@@ -52,7 +52,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
           : t('toast.reward', { xp: outcome.reward.xp, money: outcome.reward.money, hours }),
         detail:
           skill && outcome.skillLevelsGained > 0
-            ? t('toast.skillLevelUp', { skill: skillName(t, skill), level: skill.level + outcome.skillLevelsGained })
+            ? t('toast.skillLevelUp', { skill: skillName(t, skill), level: skill.level })
             : undefined,
       })
       setPulseKey((k) => k + 1)

@@ -256,11 +256,14 @@ export function createTask(input: TaskInput): Task {
   const siblings = state.tasks.filter(
     (t) => t.objectiveId === input.objectiveId && t.stage === stage,
   )
+  const objective = input.objectiveId
+    ? state.objectives.find((o) => o.id === input.objectiveId)
+    : undefined
   const task: Task = {
     id: newId('task'),
     title: input.title.trim(),
     notes: input.notes?.trim() || undefined,
-    resultId: input.resultId || undefined,
+    resultId: input.resultId || objective?.resultId,
     objectiveId: input.objectiveId || undefined,
     stage,
     skillId: input.skillId || undefined,
@@ -335,7 +338,9 @@ export function completeTask(id: string, options?: { actualHours?: number }): Co
   if (!task || task.rewardApplied) return null
 
   const completedAt = now()
-  const result = task.resultId ? state.results.find((r) => r.id === task.resultId) : undefined
+  const resultId =
+    task.resultId ?? state.objectives.find((o) => o.id === task.objectiveId)?.resultId
+  const result = resultId ? state.results.find((r) => r.id === resultId) : undefined
   const reward = computeReward({
     estimatedHours: task.estimatedHours,
     actualHours: options?.actualHours ?? task.actualHours,

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core'
 import {
   DndContext,
   KeyboardSensor,
@@ -20,8 +21,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { cx } from './primitives'
 
 export function DragHandle({ listeners, attributes, label }: {
-  listeners?: Record<string, unknown>
-  attributes?: Record<string, unknown>
+  listeners?: DraggableSyntheticListeners
+  attributes?: DraggableAttributes
   label: string
 }) {
   return (
