@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink-950: #070b16;
+  --color-ink-900: #0b1020;
+  --color-ink-800: #121a30;
+  --color-ink-700: #1b2540;
+  --color-ink-600: #263252;
+  --color-ink-400: #6b7a9e;
+  --color-ink-200: #b9c4dc;
+  --color-accent: #7dd3fc;
+  --color-accent-strong: #38bdf8;
+  --color-violet: #a78bfa;
+  --color-mint: #34d399;
+  --color-amber: #fbbf24;
+  --color-rose: #fb7185;
+
+  --font-sans: 'Inter var', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+  --tab-bar-height: 4.5rem;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(120% 60% at 50% 0%, #16204080 0%, transparent 60%),
+    var(--color-ink-950);
+  color: var(--color-ink-200);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Native selects render their popup with the OS palette; keep options readable. */
+select option {
+  color: #0b1020;
+  background: #f8fafc;
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes aleph-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.09) rotate(-2deg);
+  }
+  70% {
+    transform: scale(0.98) rotate(1deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes aleph-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes aleph-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-pop {
+  animation: aleph-pop 600ms ease-out;
+}
+
+.animate-rise {
+  animation: aleph-rise 220ms ease-out;
+}
+
+.animate-fade {
+  animation: aleph-fade 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop,
+  .animate-rise,
+  .animate-fade {
+    animation: none;
+  }
+}

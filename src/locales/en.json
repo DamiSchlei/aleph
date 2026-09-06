@@ -1,0 +1,323 @@
+{
+  "app": {
+    "name": "Aleph",
+    "tagline": "Your work, one character, three screens."
+  },
+  "nav": {
+    "home": "Home",
+    "planning": "Planning",
+    "tracking": "Tracking"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "edit": "Edit",
+    "archive": "Archive",
+    "confirm": "Confirm",
+    "add": "Add",
+    "create": "Create",
+    "none": "None",
+    "all": "All",
+    "optional": "optional",
+    "required": "Required",
+    "today": "Today",
+    "hours": "{{count}} h",
+    "hoursOf": "{{done}} h of {{total}} h",
+    "level": "Level {{level}}",
+    "levelShort": "Lv {{level}}",
+    "xp": "XP",
+    "money": "$",
+    "skill": "Skill",
+    "noSkill": "No skill",
+    "result": "Result",
+    "objective": "Objective",
+    "stage": "Stage",
+    "task": "Task",
+    "dueDate": "Due date",
+    "difficulty": "Difficulty",
+    "status": "Status",
+    "notes": "Notes",
+    "why": "Why",
+    "name": "Name",
+    "title": "Title",
+    "estimatedHours": "Estimated hours",
+    "date": "Date",
+    "unassigned": "Unassigned",
+    "reorderHint": "Drag to reorder",
+    "dash": "—"
+  },
+  "difficulty": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+  "taskStatus": {
+    "pending": "Pending",
+    "in_progress": "In progress",
+    "done_on_time": "On time",
+    "done_late": "Late",
+    "cancelled": "Cancelled"
+  },
+  "objectiveStatus": {
+    "pending": "Pending",
+    "in_progress": "In progress",
+    "done": "Done",
+    "blocked": "Blocked"
+  },
+  "resultStatus": {
+    "active": "Active",
+    "paused": "Paused",
+    "achieved": "Achieved",
+    "archived": "Archived"
+  },
+  "stages": {
+    "research": {
+      "name": "Research & goals",
+      "short": "Research"
+    },
+    "execution": {
+      "name": "Execution & follow-up",
+      "short": "Execution"
+    },
+    "review": {
+      "name": "Analysis & conclusion",
+      "short": "Review"
+    }
+  },
+  "skills": {
+    "creativity": "Creativity",
+    "study": "Study",
+    "finance": "Finance",
+    "relationships": "Relationships",
+    "health": "Health",
+    "work": "Work"
+  },
+  "home": {
+    "hint": "Complete tasks to earn XP and money.",
+    "proposePlaceholder": "Propose a task block…",
+    "proposeCta": "Propose",
+    "agendaTitle": "Today",
+    "agendaEmpty": "No blocks for today. Propose one above or create it in Planning.",
+    "agendaCount": "{{done}} of {{total}} done",
+    "skillsTitle": "Skills",
+    "newSkill": "New skill",
+    "newSkillName": "Skill name",
+    "newSkillIcon": "Icon",
+    "openTaskDetail": "Open task",
+    "completeTask": "Complete task"
+  },
+  "planning": {
+    "title": "Planning",
+    "subtitle": "Results, objectives and tasks that move you toward what you want.",
+    "tabs": {
+      "results": "Results",
+      "tasks": "Tasks"
+    },
+    "results": {
+      "helper": "A result is what you want to achieve. Inside it you add up to 4 objectives.",
+      "new": "+ New result",
+      "empty": "No results yet.",
+      "emptyHint": "Start with one of these, or write your own.",
+      "chips": {
+        "product": "First product ready to sell",
+        "money": "A month with spending and income under control",
+        "body": "A body routine held for 8 weeks"
+      },
+      "objectivesCount": "{{count}} of {{max}} objectives",
+      "noObjectives": "No objectives yet",
+      "noTasks": "No tasks yet",
+      "progress": "{{done}} of {{total}} tasks",
+      "hours": "{{done}} h of {{total}} h",
+      "pipeline": "Objectives by stage",
+      "createTitle": "New result",
+      "editTitle": "Edit result",
+      "namePlaceholder": "What do you want to achieve?",
+      "whyPlaceholder": "Why does this matter to you?",
+      "targetDate": "Target date",
+      "primarySkill": "Primary skill",
+      "archiveConfirm": "Archiving this result also archives its objectives and cancels their open tasks. The journal stays.",
+      "archived": "Archived results",
+      "detailTitle": "Result"
+    },
+    "objectives": {
+      "new": "+ Objective",
+      "limitReached": "This result already has 4 objectives. Archive one or create another result.",
+      "createTitle": "New objective",
+      "editTitle": "Edit objective",
+      "namePlaceholder": "What has to happen for this result?",
+      "importance": "Importance",
+      "archiveConfirm": "Archive this objective? Its open tasks are cancelled and the journal stays.",
+      "detailTitle": "Objective",
+      "stageOpenTasks": "{{stage}} still has {{count}} open task(s). Advance anyway?",
+      "stageAdvance": "Advance stage",
+      "stageCannotSkip": "Stages run in order. You cannot skip from research to review.",
+      "tasksInStage": "Tasks in this stage",
+      "stageEmpty": "No tasks in this stage yet."
+    },
+    "tasks": {
+      "new": "+ Task",
+      "createTitle": "New task",
+      "editTitle": "Edit task",
+      "titlePlaceholder": "What is the next concrete step?",
+      "empty": "No tasks. Create them from a result or propose a block on Home.",
+      "emptyFiltered": "No tasks match these filters.",
+      "projected": "Projected",
+      "filters": "Filters",
+      "clearFilters": "Clear filters",
+      "filterResult": "Result",
+      "filterObjective": "Objective",
+      "filterStage": "Stage",
+      "filterStatus": "Status",
+      "filterSkill": "Skill",
+      "filterDate": "Due before",
+      "count": "{{count}} task(s)",
+      "reopen": "Reopen",
+      "cancel": "Cancel task",
+      "actualHours": "Actual hours",
+      "dependencyWarning": "This task depends on: {{tasks}}. Complete anyway?",
+      "alreadyRewarded": "This task was already rewarded."
+    }
+  },
+  "tracking": {
+    "title": "Tracking",
+    "subtitle": "Whether your tasks landed in the time and hours you expected.",
+    "emptyLine": "Nothing to measure yet. Complete the first task and your pace shows up here.",
+    "weekLine": "This week you logged {{hours}} hours and finished {{onTime}} of {{total}} tasks on time.",
+    "cards": {
+      "completed": "Completed",
+      "onTime": "On time",
+      "late": "Late",
+      "avgDelay": "Avg delay",
+      "avgDelayUnit": "days",
+      "hours": "Hours",
+      "hoursCaption": "last 7 days"
+    },
+    "chart": {
+      "title": "Completed (last 7 days)",
+      "empty": "Complete a task and it will show up here."
+    },
+    "results": {
+      "title": "Result progress",
+      "empty": "Create a result in Planning to see progress.",
+      "noTasks": "No tasks yet",
+      "expand": "Show objectives",
+      "collapse": "Hide objectives"
+    },
+    "skills": {
+      "title": "Skills",
+      "line": "Most active: {{most}} · Quietest: {{quietest}}"
+    }
+  },
+  "journal": {
+    "title": "Journal",
+    "add": "Add comment",
+    "placeholder": "What happened?",
+    "empty": "This journal starts when you write the first comment.",
+    "origin": {
+      "result": "Result",
+      "objective": "Objective",
+      "task": "Task"
+    },
+    "post": "Post"
+  },
+  "relations": {
+    "title": "Relations",
+    "add": "Add relation",
+    "empty": "No relations yet.",
+    "onlySiblings": "You can only relate objectives of the same result, or tasks of the same objective.",
+    "kinds": {
+      "depends_on": "Depends on",
+      "feeds": "Feeds",
+      "parallel": "Parallel to"
+    },
+    "remove": "Remove relation",
+    "pickTarget": "Related item"
+  },
+  "character": {
+    "customize": "Customize",
+    "levelUp": "Level up",
+    "levelUpTitle": "Level {{level}}",
+    "levelUpUnlocked": "New items unlocked",
+    "levelUpNothing": "Keep going.",
+    "name": "Character name",
+    "language": "Language",
+    "new": "New",
+    "buy": "Buy",
+    "equip": "Equip",
+    "equipped": "Equipped",
+    "owned": "Owned",
+    "free": "Free",
+    "lockedLevel": "Level {{level}}",
+    "notEnoughMoney": "Not enough money",
+    "settings": "Settings",
+    "tabs": {
+      "skin": "Skin",
+      "hair": "Hair",
+      "outfit": "Outfit",
+      "accessory": "Accessory",
+      "background": "Background"
+    },
+    "xpProgress": "{{xp}} / {{xpToNext}} XP"
+  },
+  "cosmetics": {
+    "skin": {
+      "sand": "Sand",
+      "amber": "Amber",
+      "umber": "Umber",
+      "porcelain": "Porcelain",
+      "verdigris": "Verdigris"
+    },
+    "hair": {
+      "short": "Short cut",
+      "bun": "Bun",
+      "curls": "Curls",
+      "long": "Long hair",
+      "crest": "Crest",
+      "silver": "Silver"
+    },
+    "outfit": {
+      "tee": "T-shirt",
+      "hoodie": "Hoodie",
+      "jacket": "Jacket",
+      "coat": "Long coat",
+      "suit": "Suit",
+      "flightsuit": "Flight suit",
+      "apron": "Work apron"
+    },
+    "accessory": {
+      "none": "Nothing",
+      "glasses": "Glasses",
+      "headphones": "Headphones",
+      "scarf": "Scarf",
+      "crown": "Crown",
+      "earring": "Earring"
+    },
+    "background": {
+      "dawn": "Dawn",
+      "slate": "Slate",
+      "forest": "Forest",
+      "dusk": "Dusk",
+      "ember": "Ember",
+      "nebula": "Nebula",
+      "grid": "Grid"
+    }
+  },
+  "toast": {
+    "reward": "+{{xp}} XP · +{{money}} $ · {{hours}} h",
+    "rewardWithSkill": "+{{xp}} XP · +{{money}} $ · {{hours}} h · {{skill}}",
+    "skillLevelUp": "{{skill}} reached level {{level}}",
+    "purchased": "{{item}} is yours",
+    "commentAdded": "Comment added to the journal"
+  },
+  "weekdays": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  }
+}

@@ -1,0 +1,323 @@
+{
+  "app": {
+    "name": "Aleph",
+    "tagline": "Tu trabajo, un personaje, tres pantallas."
+  },
+  "nav": {
+    "home": "Inicio",
+    "planning": "Planificación",
+    "tracking": "Seguimiento"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "edit": "Editar",
+    "archive": "Archivar",
+    "confirm": "Confirmar",
+    "add": "Agregar",
+    "create": "Crear",
+    "none": "Ninguno",
+    "all": "Todos",
+    "optional": "opcional",
+    "required": "Obligatorio",
+    "today": "Hoy",
+    "hours": "{{count}} h",
+    "hoursOf": "{{done}} h de {{total}} h",
+    "level": "Nivel {{level}}",
+    "levelShort": "Nv {{level}}",
+    "xp": "XP",
+    "money": "$",
+    "skill": "Habilidad",
+    "noSkill": "Sin habilidad",
+    "result": "Resultado",
+    "objective": "Objetivo",
+    "stage": "Etapa",
+    "task": "Tarea",
+    "dueDate": "Fecha límite",
+    "difficulty": "Dificultad",
+    "status": "Estado",
+    "notes": "Notas",
+    "why": "Para qué",
+    "name": "Nombre",
+    "title": "Título",
+    "estimatedHours": "Horas estimadas",
+    "date": "Fecha",
+    "unassigned": "Sin asignar",
+    "reorderHint": "Arrastrá para ordenar",
+    "dash": "—"
+  },
+  "difficulty": {
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta"
+  },
+  "taskStatus": {
+    "pending": "Pendiente",
+    "in_progress": "En curso",
+    "done_on_time": "A tiempo",
+    "done_late": "Tarde",
+    "cancelled": "Cancelada"
+  },
+  "objectiveStatus": {
+    "pending": "Pendiente",
+    "in_progress": "En curso",
+    "done": "Listo",
+    "blocked": "Trabado"
+  },
+  "resultStatus": {
+    "active": "Activo",
+    "paused": "En pausa",
+    "achieved": "Logrado",
+    "archived": "Archivado"
+  },
+  "stages": {
+    "research": {
+      "name": "Investigación y metas",
+      "short": "Investigación"
+    },
+    "execution": {
+      "name": "Ejecución y seguimiento",
+      "short": "Ejecución"
+    },
+    "review": {
+      "name": "Análisis y conclusión",
+      "short": "Análisis"
+    }
+  },
+  "skills": {
+    "creativity": "Creatividad",
+    "study": "Estudio",
+    "finance": "Finanzas",
+    "relationships": "Vínculos",
+    "health": "Salud",
+    "work": "Trabajo"
+  },
+  "home": {
+    "hint": "Completá tareas para ganar XP y dinero.",
+    "proposePlaceholder": "Proponé un bloque de tareas…",
+    "proposeCta": "Proponer",
+    "agendaTitle": "Hoy",
+    "agendaEmpty": "Todavía no hay bloques para hoy. Proponé uno arriba o crealo en Planificación.",
+    "agendaCount": "{{done}} de {{total}} listas",
+    "skillsTitle": "Habilidades",
+    "newSkill": "Nueva habilidad",
+    "newSkillName": "Nombre de la habilidad",
+    "newSkillIcon": "Ícono",
+    "openTaskDetail": "Abrir tarea",
+    "completeTask": "Completar tarea"
+  },
+  "planning": {
+    "title": "Planificación",
+    "subtitle": "Resultados, objetivos y tareas para acercarte a lo que querés.",
+    "tabs": {
+      "results": "Resultados",
+      "tasks": "Tareas"
+    },
+    "results": {
+      "helper": "Un resultado es lo que querés lograr. Adentro sumás hasta 4 objetivos.",
+      "new": "+ Nuevo resultado",
+      "empty": "Aún no hay resultados.",
+      "emptyHint": "Arrancá con uno de estos o escribí el tuyo.",
+      "chips": {
+        "product": "Primer producto listo para vender",
+        "money": "Mes ordenado en gastos y cobros",
+        "body": "Cuerpo con rutina sostenida 8 semanas"
+      },
+      "objectivesCount": "{{count}} de {{max}} objetivos",
+      "noObjectives": "Todavía sin objetivos",
+      "noTasks": "Todavía sin tareas",
+      "progress": "{{done}} de {{total}} tareas",
+      "hours": "{{done}} h de {{total}} h",
+      "pipeline": "Objetivos por etapa",
+      "createTitle": "Nuevo resultado",
+      "editTitle": "Editar resultado",
+      "namePlaceholder": "¿Qué querés lograr?",
+      "whyPlaceholder": "¿Para qué te importa?",
+      "targetDate": "Fecha objetivo",
+      "primarySkill": "Habilidad principal",
+      "archiveConfirm": "Si archivás este resultado también se archivan sus objetivos y se cancelan las tareas abiertas. La bitácora queda.",
+      "archived": "Resultados archivados",
+      "detailTitle": "Resultado"
+    },
+    "objectives": {
+      "new": "+ Objetivo",
+      "limitReached": "Este resultado ya tiene 4 objetivos. Archivá uno o creá otro resultado.",
+      "createTitle": "Nuevo objetivo",
+      "editTitle": "Editar objetivo",
+      "namePlaceholder": "¿Qué tiene que pasar para llegar al resultado?",
+      "importance": "Importancia",
+      "archiveConfirm": "¿Archivás este objetivo? Se cancelan sus tareas abiertas y la bitácora queda.",
+      "detailTitle": "Objetivo",
+      "stageOpenTasks": "{{stage}} todavía tiene {{count}} tarea(s) abierta(s). ¿Avanzás igual?",
+      "stageAdvance": "Avanzar de etapa",
+      "stageCannotSkip": "Las etapas van en orden. No podés saltar de investigación a análisis.",
+      "tasksInStage": "Tareas de esta etapa",
+      "stageEmpty": "Todavía no hay tareas en esta etapa."
+    },
+    "tasks": {
+      "new": "+ Tarea",
+      "createTitle": "Nueva tarea",
+      "editTitle": "Editar tarea",
+      "titlePlaceholder": "¿Cuál es el próximo paso concreto?",
+      "empty": "No hay tareas. Crealas desde un resultado o proponé un bloque en la Home.",
+      "emptyFiltered": "Ninguna tarea coincide con estos filtros.",
+      "projected": "Proyectado",
+      "filters": "Filtros",
+      "clearFilters": "Limpiar filtros",
+      "filterResult": "Resultado",
+      "filterObjective": "Objetivo",
+      "filterStage": "Etapa",
+      "filterStatus": "Estado",
+      "filterSkill": "Habilidad",
+      "filterDate": "Vence antes de",
+      "count": "{{count}} tarea(s)",
+      "reopen": "Reabrir",
+      "cancel": "Cancelar tarea",
+      "actualHours": "Horas reales",
+      "dependencyWarning": "Esta tarea depende de: {{tasks}}. ¿La completás igual?",
+      "alreadyRewarded": "Esta tarea ya cobró su recompensa."
+    }
+  },
+  "tracking": {
+    "title": "Seguimiento",
+    "subtitle": "Cumplimiento de tus tareas en los tiempos y horas esperados.",
+    "emptyLine": "Todavía no hay tareas para medir. Completá la primera y acá aparece tu ritmo.",
+    "weekLine": "Esta semana hiciste {{hours}} horas y cumpliste {{onTime}} de {{total}} tareas a tiempo.",
+    "cards": {
+      "completed": "Completadas",
+      "onTime": "A tiempo",
+      "late": "Tarde",
+      "avgDelay": "Demora promedio",
+      "avgDelayUnit": "días",
+      "hours": "Horas",
+      "hoursCaption": "últimos 7 días"
+    },
+    "chart": {
+      "title": "Completadas (últimos 7 días)",
+      "empty": "Completá una tarea y va a aparecer acá."
+    },
+    "results": {
+      "title": "Avance por resultado",
+      "empty": "Creá un resultado en Planificación para ver el avance.",
+      "noTasks": "Todavía sin tareas",
+      "expand": "Ver objetivos",
+      "collapse": "Ocultar objetivos"
+    },
+    "skills": {
+      "title": "Habilidades",
+      "line": "Más activa: {{most}} · Más quieta: {{quietest}}"
+    }
+  },
+  "journal": {
+    "title": "Bitácora",
+    "add": "Agregar comentario",
+    "placeholder": "¿Qué pasó?",
+    "empty": "Esta bitácora empieza cuando escribas el primer comentario.",
+    "origin": {
+      "result": "Resultado",
+      "objective": "Objetivo",
+      "task": "Tarea"
+    },
+    "post": "Publicar"
+  },
+  "relations": {
+    "title": "Relaciones",
+    "add": "Agregar relación",
+    "empty": "Todavía no hay relaciones.",
+    "onlySiblings": "Solo podés relacionar objetivos del mismo resultado, o tareas del mismo objetivo.",
+    "kinds": {
+      "depends_on": "Depende de",
+      "feeds": "Alimenta a",
+      "parallel": "En paralelo con"
+    },
+    "remove": "Quitar relación",
+    "pickTarget": "Ítem relacionado"
+  },
+  "character": {
+    "customize": "Personalizar",
+    "levelUp": "Subiste de nivel",
+    "levelUpTitle": "Nivel {{level}}",
+    "levelUpUnlocked": "Desbloqueaste ítems",
+    "levelUpNothing": "Seguí así.",
+    "name": "Nombre del personaje",
+    "language": "Idioma",
+    "new": "Nuevo",
+    "buy": "Comprar",
+    "equip": "Usar",
+    "equipped": "Puesto",
+    "owned": "Tuyo",
+    "free": "Gratis",
+    "lockedLevel": "Nivel {{level}}",
+    "notEnoughMoney": "No te alcanza la plata",
+    "settings": "Ajustes",
+    "tabs": {
+      "skin": "Piel",
+      "hair": "Pelo",
+      "outfit": "Ropa",
+      "accessory": "Accesorio",
+      "background": "Fondo"
+    },
+    "xpProgress": "{{xp}} / {{xpToNext}} XP"
+  },
+  "cosmetics": {
+    "skin": {
+      "sand": "Arena",
+      "amber": "Ámbar",
+      "umber": "Tierra",
+      "porcelain": "Porcelana",
+      "verdigris": "Verdín"
+    },
+    "hair": {
+      "short": "Corte corto",
+      "bun": "Rodete",
+      "curls": "Rulos",
+      "long": "Pelo largo",
+      "crest": "Cresta",
+      "silver": "Plateado"
+    },
+    "outfit": {
+      "tee": "Remera",
+      "hoodie": "Buzo",
+      "jacket": "Campera",
+      "coat": "Tapado",
+      "suit": "Traje",
+      "flightsuit": "Traje de vuelo",
+      "apron": "Delantal de taller"
+    },
+    "accessory": {
+      "none": "Nada",
+      "glasses": "Anteojos",
+      "headphones": "Auriculares",
+      "scarf": "Bufanda",
+      "crown": "Corona",
+      "earring": "Aro"
+    },
+    "background": {
+      "dawn": "Amanecer",
+      "slate": "Pizarra",
+      "forest": "Bosque",
+      "dusk": "Atardecer",
+      "ember": "Brasa",
+      "nebula": "Nebulosa",
+      "grid": "Grilla"
+    }
+  },
+  "toast": {
+    "reward": "+{{xp}} XP · +{{money}} $ · {{hours}} h",
+    "rewardWithSkill": "+{{xp}} XP · +{{money}} $ · {{hours}} h · {{skill}}",
+    "skillLevelUp": "{{skill}} llegó al nivel {{level}}",
+    "purchased": "{{item}} ya es tuyo",
+    "commentAdded": "Comentario agregado a la bitácora"
+  },
+  "weekdays": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mié",
+    "thu": "Jue",
+    "fri": "Vie",
+    "sat": "Sáb",
+    "sun": "Dom"
+  }
+}
