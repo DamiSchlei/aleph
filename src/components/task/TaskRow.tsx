@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Badge, Card, cx } from '@/components/ui/primitives'
+import { RowMenu } from '@/components/ui/RowMenu'
 import { useAleph } from '@/data/store'
 import { objectiveById, resultById, skillById } from '@/data/selectors'
 import { isTaskDone, projectReward } from '@/domain/economy'
 import { formatDate, formatHours } from '@/i18n/format'
-import { skillName, stageShort } from '@/i18n/labels'
+import { skillName } from '@/i18n/labels'
 import type { Task } from '@/domain/types'
 
 export function TaskCheckbox({
@@ -42,22 +43,42 @@ export function TaskCheckbox({
   )
 }
 
+function RowAction({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="self-center rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-[12px] whitespace-nowrap text-ink-200 transition-colors hover:bg-white/8"
+    >
+      {children}
+    </button>
+  )
+}
+
 export function TaskRow({
   task,
   onToggle,
   onOpen,
   onAssign,
+  onExecute,
+  onReturn,
+  onDelete,
   handle,
   showContext = true,
   showProjection = false,
+  hideCheckbox = false,
 }: {
   task: Task
   onToggle: () => void
   onOpen?: () => void
   onAssign?: () => void
+  onExecute?: () => void
+  onReturn?: () => void
+  onDelete?: () => void
   handle?: ReactNode
   showContext?: boolean
   showProjection?: boolean
+  hideCheckbox?: boolean
 }) {
   const { t } = useTranslation()
   const state = useAleph()
@@ -69,17 +90,23 @@ export function TaskRow({
   const contextResult = result ?? resultById(state, objective?.resultId)
   const projection = projectReward(task, contextResult?.status === 'active')
   const loose = !task.objectiveId && !task.resultId
+
   const canAssign = loose && !done && Boolean(onAssign)
+  const canExecute = task.stage === 'research' && !done && Boolean(onExecute)
+  const canReturn = task.stage === 'execution' && !done && Boolean(onReturn)
 
   return (
     <Card className="flex items-start gap-1 p-2">
-      <TaskCheckbox done={done} onToggle={onToggle} label={t('home.completeTask')} />
+      {hideCheckbox ? null : (
+        <TaskCheckbox done={done} onToggle={onToggle} label={t('home.completeTask')} />
+      )}
       <button
         type="button"
         onClick={onOpen}
         disabled={!onOpen}
         className={cx(
           'min-w-0 flex-1 py-1.5 pr-1 text-left',
+          hideCheckbox && 'pl-2',
           onOpen && 'cursor-pointer rounded-xl transition-colors hover:bg-white/4',
         )}
       >
@@ -103,7 +130,11 @@ export function TaskRow({
           {showContext && contextResult ? <Badge tone="accent">{contextResult.name}</Badge> : null}
           {showContext && objective ? <Badge tone="violet">{objective.name}</Badge> : null}
           {showContext && loose ? <Badge tone="amber">{t('planning.tasks.loose')}</Badge> : null}
-          {showContext && !loose ? <Badge>{stageShort(t, task.stage)}</Badge> : null}
+          {showContext && !loose && !done ? (
+            <Badge tone={task.stage === 'execution' ? 'mint' : 'neutral'}>
+              {t(`moments.${task.stage}`)}
+            </Badge>
+          ) : null}
           {task.dueAt && !done ? <Badge tone="amber">{formatDate(task.dueAt, locale)}</Badge> : null}
           {done ? (
             <Badge tone={task.status === 'done_on_time' ? 'mint' : 'rose'}>
@@ -123,14 +154,11 @@ export function TaskRow({
           ) : null}
         </div>
       </button>
-      {canAssign ? (
-        <button
-          type="button"
-          onClick={onAssign}
-          className="self-center rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-[12px] text-ink-200 transition-colors hover:bg-white/8"
-        >
-          {t('planning.tasks.assign')}
-        </button>
+      {canExecute ? <RowAction onClick={onExecute!}>{t('planning.tasks.execute')}</RowAction> : null}
+      {canReturn ? <RowAction onClick={onReturn!}>{t('planning.tasks.backToResearch')}</RowAction> : null}
+      {canAssign ? <RowAction onClick={onAssign!}>{t('planning.tasks.assign')}</RowAction> : null}
+      {onDelete ? (
+        <RowMenu items={[{ label: t('common.delete'), tone: 'danger', onClick: onDelete }]} />
       ) : null}
       {handle}
     </Card>

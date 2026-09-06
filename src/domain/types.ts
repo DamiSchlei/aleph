@@ -14,11 +14,12 @@ export type ParentType = 'result' | 'objective' | 'task'
 
 export type RelationKind = 'depends_on' | 'feeds' | 'parallel'
 
-export type CosmeticCategory = 'skin' | 'hair' | 'outfit' | 'accessory' | 'background'
+export type CosmeticCategory = 'skin' | 'hair' | 'eyes' | 'outfit' | 'accessory' | 'background'
 
 export interface Avatar {
   skinId: string
   hairId: string
+  eyesId: string
   outfitId: string
   accessoryId: string
   backgroundId: string

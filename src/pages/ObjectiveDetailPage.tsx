@@ -3,19 +3,18 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
-import { StagePipeline } from '@/components/planning/StagePipeline'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
-import { Button, Badge, EmptyState, SectionTitle, cx } from '@/components/ui/primitives'
+import { useTaskActions } from '@/components/task/useTaskActions'
+import { Button, Card, EmptyState, SectionTitle } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { SortableList } from '@/components/ui/SortableList'
-import { archiveObjective, moveObjectiveStage, reorderTasks } from '@/data/actions'
-import { objectiveById, resultById, tasksOfObjective } from '@/data/selectors'
+import { archiveObjective, reorderTasks } from '@/data/actions'
+import { objectiveById, objectiveHealth, resultById, tasksOfObjective } from '@/data/selectors'
 import { useAleph } from '@/data/store'
-import { STAGE_ORDER, canMoveTo } from '@/domain/stage'
-import { stageName } from '@/i18n/labels'
-import type { StageId, Task } from '@/domain/types'
+import { isTaskDone } from '@/domain/economy'
+import type { Task } from '@/domain/types'
 
 export function ObjectiveDetailPage() {
   const { objectiveId = '' } = useParams()
@@ -24,22 +23,13 @@ export function ObjectiveDetailPage() {
   const state = useAleph()
   const objective = objectiveById(state, objectiveId)
   const result = objective ? resultById(state, objective.resultId) : undefined
-  const tasks = objective ? tasksOfObjective(state, objective.id) : []
-  const { toggle, dialog } = useTaskCompletion()
+  const { toggle, dialog: completionDialog } = useTaskCompletion()
+  const actions = useTaskActions()
   const [edit, setEdit] = useState(false)
-  const [taskPreset, setTaskPreset] = useState<{ stage: StageId } | null>(null)
+  const [creating, setCreating] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | undefined>()
   const [archiveOpen, setArchiveOpen] = useState(false)
-  const [stageWarn, setStageWarn] = useState<{ stage: StageId; openCount: number } | null>(null)
-
-  const requestMove = (stage: StageId, openCount: number) => {
-    if (!objective || !canMoveTo(objective.currentStage, stage)) return
-    if (openCount > 0 || objective.doneWhen) {
-      setStageWarn({ stage, openCount })
-      return
-    }
-    moveObjectiveStage(objective.id, stage)
-  }
+  const [showDone, setShowDone] = useState(false)
 
   if (!objective) {
     return (
@@ -57,26 +47,16 @@ export function ObjectiveDetailPage() {
     )
   }
 
-  // The active stage leads; the others follow as secondary context.
-  const orderedStages: StageId[] = [
-    objective.currentStage,
-    ...STAGE_ORDER.filter((s) => s !== objective.currentStage),
-  ]
+  const all = tasksOfObjective(state, objective.id)
+  const execution = all.filter((tk) => tk.stage === 'execution' && !isTaskDone(tk.status) && tk.status !== 'cancelled')
+  const research = all.filter((tk) => tk.stage === 'research' && !isTaskDone(tk.status) && tk.status !== 'cancelled')
+  const doneTasks = all.filter((tk) => isTaskDone(tk.status))
+  const health = objectiveHealth(state, objective.id)
 
-  const warnMessage = () => {
-    const parts: string[] = []
-    if (stageWarn && stageWarn.openCount > 0) {
-      parts.push(
-        t('planning.objectives.stageOpenTasks', {
-          stage: stageName(t, objective.currentStage),
-          count: stageWarn.openCount,
-        }),
-      )
-    }
-    if (objective.doneWhen) {
-      parts.push(t('planning.objectives.doneWhenConfirm', { doneWhen: objective.doneWhen }))
-    }
-    return parts.join(' ') || t('planning.objectives.stageAdvance')
+  const momentProps = {
+    onComplete: (tk: Task) => toggle(tk),
+    onExecute: (tk: Task) => actions.execute(tk),
+    onReturn: (tk: Task) => actions.back(tk),
   }
 
   return (
@@ -97,7 +77,9 @@ export function ObjectiveDetailPage() {
             {objective.doneWhen}
           </p>
         ) : null}
+        <p className="mt-2 text-[14px] leading-relaxed text-ink-200">{t(health.key, health.params)}</p>
       </header>
+
       <div className="flex gap-2">
         <Button variant="secondary" className="flex-1" onClick={() => setEdit(true)}>
           {t('common.edit')}
@@ -107,58 +89,105 @@ export function ObjectiveDetailPage() {
         </Button>
       </div>
 
-      <StagePipeline objective={objective} tasks={tasks} onRequestMove={requestMove} />
+      <Button onClick={() => setCreating(true)}>{t('planning.tasks.new')}</Button>
 
-      {orderedStages.map((stage) => {
-        const active = stage === objective.currentStage
-        const stageTasks = tasks.filter((task) => task.stage === stage)
-        return (
-          <section key={stage} className={cx(!active && 'opacity-70')}>
-            <SectionTitle
-              action={
-                <Button
-                  variant="ghost"
-                  className="px-3"
-                  onClick={() => setTaskPreset({ stage })}
-                >
-                  {t('planning.tasks.new')}
-                </Button>
-              }
-            >
-              <span className="flex items-center gap-2">
-                {t(`stages.${stage}.name`)}
-                {active ? <Badge tone="accent">{t('planning.objectives.activeStage')}</Badge> : null}
-              </span>
-            </SectionTitle>
-            {stageTasks.length === 0 ? (
-              <EmptyState>{t('planning.objectives.stageEmpty')}</EmptyState>
-            ) : (
-              <SortableList
-                ids={stageTasks.map((task) => task.id)}
-                onReorder={(ids) => reorderTasks(ids, 'importance')}
-                handleLabel={t('common.reorderHint')}
-              >
-                {(id, handle) => {
-                  const task = stageTasks.find((item) => item.id === id)
-                  if (!task) return null
-                  return (
-                    <TaskRow
-                      task={task}
-                      onToggle={() => toggle(task)}
-                      onOpen={() => setEditingTask(task)}
-                      handle={handle}
-                      showContext={false}
-                    />
-                  )
-                }}
-              </SortableList>
-            )}
-          </section>
-        )
-      })}
+      <section>
+        <SectionTitle>{t('moments.execution')}</SectionTitle>
+        {execution.length === 0 ? (
+          <EmptyState>{t('planning.objectives.noneInProgress')}</EmptyState>
+        ) : (
+          <SortableList
+            ids={execution.map((tk) => tk.id)}
+            onReorder={(ids) => reorderTasks(ids, 'importance')}
+            handleLabel={t('common.reorderHint')}
+          >
+            {(id, handle) => {
+              const task = execution.find((tk) => tk.id === id)
+              if (!task) return null
+              return (
+                <TaskRow
+                  task={task}
+                  onToggle={() => toggle(task)}
+                  onReturn={() => actions.back(task)}
+                  onDelete={() => actions.requestDelete(task)}
+                  onOpen={() => setEditingTask(task)}
+                  handle={handle}
+                  showContext={false}
+                />
+              )
+            }}
+          </SortableList>
+        )}
+      </section>
+
+      <section>
+        <SectionTitle>{t('moments.research')}</SectionTitle>
+        {research.length === 0 ? (
+          <EmptyState>{t('planning.objectives.noneInResearch')}</EmptyState>
+        ) : (
+          <SortableList
+            ids={research.map((tk) => tk.id)}
+            onReorder={(ids) => reorderTasks(ids, 'importance')}
+            handleLabel={t('common.reorderHint')}
+          >
+            {(id, handle) => {
+              const task = research.find((tk) => tk.id === id)
+              if (!task) return null
+              return (
+                <TaskRow
+                  task={task}
+                  onToggle={() => toggle(task)}
+                  onExecute={() => actions.execute(task)}
+                  onDelete={() => actions.requestDelete(task)}
+                  onOpen={() => setEditingTask(task)}
+                  handle={handle}
+                  showContext={false}
+                  hideCheckbox
+                />
+              )
+            }}
+          </SortableList>
+        )}
+      </section>
+
+      {doneTasks.length > 0 ? (
+        <section>
+          <SectionTitle
+            action={
+              <Button variant="ghost" className="px-3" onClick={() => setShowDone((v) => !v)}>
+                {showDone ? t('common.hide') : t('common.show')}
+              </Button>
+            }
+          >
+            {t('moments.done')} · {doneTasks.length}
+          </SectionTitle>
+          {showDone ? (
+            <ul className="flex flex-col gap-2">
+              {doneTasks.map((task) => (
+                <li key={task.id}>
+                  <TaskRow
+                    task={task}
+                    onToggle={() => toggle(task)}
+                    onDelete={() => actions.requestDelete(task)}
+                    onOpen={() => setEditingTask(task)}
+                    showContext={false}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
+      {all.length === 0 ? (
+        <Card>
+          <p className="text-[14px] text-ink-400">{t('planning.objectives.noConcreteStep')}</p>
+        </Card>
+      ) : null}
 
       <JournalThread parentType="objective" parentId={objective.id} />
-      {dialog}
+      {completionDialog}
+      {actions.dialog}
 
       <ObjectiveFormSheet
         open={edit}
@@ -167,17 +196,14 @@ export function ObjectiveDetailPage() {
         onClose={() => setEdit(false)}
       />
       <TaskFormSheet
-        open={taskPreset !== null}
-        preset={{
-          resultId: objective.resultId,
-          objectiveId: objective.id,
-          stage: taskPreset?.stage ?? objective.currentStage,
-        }}
-        onClose={() => setTaskPreset(null)}
+        open={creating}
+        preset={{ resultId: objective.resultId, objectiveId: objective.id }}
+        onClose={() => setCreating(false)}
       />
       <TaskFormSheet
         open={Boolean(editingTask)}
         task={editingTask}
+        moments={momentProps}
         onClose={() => setEditingTask(undefined)}
       />
       <ConfirmDialog
@@ -189,16 +215,6 @@ export function ObjectiveDetailPage() {
         onConfirm={() => {
           archiveObjective(objective.id)
           navigate(`/planning/results/${objective.resultId}`)
-        }}
-      />
-      <ConfirmDialog
-        open={stageWarn !== null}
-        title={t('planning.objectives.stageAdvance')}
-        message={warnMessage()}
-        onCancel={() => setStageWarn(null)}
-        onConfirm={() => {
-          if (stageWarn) moveObjectiveStage(objective.id, stageWarn.stage)
-          setStageWarn(null)
         }}
       />
     </div>

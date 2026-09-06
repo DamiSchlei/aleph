@@ -12,6 +12,13 @@ export const COSMETICS: Cosmetic[] = [
   { id: 'skin_porcelain', category: 'skin', nameKey: 'cosmetics.skin.porcelain', unlockLevel: 5, preview: '#fadfd0' },
   { id: 'skin_verdigris', category: 'skin', nameKey: 'cosmetics.skin.verdigris', price: 160, preview: '#7fb7a4' },
 
+  // Eyes (basic layer — eye colour). All free from level 1.
+  { id: 'eyes_dark', category: 'eyes', nameKey: 'cosmetics.eyes.dark', unlockLevel: 1, preview: '#1f2937' },
+  { id: 'eyes_hazel', category: 'eyes', nameKey: 'cosmetics.eyes.hazel', unlockLevel: 1, preview: '#6b4423' },
+  { id: 'eyes_blue', category: 'eyes', nameKey: 'cosmetics.eyes.blue', unlockLevel: 1, preview: '#2563eb' },
+  { id: 'eyes_green', category: 'eyes', nameKey: 'cosmetics.eyes.green', unlockLevel: 1, preview: '#15803d' },
+  { id: 'eyes_violet', category: 'eyes', nameKey: 'cosmetics.eyes.violet', unlockLevel: 1, preview: '#6d28d9' },
+
   // Hair
   { id: 'hair_short', category: 'hair', nameKey: 'cosmetics.hair.short', unlockLevel: 1, preview: '#2f2a26' },
   { id: 'hair_bun', category: 'hair', nameKey: 'cosmetics.hair.bun', unlockLevel: 1, preview: '#5b3a29' },
@@ -50,6 +57,7 @@ export const COSMETICS: Cosmetic[] = [
 export const COSMETIC_CATEGORIES: CosmeticCategory[] = [
   'skin',
   'hair',
+  'eyes',
   'outfit',
   'accessory',
   'background',

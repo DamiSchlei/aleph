@@ -93,6 +93,8 @@ export function normalize(input: unknown): AlephState {
   character.xpToNext = character.xpToNext > 0 ? character.xpToNext : xpToNextForLevel(character.level)
   character.money = Math.max(0, character.money || 0)
   character.locale = 'es'
+  // Merge avatar with defaults so older snapshots gain new layers (e.g. eyes).
+  character.avatar = { ...newCharacter(base.character.locale).avatar, ...(character.avatar ?? {}) }
   character.ownedCosmeticIds = Array.from(
     new Set([...base.character.ownedCosmeticIds, ...(character.ownedCosmeticIds ?? [])]),
   )

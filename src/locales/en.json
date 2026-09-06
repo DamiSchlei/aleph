@@ -46,12 +46,21 @@
     "date": "Date",
     "unassigned": "Unassigned",
     "reorderHint": "Drag to reorder",
+    "delete": "Delete",
+    "more": "More",
+    "show": "Show",
+    "hide": "Hide",
     "dash": "—"
   },
   "difficulty": {
     "low": "Low",
     "medium": "Medium",
     "high": "High"
+  },
+  "moments": {
+    "research": "Analysis & research",
+    "execution": "In progress",
+    "done": "Done"
   },
   "taskStatus": {
     "pending": "Pending",
@@ -96,11 +105,18 @@
   },
   "home": {
     "hint": "Complete tasks to earn XP and money.",
-    "proposePlaceholder": "Propose a task block…",
-    "proposeCta": "Propose",
+    "proposePlaceholder": "Jot down a step…",
+    "proposeCta": "Add",
     "agendaTitle": "Today",
-    "agendaEmpty": "No blocks for today. Propose one above or create it in Planning.",
+    "agendaEmpty": "Nothing here yet. Jot one down above or create it in Planning.",
     "agendaCount": "{{done}} of {{total}} done",
+    "filters": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "week": "This week",
+      "overdue": "Overdue",
+      "pick": "Pick a date"
+    },
     "skillsTitle": "Skills",
     "newSkill": "New skill",
     "newSkillName": "Skill name",
@@ -137,8 +153,11 @@
       "whyPlaceholder": "Why does this matter to you?",
       "targetDate": "Target date",
       "primarySkill": "Primary skill",
-      "archiveConfirm": "Archiving this result also archives its objectives and cancels their open tasks. The journal stays.",
+      "archiveConfirm": "Archiving this result sets it aside and its steps drop off the agenda. You can restore it any time.",
       "archived": "Archived results",
+      "showArchived": "Show archived",
+      "hideArchived": "Hide archived",
+      "restore": "Restore",
       "detailTitle": "Result",
       "health": {
         "noObjectives": "No objectives yet. Add the first lever.",
@@ -160,6 +179,13 @@
       "doneWhenConfirm": "Done when: {{doneWhen}}.",
       "activeStage": "Active stage",
       "noConcreteStep": "This objective has no concrete step yet.",
+      "noneInProgress": "Nothing in progress yet.",
+      "noneInResearch": "Nothing in research yet.",
+      "health": {
+        "inProgress": "{{count}} step(s) in progress: {{title}}",
+        "research": "{{count}} steps in research, none in execution.",
+        "readyToClose": "All done. Ready to close."
+      },
       "archiveConfirm": "Archive this objective? Its open tasks are cancelled and the journal stays.",
       "detailTitle": "Objective",
       "stageOpenTasks": "{{stage}} still has {{count}} open task(s). Advance anyway?",
@@ -191,6 +217,11 @@
       "loose": "Loose",
       "looseStep": "Loose step",
       "assign": "Assign to an objective",
+      "execute": "Execute",
+      "complete": "Complete",
+      "backToResearch": "Back to research",
+      "executeNoNote": "No note for this step. Execute anyway?",
+      "deleteConfirm": "Delete this task? It earns no XP and can't be undone.",
       "skillPromptTitle": "Which skill does it add to?",
       "skillPromptHint": "Pick the skill this task counts toward. It is saved for next time.",
       "count": "{{count}} task(s)",
@@ -275,9 +306,11 @@
     "settings": "Settings",
     "tabs": {
       "skin": "Skin",
+      "color": "Color",
       "hair": "Hair",
+      "eyes": "Eyes",
       "outfit": "Outfit",
-      "accessory": "Accessory",
+      "accessory": "Accessories",
       "background": "Background"
     },
     "xpProgress": "{{xp}} / {{xpToNext}} XP"
@@ -289,6 +322,13 @@
       "umber": "Umber",
       "porcelain": "Porcelain",
       "verdigris": "Verdigris"
+    },
+    "eyes": {
+      "dark": "Dark",
+      "hazel": "Hazel",
+      "blue": "Blue",
+      "green": "Green",
+      "violet": "Violet"
     },
     "hair": {
       "short": "Short cut",

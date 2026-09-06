@@ -46,12 +46,21 @@
     "date": "Fecha",
     "unassigned": "Sin asignar",
     "reorderHint": "Arrastrá para ordenar",
+    "delete": "Eliminar",
+    "more": "Más",
+    "show": "Ver",
+    "hide": "Ocultar",
     "dash": "—"
   },
   "difficulty": {
     "low": "Baja",
     "medium": "Media",
     "high": "Alta"
+  },
+  "moments": {
+    "research": "Análisis e investigación",
+    "execution": "En progreso",
+    "done": "Hechas"
   },
   "taskStatus": {
     "pending": "Pendiente",
@@ -96,11 +105,18 @@
   },
   "home": {
     "hint": "Completá tareas para ganar XP y dinero.",
-    "proposePlaceholder": "Proponé un bloque de tareas…",
-    "proposeCta": "Proponer",
+    "proposePlaceholder": "Anotá un paso…",
+    "proposeCta": "Anotar",
     "agendaTitle": "Hoy",
-    "agendaEmpty": "Todavía no hay bloques para hoy. Proponé uno arriba o crealo en Planificación.",
+    "agendaEmpty": "Todavía no hay pasos acá. Anotá uno arriba o crealo en Planificación.",
     "agendaCount": "{{done}} de {{total}} listas",
+    "filters": {
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "week": "Esta semana",
+      "overdue": "Vencidas",
+      "pick": "Elegir fecha"
+    },
     "skillsTitle": "Habilidades",
     "newSkill": "Nueva habilidad",
     "newSkillName": "Nombre de la habilidad",
@@ -137,8 +153,11 @@
       "whyPlaceholder": "¿Para qué te importa?",
       "targetDate": "Fecha objetivo",
       "primarySkill": "Habilidad principal",
-      "archiveConfirm": "Si archivás este resultado también se archivan sus objetivos y se cancelan las tareas abiertas. La bitácora queda.",
+      "archiveConfirm": "Si archivás este resultado se guarda aparte y sus pasos dejan de aparecer en la agenda. Podés restaurarlo cuando quieras.",
       "archived": "Resultados archivados",
+      "showArchived": "Ver archivados",
+      "hideArchived": "Ocultar archivados",
+      "restore": "Restaurar",
       "detailTitle": "Resultado",
       "health": {
         "noObjectives": "Todavía no hay objetivos. Sumá la primera palanca.",
@@ -160,6 +179,13 @@
       "doneWhenConfirm": "Listo cuando: {{doneWhen}}.",
       "activeStage": "Etapa activa",
       "noConcreteStep": "Este objetivo todavía no tiene un paso concreto.",
+      "noneInProgress": "Nada en progreso todavía.",
+      "noneInResearch": "Nada en investigación todavía.",
+      "health": {
+        "inProgress": "Hay {{count}} paso(s) en curso: {{title}}",
+        "research": "{{count}} pasos en investigación, ninguno en ejecución.",
+        "readyToClose": "Todo hecho. Listo para cerrar."
+      },
       "archiveConfirm": "¿Archivás este objetivo? Se cancelan sus tareas abiertas y la bitácora queda.",
       "detailTitle": "Objetivo",
       "stageOpenTasks": "{{stage}} todavía tiene {{count}} tarea(s) abierta(s). ¿Avanzás igual?",
@@ -191,6 +217,11 @@
       "loose": "Suelto",
       "looseStep": "Paso suelto",
       "assign": "Asignar a un objetivo",
+      "execute": "Ejecutar",
+      "complete": "Completar",
+      "backToResearch": "Volver a investigación",
+      "executeNoNote": "No hay nota de este paso. ¿Ejecutar igual?",
+      "deleteConfirm": "¿Eliminar esta tarea? No suma XP y no se puede deshacer.",
       "skillPromptTitle": "¿A qué habilidad suma?",
       "skillPromptHint": "Elegí a qué habilidad le suma esta tarea. Queda guardado para la próxima.",
       "count": "{{count}} tarea(s)",
@@ -275,9 +306,11 @@
     "settings": "Ajustes",
     "tabs": {
       "skin": "Piel",
-      "hair": "Pelo",
+      "color": "Color",
+      "hair": "Peinado",
+      "eyes": "Ojos",
       "outfit": "Ropa",
-      "accessory": "Accesorio",
+      "accessory": "Accesorios",
       "background": "Fondo"
     },
     "xpProgress": "{{xp}} / {{xpToNext}} XP"
@@ -289,6 +322,13 @@
       "umber": "Tierra",
       "porcelain": "Porcelana",
       "verdigris": "Verdín"
+    },
+    "eyes": {
+      "dark": "Oscuros",
+      "hazel": "Avellana",
+      "blue": "Azules",
+      "green": "Verdes",
+      "violet": "Violetas"
     },
     "hair": {
       "short": "Corte corto",

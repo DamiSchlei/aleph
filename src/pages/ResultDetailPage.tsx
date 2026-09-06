@@ -7,9 +7,10 @@ import { ResultFormSheet } from '@/components/planning/ResultForm'
 import { Button, Card, EmptyState, ProgressBar, SectionTitle } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { SortableList } from '@/components/ui/SortableList'
-import { archiveResult, reorderObjectives } from '@/data/actions'
+import { archiveResult, reorderObjectives, restoreResult } from '@/data/actions'
 import { canAddObjective, MAX_OBJECTIVES_PER_RESULT } from '@/domain/limits'
 import {
+  deriveObjectiveStage,
   nextTaskOfObjective,
   objectiveProgress,
   objectivesOfResult,
@@ -32,6 +33,7 @@ export function ResultDetailPage() {
   const [addObjective, setAddObjective] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
   const atLimit = !canAddObjective(state.objectives, resultId)
+  const isArchived = result?.status === 'archived'
 
   if (!result) {
     return (
@@ -69,21 +71,29 @@ export function ResultDetailPage() {
         </Card>
       ) : null}
 
-      <div className="flex gap-2">
-        <Button variant="secondary" className="flex-1" onClick={() => setEdit(true)}>
-          {t('common.edit')}
+      {isArchived ? (
+        <Button variant="secondary" onClick={() => restoreResult(result.id)}>
+          {t('planning.results.restore')}
         </Button>
-        <Button variant="danger" className="flex-1" onClick={() => setArchiveOpen(true)}>
-          {t('common.archive')}
-        </Button>
-      </div>
+      ) : (
+        <div className="flex gap-2">
+          <Button variant="secondary" className="flex-1" onClick={() => setEdit(true)}>
+            {t('common.edit')}
+          </Button>
+          <Button variant="danger" className="flex-1" onClick={() => setArchiveOpen(true)}>
+            {t('common.archive')}
+          </Button>
+        </div>
+      )}
 
       <div>
         <SectionTitle
           action={
-            <Button disabled={atLimit} onClick={() => setAddObjective(true)}>
-              {t('planning.objectives.new')}
-            </Button>
+            isArchived ? null : (
+              <Button disabled={atLimit} onClick={() => setAddObjective(true)}>
+                {t('planning.objectives.new')}
+              </Button>
+            )
           }
         >
           {t('planning.results.objectivesCount', {
@@ -91,7 +101,7 @@ export function ResultDetailPage() {
             max: MAX_OBJECTIVES_PER_RESULT,
           })}
         </SectionTitle>
-        {atLimit ? (
+        {atLimit && !isArchived ? (
           <p className="mb-3 text-[13px] leading-relaxed text-amber">{t('planning.objectives.limitReached')}</p>
         ) : null}
         {objectives.length === 0 ? (
@@ -112,7 +122,7 @@ export function ResultDetailPage() {
                   <Link to={`/planning/objectives/${objective.id}`} className="min-w-0 flex-1 p-2">
                     <p className="font-medium text-white">{objective.name}</p>
                     <p className="mt-1 text-[12px] text-ink-400">
-                      {stageShort(t, objective.currentStage)}
+                      {stageShort(t, deriveObjectiveStage(state, objective.id))}
                       {' · '}
                       {obj.tasksTotal === 0
                         ? t('planning.results.noTasks')

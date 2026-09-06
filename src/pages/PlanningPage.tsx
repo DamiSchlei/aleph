@@ -6,6 +6,7 @@ import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { AssignSheet } from '@/components/task/AssignSheet'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
+import { useTaskActions } from '@/components/task/useTaskActions'
 import { SortableList } from '@/components/ui/SortableList'
 import {
   Badge,
@@ -16,8 +17,8 @@ import {
   ProgressBar,
   Select,
 } from '@/components/ui/primitives'
-import { reorderResults } from '@/data/actions'
-import { activeResults, resultHealth, resultProgress } from '@/data/selectors'
+import { reorderResults, restoreResult } from '@/data/actions'
+import { activeResults, resultHealth, resultProgress, taskResultStatus } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { MAX_OBJECTIVES_PER_RESULT } from '@/domain/limits'
 import { STAGE_ORDER } from '@/domain/stage'
@@ -56,8 +57,10 @@ function ResultsTab() {
   const { t } = useTranslation()
   const state = useAleph()
   const results = activeResults(state)
+  const archived = state.results.filter((r) => r.status === 'archived')
   const [open, setOpen] = useState(false)
   const [seed, setSeed] = useState<string | undefined>()
+  const [showArchived, setShowArchived] = useState(false)
 
   const openCreate = (name?: string) => {
     setSeed(name)
@@ -135,6 +138,33 @@ function ResultsTab() {
           }}
         </SortableList>
       )}
+
+      {archived.length > 0 ? (
+        <div>
+          <Button variant="ghost" className="px-2" onClick={() => setShowArchived((v) => !v)}>
+            {showArchived ? t('planning.results.hideArchived') : t('planning.results.showArchived')}
+          </Button>
+          {showArchived ? (
+            <ul className="mt-2 flex flex-col gap-2">
+              {archived.map((result) => (
+                <li
+                  key={result.id}
+                  className="flex items-center justify-between gap-2 rounded-2xl border border-white/6 bg-ink-900/50 px-3 py-2"
+                >
+                  <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1">
+                    <p className="truncate text-[15px] text-ink-200">{result.name}</p>
+                    <p className="text-[12px] text-ink-400">{t('resultStatus.archived')}</p>
+                  </Link>
+                  <Button variant="secondary" onClick={() => restoreResult(result.id)}>
+                    {t('planning.results.restore')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
       <ResultFormSheet open={open} initialName={seed} onClose={() => setOpen(false)} />
     </div>
   )
@@ -146,6 +176,7 @@ function TasksTab() {
   const { t } = useTranslation()
   const state = useAleph()
   const { toggle, dialog } = useTaskCompletion()
+  const actions = useTaskActions()
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<Task | undefined>()
   const [assigning, setAssigning] = useState<Task | undefined>()
@@ -162,6 +193,8 @@ function TasksTab() {
   const filtered = useMemo(() => {
     return state.tasks
       .filter((task) => {
+        // Tasks of archived results are hidden until the result is restored.
+        if (taskResultStatus(state, task) === 'archived') return false
         if (resultId && task.resultId !== resultId) return false
         if (objectiveId && task.objectiveId !== objectiveId) return false
         if (stage && task.stage !== stage) return false
@@ -177,7 +210,7 @@ function TasksTab() {
         if (al !== bl) return al - bl
         return a.importance - b.importance
       })
-  }, [state.tasks, resultId, objectiveId, stage, status, skillId, before])
+  }, [state, resultId, objectiveId, stage, status, skillId, before])
 
   const clear = () => {
     setResultId('')
@@ -274,6 +307,7 @@ function TasksTab() {
                 onToggle={() => toggle(task)}
                 onOpen={() => setEditing(task)}
                 onAssign={() => setAssigning(task)}
+                onDelete={() => actions.requestDelete(task)}
                 showProjection
               />
             </li>
@@ -281,8 +315,18 @@ function TasksTab() {
         </ul>
       )}
       {dialog}
+      {actions.dialog}
       <TaskFormSheet open={creating} onClose={() => setCreating(false)} />
-      <TaskFormSheet open={Boolean(editing)} task={editing} onClose={() => setEditing(undefined)} />
+      <TaskFormSheet
+        open={Boolean(editing)}
+        task={editing}
+        moments={{
+          onComplete: (tk) => toggle(tk),
+          onExecute: (tk) => actions.execute(tk),
+          onReturn: (tk) => actions.back(tk),
+        }}
+        onClose={() => setEditing(undefined)}
+      />
       <AssignSheet
         open={Boolean(assigning)}
         task={assigning}

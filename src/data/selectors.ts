@@ -1,5 +1,13 @@
 import { isTaskDone } from '@/domain/economy'
-import { lastSevenDayKeys, startOfWeek, toDayKey, deadlineOf, daysBetween } from '@/domain/dates'
+import {
+  addDays,
+  daysBetween,
+  deadlineOf,
+  lastSevenDayKeys,
+  startOfDay,
+  startOfWeek,
+  toDayKey,
+} from '@/domain/dates'
 import { STAGE_ORDER } from '@/domain/stage'
 import type {
   AlephState,
@@ -8,6 +16,7 @@ import type {
   ParentType,
   Result,
   ResultProgress,
+  ResultStatus,
   Skill,
   StageId,
   Task,
@@ -64,7 +73,10 @@ function progressOf(tasks: Task[]): Pick<ResultProgress, 'tasksDone' | 'tasksTot
 export function resultProgress(state: AlephState, resultId: string): ResultProgress {
   const objectives = objectivesOfResult(state, resultId)
   const objectivesByStage = STAGE_ORDER.reduce(
-    (acc, stage) => ({ ...acc, [stage]: objectives.filter((o) => o.currentStage === stage).length }),
+    (acc, stage) => ({
+      ...acc,
+      [stage]: objectives.filter((o) => deriveObjectiveStage(state, o.id) === stage).length,
+    }),
     {} as Record<StageId, number>,
   )
   return {
@@ -80,21 +92,64 @@ export function objectiveProgress(state: AlephState, objectiveId: string) {
 
 // -------------------------------------------------------------------- agenda
 
+/** The day a task shows on: its due day, else its scheduled day. */
+function taskDayKey(task: Task): string | undefined {
+  if (task.dueAt) return toDayKey(task.dueAt)
+  if (task.scheduledFor) return toDayKey(task.scheduledFor)
+  return undefined
+}
+
+function byDayOrder(a: Task, b: Task): number {
+  const ao = a.dayOrder ?? a.importance
+  const bo = b.dayOrder ?? b.importance
+  if (ao !== bo) return ao - bo
+  return a.createdAt.localeCompare(b.createdAt)
+}
+
+/** The status of the result a task belongs to, resolving through its objective. */
+export function taskResultStatus(state: AlephState, task: Task): ResultStatus | undefined {
+  const objective = task.objectiveId
+    ? state.objectives.find((o) => o.id === task.objectiveId)
+    : undefined
+  const resultId = task.resultId ?? objective?.resultId
+  const result = resultId ? state.results.find((r) => r.id === resultId) : undefined
+  return result?.status
+}
+
+function isArchivedTask(state: AlephState, task: Task): boolean {
+  return taskResultStatus(state, task) === 'archived'
+}
+
 /** Tasks that belong to a given day: due that day or scheduled for it. */
 export function tasksForDay(state: AlephState, dayKey: string): Task[] {
   return state.tasks
-    .filter((t) => {
-      if (t.status === 'cancelled') return false
-      const due = t.dueAt ? toDayKey(t.dueAt) : undefined
-      const scheduled = t.scheduledFor ? toDayKey(t.scheduledFor) : undefined
-      return due === dayKey || scheduled === dayKey
-    })
-    .sort((a, b) => {
-      const ao = a.dayOrder ?? a.importance
-      const bo = b.dayOrder ?? b.importance
-      if (ao !== bo) return ao - bo
-      return a.createdAt.localeCompare(b.createdAt)
-    })
+    .filter((t) => t.status !== 'cancelled' && !isArchivedTask(state, t) && taskDayKey(t) === dayKey)
+    .sort(byDayOrder)
+}
+
+export type AgendaFilter = 'today' | 'tomorrow' | 'week' | 'overdue' | 'pick'
+
+/** The agenda for a Home date filter. Archived and cancelled tasks never appear. */
+export function agendaTasks(state: AlephState, filter: AgendaFilter, pickDate?: string): Task[] {
+  const todayKey = toDayKey(new Date())
+  const matches = (task: Task): boolean => {
+    if (filter === 'overdue') {
+      return (
+        Boolean(task.dueAt) &&
+        !isTaskDone(task.status) &&
+        deadlineOf(task.dueAt!).getTime() < startOfDay(new Date()).getTime()
+      )
+    }
+    const day = taskDayKey(task)
+    if (!day) return false
+    if (filter === 'today') return day === todayKey
+    if (filter === 'tomorrow') return day === toDayKey(addDays(new Date(), 1))
+    if (filter === 'week') return day >= todayKey && day <= toDayKey(addDays(startOfWeek(new Date()), 6))
+    return day === (pickDate || todayKey)
+  }
+  return state.tasks
+    .filter((t) => t.status !== 'cancelled' && !isArchivedTask(state, t) && matches(t))
+    .sort(byDayOrder)
 }
 
 // ------------------------------------------------------------------ tracking
@@ -227,7 +282,7 @@ export function skillById(state: AlephState, id?: string): Skill | undefined {
   return id ? state.skills.find((s) => s.id === id) : undefined
 }
 
-// -------------------------------------------------------------- skill / steps
+// -------------------------------------------------------------- moments / steps
 
 /** A task with no due date sorts after dated ones; ties break on importance. */
 function byDueThenImportance(a: Task, b: Task): number {
@@ -235,6 +290,13 @@ function byDueThenImportance(a: Task, b: Task): number {
   const bd = b.dueAt ? toDayKey(b.dueAt) : '9999-99-99'
   if (ad !== bd) return ad < bd ? -1 : 1
   return a.importance - b.importance
+}
+
+/** Next-step ranking: a task in execution outranks one still in research. */
+function byMomentThenDue(a: Task, b: Task): number {
+  const rank = (t: Task) => (t.stage === 'execution' ? 0 : 1)
+  const diff = rank(a) - rank(b)
+  return diff !== 0 ? diff : byDueThenImportance(a, b)
 }
 
 function isOpen(task: Task): boolean {
@@ -253,11 +315,51 @@ export function resolveTaskSkillId(state: AlephState, task: Task): string | unde
   return result?.skillId
 }
 
-/** The next concrete step of an objective: its first open task by due date, then order. */
+/** The next concrete step of an objective, preferring an in-progress task. */
 export function nextTaskOfObjective(state: AlephState, objectiveId: string): Task | undefined {
   return tasksOfObjective(state, objectiveId)
     .filter(isOpen)
-    .sort(byDueThenImportance)[0]
+    .sort(byMomentThenDue)[0]
+}
+
+/**
+ * The objective's moment, derived for display only. The user never moves an
+ * objective between columns; its tasks' moments do:
+ *   open execution task -> execution; else open research task -> research;
+ *   else (some work, all done) -> review; else research.
+ */
+export function deriveObjectiveStage(state: AlephState, objectiveId: string): StageId {
+  const tasks = tasksOfObjective(state, objectiveId).filter((t) => t.status !== 'cancelled')
+  if (tasks.some((t) => t.stage === 'execution' && isOpen(t))) return 'execution'
+  if (tasks.some((t) => t.stage === 'research' && isOpen(t))) return 'research'
+  if (tasks.length > 0 && tasks.every((t) => isTaskDone(t.status))) return 'review'
+  return 'research'
+}
+
+export interface ObjectiveHealth {
+  key: string
+  params?: Record<string, string | number>
+}
+
+/** One honest line about an objective: what is running, waiting, or missing. */
+export function objectiveHealth(state: AlephState, objectiveId: string): ObjectiveHealth {
+  const tasks = tasksOfObjective(state, objectiveId).filter((t) => t.status !== 'cancelled')
+  const execOpen = tasks.filter((t) => t.stage === 'execution' && isOpen(t))
+  if (execOpen.length > 0) {
+    const lead = [...execOpen].sort(byDueThenImportance)[0]
+    return {
+      key: 'planning.objectives.health.inProgress',
+      params: { count: execOpen.length, title: lead.title },
+    }
+  }
+  const researchOpen = tasks.filter((t) => t.stage === 'research' && isOpen(t))
+  if (researchOpen.length > 0) {
+    return { key: 'planning.objectives.health.research', params: { count: researchOpen.length } }
+  }
+  if (tasks.length > 0 && tasks.every((t) => isTaskDone(t.status))) {
+    return { key: 'planning.objectives.health.readyToClose' }
+  }
+  return { key: 'planning.objectives.noConcreteStep' }
 }
 
 export interface ResultHealth {
@@ -293,7 +395,7 @@ export function resultHealth(state: AlephState, resultId: string): ResultHealth 
     return { key: 'planning.results.health.overdue', params: { count: overdue.length } }
   }
 
-  const next = [...resultTasks].sort(byDueThenImportance)[0]
+  const next = [...resultTasks].sort(byMomentThenDue)[0]
   if (next) return { key: 'planning.results.health.next', params: { title: next.title } }
 
   return { key: 'planning.results.health.allClear' }

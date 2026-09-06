@@ -24,6 +24,7 @@ export function newCharacter(locale: Character['locale'] = 'es'): Character {
     avatar: {
       skinId: 'skin_sand',
       hairId: 'hair_short',
+      eyesId: 'eyes_dark',
       outfitId: 'outfit_tee',
       accessoryId: 'accessory_none',
       backgroundId: 'bg_dawn',

@@ -30,6 +30,30 @@ const OUTFIT: Record<string, { base: string; accent: string }> = {
   outfit_apron: { base: '#c98a2b', accent: '#a06e1f' },
 }
 
+const EYE_COLOR: Record<string, string> = {
+  eyes_dark: '#1f2937',
+  eyes_hazel: '#6b4423',
+  eyes_blue: '#2563eb',
+  eyes_green: '#15803d',
+  eyes_violet: '#6d28d9',
+}
+
+function Eyes({ id }: { id: string }): ReactElement {
+  const color = EYE_COLOR[id] ?? EYE_COLOR.eyes_dark
+  return (
+    <g>
+      <g fill={color}>
+        <ellipse cx="41" cy="49" rx="2.2" ry="2.8" />
+        <ellipse cx="59" cy="49" rx="2.2" ry="2.8" />
+      </g>
+      <g fill="#ffffff" fillOpacity="0.85">
+        <circle cx="41.8" cy="48" r="0.7" />
+        <circle cx="59.8" cy="48" r="0.7" />
+      </g>
+    </g>
+  )
+}
+
 const HAIR_COLOR: Record<string, string> = {
   hair_short: '#2f2a26',
   hair_bun: '#5b3a29',
@@ -260,10 +284,7 @@ export function Avatar({
         <path d="M50 72c-8 0-14-4-18-11 4 4 10 6 18 6s14-2 18-6c-4 7-10 11-18 11z" fill={skin.shade} fillOpacity="0.5" />
 
         {/* face */}
-        <g fill="#1f2937">
-          <ellipse cx="41" cy="49" rx="2.2" ry="2.8" />
-          <ellipse cx="59" cy="49" rx="2.2" ry="2.8" />
-        </g>
+        <Eyes id={avatar.eyesId} />
         <path d="M43 59c4 3 10 3 14 0" fill="none" stroke="#1f2937" strokeOpacity="0.8" strokeWidth="2" strokeLinecap="round" />
         <path d="M36 40c3-2 7-2 9 0M55 40c2-2 6-2 9 0" fill="none" stroke="#1f2937" strokeOpacity="0.55" strokeWidth="2" strokeLinecap="round" />
 

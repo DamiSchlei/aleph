@@ -9,6 +9,7 @@ import { Button, ProgressBar } from '@/components/ui/primitives'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { useAleph } from '@/data/store'
 import { formatMoney } from '@/i18n/format'
+import type { AgendaFilter } from '@/data/selectors'
 
 export function HomePage() {
   const { t } = useTranslation()
@@ -16,6 +17,8 @@ export function HomePage() {
   const { pulseKey } = useFeedback()
   const [customize, setCustomize] = useState(false)
   const [skills, setSkills] = useState(false)
+  const [filter, setFilter] = useState<AgendaFilter>('today')
+  const [pickDate, setPickDate] = useState('')
   const xpRatio = character.xpToNext > 0 ? character.xp / character.xpToNext : null
 
   return (
@@ -50,8 +53,13 @@ export function HomePage() {
 
       <p className="text-[14px] leading-relaxed text-ink-400">{t('home.hint')}</p>
 
-      <Composer />
-      <Agenda />
+      <Composer filter={filter} pickDate={pickDate} />
+      <Agenda
+        filter={filter}
+        pickDate={pickDate}
+        onFilterChange={setFilter}
+        onPickDateChange={setPickDate}
+      />
 
       <CustomizeSheet open={customize} onClose={() => setCustomize(false)} pulseKey={pulseKey} />
       <SkillsSheet open={skills} onClose={() => setSkills(false)} />

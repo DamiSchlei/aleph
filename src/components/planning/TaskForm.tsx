@@ -6,29 +6,38 @@ import { Sheet } from '@/components/ui/Sheet'
 import { createTask, updateTask } from '@/data/actions'
 import { objectivesOfResult } from '@/data/selectors'
 import { useAleph } from '@/data/store'
-import { STAGE_ORDER, openedStages } from '@/domain/stage'
 import { MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import { addDays, startOfWeek, toDayKey } from '@/domain/dates'
-import type { Difficulty, StageId, Task } from '@/domain/types'
+import { isTaskDone } from '@/domain/economy'
+import type { Difficulty, Task } from '@/domain/types'
+
+export interface TaskMoments {
+  onComplete?: (task: Task) => void
+  onExecute?: (task: Task) => void
+  onReturn?: (task: Task) => void
+}
+
+interface TaskPreset {
+  resultId?: string
+  objectiveId?: string
+  dueAt?: string
+}
 
 export function TaskFormSheet({
   open,
   onClose,
   task,
   preset,
+  moments,
 }: {
   open: boolean
   onClose: () => void
   task?: Task
-  preset?: {
-    resultId?: string
-    objectiveId?: string
-    stage?: StageId
-    dueAt?: string
-  }
+  preset?: TaskPreset
+  moments?: TaskMoments
 }) {
   const { t } = useTranslation()
-  const key = `${task?.id ?? 'new'}:${preset?.objectiveId ?? ''}:${preset?.stage ?? ''}:${open ? '1' : '0'}`
+  const key = `${task?.id ?? 'new'}:${preset?.objectiveId ?? ''}:${open ? '1' : '0'}`
   return (
     <Sheet
       key={key}
@@ -37,7 +46,7 @@ export function TaskFormSheet({
       title={task ? t('planning.tasks.editTitle') : t('planning.tasks.createTitle')}
       footer={null}
     >
-      <TaskFormBody task={task} preset={preset} onClose={onClose} />
+      <TaskFormBody task={task} preset={preset} moments={moments} onClose={onClose} />
     </Sheet>
   )
 }
@@ -54,15 +63,12 @@ function weekEndKey(): string {
 function TaskFormBody({
   task,
   preset,
+  moments,
   onClose,
 }: {
   task?: Task
-  preset?: {
-    resultId?: string
-    objectiveId?: string
-    stage?: StageId
-    dueAt?: string
-  }
+  preset?: TaskPreset
+  moments?: TaskMoments
   onClose: () => void
 }) {
   const { t } = useTranslation()
@@ -71,7 +77,6 @@ function TaskFormBody({
   const [notes, setNotes] = useState(task?.notes ?? '')
   const [resultId, setResultId] = useState(task?.resultId ?? preset?.resultId ?? '')
   const [objectiveId, setObjectiveId] = useState(task?.objectiveId ?? preset?.objectiveId ?? '')
-  const [stage, setStage] = useState<StageId>(task?.stage ?? preset?.stage ?? 'research')
   const [hours, setHours] = useState(String(task?.estimatedHours ?? 1))
   const [difficulty, setDifficulty] = useState<Difficulty>(task?.difficulty ?? 'medium')
   const [dueAt, setDueAt] = useState(task?.dueAt?.slice(0, 10) ?? preset?.dueAt ?? '')
@@ -81,11 +86,10 @@ function TaskFormBody({
     () => (resultId ? objectivesOfResult(state, resultId) : []),
     [resultId, state],
   )
-  const selectedObjective = objectives.find((o) => o.id === objectiveId)
-  const allowedStages = selectedObjective ? openedStages(selectedObjective.currentStage) : STAGE_ORDER
 
   const today = todayKey()
   const weekEnd = weekEndKey()
+  const showMoments = task && !isTaskDone(task.status) && moments
 
   const save = () => {
     const trimmed = title.trim()
@@ -96,7 +100,6 @@ function TaskFormBody({
       notes: notes.trim() || undefined,
       resultId: resultId || undefined,
       objectiveId: objectiveId || undefined,
-      stage,
       estimatedHours,
       difficulty,
       dueAt: dueAt || undefined,
@@ -138,29 +141,13 @@ function TaskFormBody({
       <Field label={t('common.objective')}>
         <Select
           value={objectiveId}
-          onChange={(e) => {
-            const next = e.target.value
-            setObjectiveId(next)
-            const obj = objectives.find((o) => o.id === next)
-            if (obj && !openedStages(obj.currentStage).includes(stage)) {
-              setStage(obj.currentStage)
-            }
-          }}
+          onChange={(e) => setObjectiveId(e.target.value)}
           disabled={!resultId}
         >
           <option value="">{t('common.unassigned')}</option>
           {objectives.map((objective) => (
             <option key={objective.id} value={objective.id}>
               {objective.name}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      <Field label={t('common.stage')}>
-        <Select value={stage} onChange={(e) => setStage(e.target.value as StageId)}>
-          {allowedStages.map((id) => (
-            <option key={id} value={id}>
-              {t(`stages.${id}.name`)}
             </option>
           ))}
         </Select>
@@ -206,16 +193,15 @@ function TaskFormBody({
           <Chip active={pickDate} onClick={() => setPickDate(true)}>
             {t('planning.tasks.pickDate')}
           </Chip>
-          {dueAt ? (
-            <Chip
-              onClick={() => {
-                setDueAt('')
-                setPickDate(false)
-              }}
-            >
-              {t('planning.tasks.noDate')}
-            </Chip>
-          ) : null}
+          <Chip
+            active={!pickDate && dueAt === ''}
+            onClick={() => {
+              setDueAt('')
+              setPickDate(false)
+            }}
+          >
+            {t('planning.tasks.noDate')}
+          </Chip>
         </div>
         {pickDate ? (
           <Input
@@ -229,6 +215,7 @@ function TaskFormBody({
       <Field label={`${t('common.notes')} (${t('common.optional')})`}>
         <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
+
       <div className="flex gap-2 pt-2">
         <Button variant="secondary" className="flex-1" onClick={onClose}>
           {t('common.cancel')}
@@ -237,6 +224,42 @@ function TaskFormBody({
           {t('common.save')}
         </Button>
       </div>
+
+      {showMoments && task ? (
+        <div className="flex flex-col gap-2 border-t border-white/6 pt-4">
+          {task.stage === 'research' ? (
+            <Button
+              onClick={() => {
+                moments?.onExecute?.(task)
+                onClose()
+              }}
+            >
+              {t('planning.tasks.execute')}
+            </Button>
+          ) : (
+            <>
+              <Button
+                onClick={() => {
+                  moments?.onComplete?.(task)
+                  onClose()
+                }}
+              >
+                {t('planning.tasks.complete')}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  moments?.onReturn?.(task)
+                  onClose()
+                }}
+              >
+                {t('planning.tasks.backToResearch')}
+              </Button>
+            </>
+          )}
+        </div>
+      ) : null}
+
       {task ? <JournalThread parentType="task" parentId={task.id} /> : null}
     </div>
   )

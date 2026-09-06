@@ -1,9 +1,6 @@
 import { getState, newId, setState } from './store'
-import { cosmeticById, cosmeticsUnlockedAtLevel } from './cosmetics'
 import { addCharacterXp, addSkillXp, computeReward, type Reward } from '@/domain/economy'
 import { MAX_OBJECTIVES_PER_RESULT, activeObjectivesOfResult, MIN_ESTIMATED_HOURS } from '@/domain/limits'
-import { canMoveTo } from '@/domain/stage'
-import { toDayKey } from '@/domain/dates'
 import type {
   Comment,
   Cosmetic,
@@ -14,7 +11,6 @@ import type {
   Result,
   ResultStatus,
   Skill,
-  StageId,
   Task,
 } from '@/domain/types'
 
@@ -28,45 +24,17 @@ export function renameCharacter(name: string): void {
   setState((s) => ({ ...s, character: { ...s.character, name: trimmed } }))
 }
 
+/**
+ * Basic avatar layers (skin, hair, eyes, outfit, accessory, background) are all
+ * free from level 1, so equipping never touches money. A future shop would sell
+ * extras (bundles, frames), not these basics.
+ */
 export function equipCosmetic(category: CosmeticCategory, cosmeticId: string): void {
   setState((s) => ({
     ...s,
     character: {
       ...s.character,
       avatar: { ...s.character.avatar, [`${category}Id`]: cosmeticId },
-      seenNewCosmeticIds: Array.from(
-        new Set([...(s.character.seenNewCosmeticIds ?? []), cosmeticId]),
-      ),
-    },
-  }))
-}
-
-/** Returns false when the character cannot afford it or it is not for sale. */
-export function buyCosmetic(cosmeticId: string): boolean {
-  const cosmetic = cosmeticById(cosmeticId)
-  const { character } = getState()
-  if (!cosmetic || cosmetic.price === undefined) return false
-  if (character.ownedCosmeticIds.includes(cosmeticId)) return false
-  if (character.money < cosmetic.price) return false
-
-  setState((s) => ({
-    ...s,
-    character: {
-      ...s.character,
-      money: s.character.money - cosmetic.price!,
-      ownedCosmeticIds: [...s.character.ownedCosmeticIds, cosmeticId],
-    },
-  }))
-  return true
-}
-
-export function markCosmeticsSeen(ids: string[]): void {
-  if (ids.length === 0) return
-  setState((s) => ({
-    ...s,
-    character: {
-      ...s.character,
-      seenNewCosmeticIds: Array.from(new Set([...(s.character.seenNewCosmeticIds ?? []), ...ids])),
     },
   }))
 }
@@ -122,24 +90,18 @@ export function setResultStatus(id: string, status: ResultStatus): void {
   updateResult(id, { status })
 }
 
-/** Archiving cascades to objectives and open tasks. Journal entries stay. */
+/**
+ * Archiving only flips the result's status so it can be restored cleanly: its
+ * objectives, tasks and journal stay intact. Archived results are hidden from the
+ * active lists and their tasks drop off the agenda (see selectors).
+ */
 export function archiveResult(id: string): void {
-  const timestamp = now()
-  setState((s) => {
-    const objectiveIds = s.objectives.filter((o) => o.resultId === id).map((o) => o.id)
-    return {
-      ...s,
-      results: s.results.map((r) => (r.id === id ? { ...r, status: 'archived' } : r)),
-      objectives: s.objectives.map((o) =>
-        o.resultId === id ? { ...o, archivedAt: o.archivedAt ?? timestamp } : o,
-      ),
-      tasks: s.tasks.map((t) => {
-        const belongs = t.resultId === id || (t.objectiveId && objectiveIds.includes(t.objectiveId))
-        const open = t.status === 'pending' || t.status === 'in_progress'
-        return belongs && open ? { ...t, status: 'cancelled' } : t
-      }),
-    }
-  })
+  setResultStatus(id, 'archived')
+}
+
+/** Brings an archived result back into the active lists, untouched. */
+export function restoreResult(id: string): void {
+  setResultStatus(id, 'active')
 }
 
 export function reorderResults(orderedIds: string[]): void {
@@ -220,16 +182,6 @@ export function reorderObjectives(resultId: string, orderedIds: string[]): void 
   }))
 }
 
-/** Only adjacent stage moves are allowed; the caller confirms open tasks first. */
-export function moveObjectiveStage(id: string, stage: StageId): boolean {
-  const objective = getState().objectives.find((o) => o.id === id)
-  if (!objective || !canMoveTo(objective.currentStage, stage)) return false
-  const status: Objective['status'] =
-    objective.status === 'pending' ? 'in_progress' : objective.status
-  updateObjective(id, { currentStage: stage, status })
-  return true
-}
-
 // -------------------------------------------------------------------- tasks
 
 export interface TaskInput {
@@ -237,7 +189,6 @@ export interface TaskInput {
   notes?: string
   resultId?: string
   objectiveId?: string
-  stage?: StageId
   skillId?: string
   estimatedHours?: number
   difficulty?: Difficulty
@@ -245,11 +196,15 @@ export interface TaskInput {
   scheduledFor?: string
 }
 
+/**
+ * Every task is born in the `research` moment ("Análisis e investigación"). It only
+ * moves to `execution` when the user presses "Ejecutar". `review` is never a column
+ * for open tasks — finished tasks live in their done status.
+ */
 export function createTask(input: TaskInput): Task {
   const state = getState()
-  const stage = input.stage ?? 'research'
   const siblings = state.tasks.filter(
-    (t) => t.objectiveId === input.objectiveId && t.stage === stage,
+    (t) => t.objectiveId === input.objectiveId && t.stage === 'research',
   )
   const objective = input.objectiveId
     ? state.objectives.find((o) => o.id === input.objectiveId)
@@ -260,7 +215,7 @@ export function createTask(input: TaskInput): Task {
     notes: input.notes?.trim() || undefined,
     resultId: input.resultId || objective?.resultId,
     objectiveId: input.objectiveId || undefined,
-    stage,
+    stage: 'research',
     skillId: input.skillId || undefined,
     estimatedHours: Math.max(MIN_ESTIMATED_HOURS, input.estimatedHours ?? 1),
     difficulty: input.difficulty ?? 'medium',
@@ -275,19 +230,37 @@ export function createTask(input: TaskInput): Task {
   return task
 }
 
+/** "Ejecutar": move a research task into the execution moment. */
+export function executeTask(id: string): void {
+  const task = getState().tasks.find((t) => t.id === id)
+  if (!task || task.stage !== 'research') return
+  updateTask(id, { stage: 'execution', status: 'in_progress' })
+}
+
+/** "Volver a investigación": send an execution task back to research. */
+export function returnToResearch(id: string): void {
+  const task = getState().tasks.find((t) => t.id === id)
+  if (!task || task.stage !== 'execution') return
+  updateTask(id, { stage: 'research', status: 'pending' })
+}
+
+/** Assigns a loose task onto an objective; it lands in the research moment. */
+export function assignTaskToObjective(id: string, resultId: string, objectiveId: string): void {
+  updateTask(id, { resultId, objectiveId, stage: 'research' })
+}
+
 /**
- * Home composer: capture a loose task (no result, no objective). When `today` is
- * set it gets today's due date so it lands on the agenda; otherwise it stays loose.
+ * Home composer: capture a loose research task (no result, no objective) with the
+ * due date implied by the active agenda filter, so it lands where the user is looking.
  */
-export function captureLooseTask(title: string, options?: { today?: boolean }): Task | null {
+export function captureLooseTask(title: string, options?: { dueAt?: string }): Task | null {
   const trimmed = title.trim()
   if (!trimmed) return null
-  const day = options?.today ? toDayKey(new Date()) : undefined
+  const day = options?.dueAt || undefined
   return createTask({
     title: trimmed,
     estimatedHours: 1,
     difficulty: 'medium',
-    stage: 'research',
     dueAt: day,
     scheduledFor: day,
   })
@@ -301,8 +274,13 @@ export function cancelTask(id: string): void {
   updateTask(id, { status: 'cancelled' })
 }
 
+/** Hard-deletes a task and its journal comments. No XP is paid; not undoable. */
 export function deleteTask(id: string): void {
-  setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) }))
+  setState((s) => ({
+    ...s,
+    tasks: s.tasks.filter((t) => t.id !== id),
+    comments: s.comments.filter((c) => !(c.parentType === 'task' && c.parentId === id)),
+  }))
 }
 
 export function reorderTasks(orderedIds: string[], field: 'importance' | 'dayOrder' = 'importance'): void {
@@ -353,10 +331,9 @@ export function completeTask(
   })
 
   const characterXp = addCharacterXp(state.character, reward.xp)
+  // Basic avatar layers are all free, so leveling up no longer unlocks cosmetics.
+  // A future shop would grant extras here instead.
   const unlockedCosmetics: Cosmetic[] = []
-  for (let level = state.character.level + 1; level <= characterXp.level; level += 1) {
-    unlockedCosmetics.push(...cosmeticsUnlockedAtLevel(level))
-  }
 
   // XP flows to the task's own skill, else it is inherited from the objective, then
   // the result. A prompt at the call site may pass an explicit skill for loose work.
@@ -385,9 +362,6 @@ export function completeTask(
       xp: characterXp.xp,
       xpToNext: characterXp.xpToNext,
       money: s.character.money + reward.money,
-      ownedCosmeticIds: Array.from(
-        new Set([...s.character.ownedCosmeticIds, ...unlockedCosmetics.map((c) => c.id)]),
-      ),
     },
     skills: skillXp
       ? s.skills.map((sk) =>
