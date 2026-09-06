@@ -4,7 +4,7 @@ import { Avatar } from '@/components/character/Avatar'
 import { CustomizeSheet } from '@/components/character/CustomizeSheet'
 import { Agenda } from '@/components/home/Agenda'
 import { Composer } from '@/components/home/Composer'
-import { SkillList } from '@/components/home/SkillList'
+import { SkillsSheet } from '@/components/home/SkillsSheet'
 import { Button, ProgressBar } from '@/components/ui/primitives'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { useAleph } from '@/data/store'
@@ -15,6 +15,7 @@ export function HomePage() {
   const { character } = useAleph()
   const { pulseKey } = useFeedback()
   const [customize, setCustomize] = useState(false)
+  const [skills, setSkills] = useState(false)
   const xpRatio = character.xpToNext > 0 ? character.xp / character.xpToNext : null
 
   return (
@@ -38,17 +39,22 @@ export function HomePage() {
         </button>
       </header>
 
-      <Button variant="secondary" onClick={() => setCustomize(true)}>
-        {t('character.customize')}
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="secondary" className="flex-1" onClick={() => setCustomize(true)}>
+          {t('character.customize')}
+        </Button>
+        <Button variant="secondary" className="flex-1" onClick={() => setSkills(true)}>
+          {t('home.skillsTitle')}
+        </Button>
+      </div>
 
       <p className="text-[14px] leading-relaxed text-ink-400">{t('home.hint')}</p>
 
       <Composer />
       <Agenda />
-      <SkillList />
 
       <CustomizeSheet open={customize} onClose={() => setCustomize(false)} pulseKey={pulseKey} />
+      <SkillsSheet open={skills} onClose={() => setSkills(false)} />
     </div>
   )
 }

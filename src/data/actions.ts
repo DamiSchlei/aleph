@@ -9,11 +9,8 @@ import type {
   Cosmetic,
   CosmeticCategory,
   Difficulty,
-  Locale,
   Objective,
   ParentType,
-  Relation,
-  RelationKind,
   Result,
   ResultStatus,
   Skill,
@@ -24,10 +21,6 @@ import type {
 const now = () => new Date().toISOString()
 
 // ---------------------------------------------------------------- character
-
-export function setLocale(locale: Locale): void {
-  setState((s) => ({ ...s, character: { ...s.character, locale } }))
-}
 
 export function renameCharacter(name: string): void {
   const trimmed = name.trim()
@@ -165,6 +158,7 @@ export interface ObjectiveInput {
   resultId: string
   name: string
   why?: string
+  doneWhen?: string
   skillId?: string
   importance?: number
 }
@@ -185,6 +179,7 @@ export function createObjective(input: ObjectiveInput): Objective {
     resultId: input.resultId,
     name: input.name.trim(),
     why: input.why?.trim() || undefined,
+    doneWhen: input.doneWhen?.trim() || undefined,
     skillId: input.skillId || undefined,
     importance: input.importance ?? siblings.length + 1,
     currentStage: 'research',
@@ -280,19 +275,21 @@ export function createTask(input: TaskInput): Task {
   return task
 }
 
-/** Home composer: a block for today. */
-export function proposeBlock(title: string, extra?: Partial<TaskInput>): Task | null {
+/**
+ * Home composer: capture a loose task (no result, no objective). When `today` is
+ * set it gets today's due date so it lands on the agenda; otherwise it stays loose.
+ */
+export function captureLooseTask(title: string, options?: { today?: boolean }): Task | null {
   const trimmed = title.trim()
   if (!trimmed) return null
-  const today = toDayKey(new Date())
+  const day = options?.today ? toDayKey(new Date()) : undefined
   return createTask({
     title: trimmed,
     estimatedHours: 1,
     difficulty: 'medium',
-    dueAt: today,
-    scheduledFor: today,
     stage: 'research',
-    ...extra,
+    dueAt: day,
+    scheduledFor: day,
   })
 }
 
@@ -332,14 +329,19 @@ export interface CompletionOutcome {
  * Runs the economy once and only once. Returns null when the task is missing or
  * its reward was already paid.
  */
-export function completeTask(id: string, options?: { actualHours?: number }): CompletionOutcome | null {
+export function completeTask(
+  id: string,
+  options?: { actualHours?: number; skillId?: string },
+): CompletionOutcome | null {
   const state = getState()
   const task = state.tasks.find((t) => t.id === id)
   if (!task || task.rewardApplied) return null
 
   const completedAt = now()
-  const resultId =
-    task.resultId ?? state.objectives.find((o) => o.id === task.objectiveId)?.resultId
+  const objective = task.objectiveId
+    ? state.objectives.find((o) => o.id === task.objectiveId)
+    : undefined
+  const resultId = task.resultId ?? objective?.resultId
   const result = resultId ? state.results.find((r) => r.id === resultId) : undefined
   const reward = computeReward({
     estimatedHours: task.estimatedHours,
@@ -356,11 +358,17 @@ export function completeTask(id: string, options?: { actualHours?: number }): Co
     unlockedCosmetics.push(...cosmeticsUnlockedAtLevel(level))
   }
 
-  const skill = task.skillId ? state.skills.find((s) => s.id === task.skillId) : undefined
+  // XP flows to the task's own skill, else it is inherited from the objective, then
+  // the result. A prompt at the call site may pass an explicit skill for loose work.
+  const explicitSkillId = options?.skillId
+  const effectiveSkillId = explicitSkillId ?? task.skillId ?? objective?.skillId ?? result?.skillId
+  const skill = effectiveSkillId ? state.skills.find((s) => s.id === effectiveSkillId) : undefined
   const skillXp = skill ? addSkillXp(skill, reward.xp) : null
 
   const completedTask: Task = {
     ...task,
+    // Only a prompt choice is persisted onto the task; inheritance stays derived.
+    skillId: explicitSkillId ?? task.skillId,
     actualHours: options?.actualHours ?? task.actualHours,
     completedAt,
     status: reward.status,
@@ -392,7 +400,7 @@ export function completeTask(id: string, options?: { actualHours?: number }): Co
   return {
     task: completedTask,
     reward,
-    skillId: task.skillId,
+    skillId: effectiveSkillId,
     skillLevelsGained: skillXp?.levelsGained ?? 0,
     characterLevelsGained: characterXp.levelsGained,
     newLevel: characterXp.level,
@@ -421,29 +429,3 @@ export function addComment(parentType: ParentType, parentId: string, body: strin
   return comment
 }
 
-// ---------------------------------------------------------------- relations
-
-export function addRelation(input: {
-  fromType: ParentType
-  fromId: string
-  toType: ParentType
-  toId: string
-  kind: RelationKind
-}): Relation | null {
-  if (input.fromId === input.toId) return null
-  const exists = getState().relations.some(
-    (r) =>
-      r.fromId === input.fromId &&
-      r.toId === input.toId &&
-      r.kind === input.kind &&
-      r.fromType === input.fromType,
-  )
-  if (exists) return null
-  const relation: Relation = { id: newId('relation'), ...input }
-  setState((s) => ({ ...s, relations: [...s.relations, relation] }))
-  return relation
-}
-
-export function removeRelation(id: string): void {
-  setState((s) => ({ ...s, relations: s.relations.filter((r) => r.id !== id) }))
-}

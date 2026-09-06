@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Field, Input, Textarea } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
-import { SkillSelect } from './SkillSelect'
 import { createObjective, updateObjective } from '@/data/actions'
 import type { Objective } from '@/domain/types'
 
@@ -45,19 +44,23 @@ function FormBody({
   const { t } = useTranslation()
   const [name, setName] = useState(objective?.name ?? '')
   const [why, setWhy] = useState(objective?.why ?? '')
-  const [skillId, setSkillId] = useState(objective?.skillId)
+  const [doneWhen, setDoneWhen] = useState(objective?.doneWhen ?? '')
 
   const save = () => {
     const trimmed = name.trim()
     if (!trimmed) return
     if (objective) {
-      updateObjective(objective.id, { name: trimmed, why: why.trim() || undefined, skillId })
+      updateObjective(objective.id, {
+        name: trimmed,
+        why: why.trim() || undefined,
+        doneWhen: doneWhen.trim() || undefined,
+      })
     } else {
       createObjective({
         resultId,
         name: trimmed,
         why: why.trim() || undefined,
-        skillId,
+        doneWhen: doneWhen.trim() || undefined,
       })
     }
     onClose()
@@ -76,8 +79,12 @@ function FormBody({
       <Field label={`${t('common.why')} (${t('common.optional')})`}>
         <Textarea rows={3} value={why} onChange={(e) => setWhy(e.target.value)} />
       </Field>
-      <Field label={t('common.skill')}>
-        <SkillSelect value={skillId} onChange={setSkillId} />
+      <Field label={`${t('planning.objectives.doneWhen')} (${t('common.optional')})`}>
+        <Input
+          value={doneWhen}
+          onChange={(e) => setDoneWhen(e.target.value)}
+          placeholder={t('planning.objectives.doneWhenPlaceholder')}
+        />
       </Field>
       <div className="flex gap-2 pt-2">
         <Button variant="secondary" className="flex-1" onClick={onClose}>

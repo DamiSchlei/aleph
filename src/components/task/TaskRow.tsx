@@ -46,6 +46,7 @@ export function TaskRow({
   task,
   onToggle,
   onOpen,
+  onAssign,
   handle,
   showContext = true,
   showProjection = false,
@@ -53,6 +54,7 @@ export function TaskRow({
   task: Task
   onToggle: () => void
   onOpen?: () => void
+  onAssign?: () => void
   handle?: ReactNode
   showContext?: boolean
   showProjection?: boolean
@@ -66,6 +68,8 @@ export function TaskRow({
   const objective = objectiveById(state, task.objectiveId)
   const contextResult = result ?? resultById(state, objective?.resultId)
   const projection = projectReward(task, contextResult?.status === 'active')
+  const loose = !task.objectiveId && !task.resultId
+  const canAssign = loose && !done && Boolean(onAssign)
 
   return (
     <Card className="flex items-start gap-1 p-2">
@@ -98,7 +102,8 @@ export function TaskRow({
           <Badge>{t(`difficulty.${task.difficulty}`)}</Badge>
           {showContext && contextResult ? <Badge tone="accent">{contextResult.name}</Badge> : null}
           {showContext && objective ? <Badge tone="violet">{objective.name}</Badge> : null}
-          {showContext ? <Badge>{stageShort(t, task.stage)}</Badge> : null}
+          {showContext && loose ? <Badge tone="amber">{t('planning.tasks.loose')}</Badge> : null}
+          {showContext && !loose ? <Badge>{stageShort(t, task.stage)}</Badge> : null}
           {task.dueAt && !done ? <Badge tone="amber">{formatDate(task.dueAt, locale)}</Badge> : null}
           {done ? (
             <Badge tone={task.status === 'done_on_time' ? 'mint' : 'rose'}>
@@ -118,6 +123,15 @@ export function TaskRow({
           ) : null}
         </div>
       </button>
+      {canAssign ? (
+        <button
+          type="button"
+          onClick={onAssign}
+          className="self-center rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-[12px] text-ink-200 transition-colors hover:bg-white/8"
+        >
+          {t('planning.tasks.assign')}
+        </button>
+      ) : null}
       {handle}
     </Card>
   )

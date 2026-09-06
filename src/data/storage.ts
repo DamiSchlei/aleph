@@ -5,9 +5,9 @@ import type { AlephState, Locale, Objective, Result, Task } from '@/domain/types
 
 export const STORAGE_KEY = 'aleph.state.v1'
 
+/** Visible copy is frozen to Rioplatense Spanish for now; a Settings screen will own language later. */
 function detectLocale(): Locale {
-  if (typeof navigator === 'undefined') return 'en'
-  return navigator.language?.toLowerCase().startsWith('es') ? 'es' : 'en'
+  return 'es'
 }
 
 /**
@@ -92,6 +92,7 @@ export function normalize(input: unknown): AlephState {
   character.xp = Math.max(0, character.xp || 0)
   character.xpToNext = character.xpToNext > 0 ? character.xpToNext : xpToNextForLevel(character.level)
   character.money = Math.max(0, character.money || 0)
+  character.locale = 'es'
   character.ownedCosmeticIds = Array.from(
     new Set([...base.character.ownedCosmeticIds, ...(character.ownedCosmeticIds ?? [])]),
   )

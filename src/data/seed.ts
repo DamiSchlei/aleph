@@ -13,7 +13,7 @@ export const DEFAULT_SKILLS: Skill[] = [
   { id: 'work', nameKey: 'skills.work', icon: 'hammer', color: '#facc15', level: 1, xp: 0, isCustom: false },
 ]
 
-export function newCharacter(locale: Character['locale'] = 'en'): Character {
+export function newCharacter(locale: Character['locale'] = 'es'): Character {
   return {
     id: 'character',
     name: 'Aleph',
@@ -35,7 +35,7 @@ export function newCharacter(locale: Character['locale'] = 'en'): Character {
 }
 
 /** Structure only: skills and a level 1 character. No results, tasks or progress. */
-export function initialState(locale: Character['locale'] = 'en'): AlephState {
+export function initialState(locale: Character['locale'] = 'es'): AlephState {
   return {
     version: STATE_VERSION,
     character: newCharacter(locale),

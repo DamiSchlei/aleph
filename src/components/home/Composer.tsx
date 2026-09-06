@@ -1,16 +1,15 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Input } from '@/components/ui/primitives'
-import { proposeBlock } from '@/data/actions'
-import { SkillSelect } from '@/components/planning/SkillSelect'
+import { Button, Chip, Input } from '@/components/ui/primitives'
+import { captureLooseTask } from '@/data/actions'
 
 export function Composer() {
   const { t } = useTranslation()
   const [title, setTitle] = useState('')
-  const [skillId, setSkillId] = useState<string | undefined>()
+  const [today, setToday] = useState(false)
 
   const submit = () => {
-    if (!proposeBlock(title, { skillId })) return
+    if (!captureLooseTask(title, { today })) return
     setTitle('')
   }
 
@@ -33,7 +32,11 @@ export function Composer() {
           {t('home.proposeCta')}
         </Button>
       </div>
-      <SkillSelect value={skillId} onChange={setSkillId} />
+      <div className="flex">
+        <Chip active={today} onClick={() => setToday((v) => !v)}>
+          {t('common.today')}
+        </Chip>
+      </div>
     </form>
   )
 }

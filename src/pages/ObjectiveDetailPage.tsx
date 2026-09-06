@@ -3,16 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
-import { RelationsPanel } from '@/components/planning/RelationsPanel'
 import { StagePipeline } from '@/components/planning/StagePipeline'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
-import { Button, EmptyState, SectionTitle } from '@/components/ui/primitives'
+import { Button, Badge, EmptyState, SectionTitle, cx } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { SortableList } from '@/components/ui/SortableList'
 import { archiveObjective, moveObjectiveStage, reorderTasks } from '@/data/actions'
-import { objectiveById, objectivesOfResult, resultById, tasksOfObjective } from '@/data/selectors'
+import { objectiveById, resultById, tasksOfObjective } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { STAGE_ORDER, canMoveTo } from '@/domain/stage'
 import { stageName } from '@/i18n/labels'
@@ -26,7 +25,6 @@ export function ObjectiveDetailPage() {
   const objective = objectiveById(state, objectiveId)
   const result = objective ? resultById(state, objective.resultId) : undefined
   const tasks = objective ? tasksOfObjective(state, objective.id) : []
-  const siblings = objective ? objectivesOfResult(state, objective.resultId) : []
   const { toggle, dialog } = useTaskCompletion()
   const [edit, setEdit] = useState(false)
   const [taskPreset, setTaskPreset] = useState<{ stage: StageId } | null>(null)
@@ -36,7 +34,7 @@ export function ObjectiveDetailPage() {
 
   const requestMove = (stage: StageId, openCount: number) => {
     if (!objective || !canMoveTo(objective.currentStage, stage)) return
-    if (openCount > 0) {
+    if (openCount > 0 || objective.doneWhen) {
       setStageWarn({ stage, openCount })
       return
     }
@@ -59,6 +57,28 @@ export function ObjectiveDetailPage() {
     )
   }
 
+  // The active stage leads; the others follow as secondary context.
+  const orderedStages: StageId[] = [
+    objective.currentStage,
+    ...STAGE_ORDER.filter((s) => s !== objective.currentStage),
+  ]
+
+  const warnMessage = () => {
+    const parts: string[] = []
+    if (stageWarn && stageWarn.openCount > 0) {
+      parts.push(
+        t('planning.objectives.stageOpenTasks', {
+          stage: stageName(t, objective.currentStage),
+          count: stageWarn.openCount,
+        }),
+      )
+    }
+    if (objective.doneWhen) {
+      parts.push(t('planning.objectives.doneWhenConfirm', { doneWhen: objective.doneWhen }))
+    }
+    return parts.join(' ') || t('planning.objectives.stageAdvance')
+  }
+
   return (
     <div className="flex flex-col gap-5 pt-4">
       <button
@@ -71,6 +91,12 @@ export function ObjectiveDetailPage() {
       <header>
         <h1 className="text-2xl font-semibold text-white">{objective.name}</h1>
         {objective.why ? <p className="mt-1 text-[15px] text-ink-400">{objective.why}</p> : null}
+        {objective.doneWhen ? (
+          <p className="mt-2 text-[13px] text-ink-200">
+            <span className="text-ink-400">{t('planning.objectives.doneWhen')}: </span>
+            {objective.doneWhen}
+          </p>
+        ) : null}
       </header>
       <div className="flex gap-2">
         <Button variant="secondary" className="flex-1" onClick={() => setEdit(true)}>
@@ -83,10 +109,11 @@ export function ObjectiveDetailPage() {
 
       <StagePipeline objective={objective} tasks={tasks} onRequestMove={requestMove} />
 
-      {STAGE_ORDER.map((stage) => {
+      {orderedStages.map((stage) => {
+        const active = stage === objective.currentStage
         const stageTasks = tasks.filter((task) => task.stage === stage)
         return (
-          <section key={stage}>
+          <section key={stage} className={cx(!active && 'opacity-70')}>
             <SectionTitle
               action={
                 <Button
@@ -98,7 +125,10 @@ export function ObjectiveDetailPage() {
                 </Button>
               }
             >
-              {t(`stages.${stage}.name`)}
+              <span className="flex items-center gap-2">
+                {t(`stages.${stage}.name`)}
+                {active ? <Badge tone="accent">{t('planning.objectives.activeStage')}</Badge> : null}
+              </span>
             </SectionTitle>
             {stageTasks.length === 0 ? (
               <EmptyState>{t('planning.objectives.stageEmpty')}</EmptyState>
@@ -127,7 +157,6 @@ export function ObjectiveDetailPage() {
         )
       })}
 
-      <RelationsPanel type="objective" id={objective.id} siblings={siblings} />
       <JournalThread parentType="objective" parentId={objective.id} />
       {dialog}
 
@@ -165,10 +194,7 @@ export function ObjectiveDetailPage() {
       <ConfirmDialog
         open={stageWarn !== null}
         title={t('planning.objectives.stageAdvance')}
-        message={t('planning.objectives.stageOpenTasks', {
-          stage: stageName(t, objective.currentStage),
-          count: stageWarn?.openCount ?? 0,
-        })}
+        message={warnMessage()}
         onCancel={() => setStageWarn(null)}
         onConfirm={() => {
           if (stageWarn) moveObjectiveStage(objective.id, stageWarn.stage)

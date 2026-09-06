@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Field, Input, Textarea } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
-import { SkillSelect } from './SkillSelect'
 import { createResult, updateResult } from '@/data/actions'
 import type { Result } from '@/domain/types'
 
@@ -21,13 +20,11 @@ export function ResultForm({
   const [name, setName] = useState(result?.name ?? initialName ?? '')
   const [why, setWhy] = useState(result?.why ?? '')
   const [targetDate, setTargetDate] = useState(result?.targetDate ?? '')
-  const [skillId, setSkillId] = useState(result?.skillId)
 
   const reset = (next?: Result, seed?: string) => {
     setName(next?.name ?? seed ?? '')
     setWhy(next?.why ?? '')
     setTargetDate(next?.targetDate ?? '')
-    setSkillId(next?.skillId)
   }
 
   const visible = open
@@ -43,14 +40,12 @@ export function ResultForm({
         name: trimmed,
         why: why.trim() || undefined,
         targetDate: targetDate || undefined,
-        skillId,
       })
     } else {
       createResult({
         name: trimmed,
         why: why.trim() || undefined,
         targetDate: targetDate || undefined,
-        skillId,
       })
     }
     reset()
@@ -95,9 +90,6 @@ export function ResultForm({
         </Field>
         <Field label={`${t('planning.results.targetDate')} (${t('common.optional')})`}>
           <Input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
-        </Field>
-        <Field label={t('planning.results.primarySkill')}>
-          <SkillSelect value={skillId} onChange={setSkillId} />
         </Field>
       </div>
     </Sheet>

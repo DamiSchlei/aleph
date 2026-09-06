@@ -139,7 +139,14 @@
       "primarySkill": "Habilidad principal",
       "archiveConfirm": "Si archivás este resultado también se archivan sus objetivos y se cancelan las tareas abiertas. La bitácora queda.",
       "archived": "Resultados archivados",
-      "detailTitle": "Resultado"
+      "detailTitle": "Resultado",
+      "health": {
+        "noObjectives": "Todavía no hay objetivos. Sumá la primera palanca.",
+        "unbalanced": "{{emptyObjective}} no tiene pasos. El resultado queda apoyado en una sola palanca.",
+        "overdue": "Tenés {{count}} tarea(s) vencida(s).",
+        "next": "Próximo paso: {{title}}",
+        "allClear": "Sin pasos pendientes. Buen momento para sumar el próximo."
+      }
     },
     "objectives": {
       "new": "+ Objetivo",
@@ -148,6 +155,11 @@
       "editTitle": "Editar objetivo",
       "namePlaceholder": "¿Qué tiene que pasar para llegar al resultado?",
       "importance": "Importancia",
+      "doneWhen": "Listo cuando",
+      "doneWhenPlaceholder": "¿Cómo sabés que está terminado?",
+      "doneWhenConfirm": "Listo cuando: {{doneWhen}}.",
+      "activeStage": "Etapa activa",
+      "noConcreteStep": "Este objetivo todavía no tiene un paso concreto.",
       "archiveConfirm": "¿Archivás este objetivo? Se cancelan sus tareas abiertas y la bitácora queda.",
       "detailTitle": "Objetivo",
       "stageOpenTasks": "{{stage}} todavía tiene {{count}} tarea(s) abierta(s). ¿Avanzás igual?",
@@ -172,6 +184,15 @@
       "filterStatus": "Estado",
       "filterSkill": "Habilidad",
       "filterDate": "Vence antes de",
+      "moreFilters": "Más filtros",
+      "thisWeek": "Esta semana",
+      "pickDate": "Elegir",
+      "noDate": "Sin fecha",
+      "loose": "Suelto",
+      "looseStep": "Paso suelto",
+      "assign": "Asignar a un objetivo",
+      "skillPromptTitle": "¿A qué habilidad suma?",
+      "skillPromptHint": "Elegí a qué habilidad le suma esta tarea. Queda guardado para la próxima.",
       "count": "{{count}} tarea(s)",
       "reopen": "Reabrir",
       "cancel": "Cancelar tarea",

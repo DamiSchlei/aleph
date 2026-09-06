@@ -4,19 +4,12 @@ import { Avatar } from './Avatar'
 import { Badge, Chip, Field, Input, ProgressBar } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
 import { COSMETIC_CATEGORIES, cosmeticsByCategory, isCosmeticOwned } from '@/data/cosmetics'
-import {
-  buyCosmetic,
-  equipCosmetic,
-  markCosmeticsSeen,
-  renameCharacter,
-  setLocale,
-} from '@/data/actions'
+import { buyCosmetic, equipCosmetic, markCosmeticsSeen, renameCharacter } from '@/data/actions'
 import { useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
-import { LOCALE_LABELS, SUPPORTED_LOCALES } from '@/i18n'
 import { cosmeticName } from '@/i18n/labels'
 import { formatMoney } from '@/i18n/format'
-import type { Cosmetic, CosmeticCategory, Locale } from '@/domain/types'
+import type { Cosmetic, CosmeticCategory } from '@/domain/types'
 
 export function CustomizeSheet({
   open,
@@ -74,22 +67,6 @@ export function CustomizeSheet({
           onBlur={() => renameCharacter(name)}
         />
       </Field>
-
-      <div className="mt-4">
-        <Field label={t('character.language')}>
-          <div className="flex gap-2">
-            {SUPPORTED_LOCALES.map((locale) => (
-              <Chip
-                key={locale}
-                active={character.locale === locale}
-                onClick={() => setLocale(locale as Locale)}
-              >
-                {LOCALE_LABELS[locale]}
-              </Chip>
-            ))}
-          </div>
-        </Field>
-      </div>
 
       <div className="no-scrollbar mt-5 flex gap-2 overflow-x-auto pb-2">
         {COSMETIC_CATEGORIES.map((category) => (

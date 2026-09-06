@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
-import { RelationsPanel } from '@/components/planning/RelationsPanel'
-import { Button, Field, Input, Select, Textarea } from '@/components/ui/primitives'
+import { Button, Chip, Field, Input, Select, Textarea } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
-import { SkillSelect } from './SkillSelect'
 import { createTask, updateTask } from '@/data/actions'
 import { objectivesOfResult } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { STAGE_ORDER, openedStages } from '@/domain/stage'
 import { MIN_ESTIMATED_HOURS } from '@/domain/limits'
+import { addDays, startOfWeek, toDayKey } from '@/domain/dates'
 import type { Difficulty, StageId, Task } from '@/domain/types'
 
 export function TaskFormSheet({
@@ -43,6 +42,15 @@ export function TaskFormSheet({
   )
 }
 
+function todayKey(): string {
+  return toDayKey(new Date())
+}
+
+/** End of the current week (Sunday), the target for the "this week" quick date. */
+function weekEndKey(): string {
+  return toDayKey(addDays(startOfWeek(new Date()), 6))
+}
+
 function TaskFormBody({
   task,
   preset,
@@ -64,10 +72,10 @@ function TaskFormBody({
   const [resultId, setResultId] = useState(task?.resultId ?? preset?.resultId ?? '')
   const [objectiveId, setObjectiveId] = useState(task?.objectiveId ?? preset?.objectiveId ?? '')
   const [stage, setStage] = useState<StageId>(task?.stage ?? preset?.stage ?? 'research')
-  const [skillId, setSkillId] = useState(task?.skillId)
   const [hours, setHours] = useState(String(task?.estimatedHours ?? 1))
   const [difficulty, setDifficulty] = useState<Difficulty>(task?.difficulty ?? 'medium')
   const [dueAt, setDueAt] = useState(task?.dueAt?.slice(0, 10) ?? preset?.dueAt ?? '')
+  const [pickDate, setPickDate] = useState(false)
 
   const objectives = useMemo(
     () => (resultId ? objectivesOfResult(state, resultId) : []),
@@ -75,6 +83,9 @@ function TaskFormBody({
   )
   const selectedObjective = objectives.find((o) => o.id === objectiveId)
   const allowedStages = selectedObjective ? openedStages(selectedObjective.currentStage) : STAGE_ORDER
+
+  const today = todayKey()
+  const weekEnd = weekEndKey()
 
   const save = () => {
     const trimmed = title.trim()
@@ -86,7 +97,6 @@ function TaskFormBody({
       resultId: resultId || undefined,
       objectiveId: objectiveId || undefined,
       stage,
-      skillId,
       estimatedHours,
       difficulty,
       dueAt: dueAt || undefined,
@@ -173,11 +183,48 @@ function TaskFormBody({
           </Select>
         </Field>
       </div>
-      <Field label={t('common.skill')}>
-        <SkillSelect value={skillId} onChange={setSkillId} />
-      </Field>
       <Field label={`${t('common.dueDate')} (${t('common.optional')})`}>
-        <Input type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
+        <div className="flex flex-wrap gap-2">
+          <Chip
+            active={!pickDate && dueAt === today}
+            onClick={() => {
+              setDueAt(today)
+              setPickDate(false)
+            }}
+          >
+            {t('common.today')}
+          </Chip>
+          <Chip
+            active={!pickDate && dueAt === weekEnd}
+            onClick={() => {
+              setDueAt(weekEnd)
+              setPickDate(false)
+            }}
+          >
+            {t('planning.tasks.thisWeek')}
+          </Chip>
+          <Chip active={pickDate} onClick={() => setPickDate(true)}>
+            {t('planning.tasks.pickDate')}
+          </Chip>
+          {dueAt ? (
+            <Chip
+              onClick={() => {
+                setDueAt('')
+                setPickDate(false)
+              }}
+            >
+              {t('planning.tasks.noDate')}
+            </Chip>
+          ) : null}
+        </div>
+        {pickDate ? (
+          <Input
+            type="date"
+            className="mt-2"
+            value={dueAt}
+            onChange={(e) => setDueAt(e.target.value)}
+          />
+        ) : null}
       </Field>
       <Field label={`${t('common.notes')} (${t('common.optional')})`}>
         <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
@@ -190,16 +237,7 @@ function TaskFormBody({
           {t('common.save')}
         </Button>
       </div>
-      {task ? (
-        <>
-          <RelationsPanel
-            type="task"
-            id={task.id}
-            siblings={state.tasks.filter((item) => item.objectiveId && item.objectiveId === task.objectiveId)}
-          />
-          <JournalThread parentType="task" parentId={task.id} />
-        </>
-      ) : null}
+      {task ? <JournalThread parentType="task" parentId={task.id} /> : null}
     </div>
   )
 }

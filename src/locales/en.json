@@ -139,7 +139,14 @@
       "primarySkill": "Primary skill",
       "archiveConfirm": "Archiving this result also archives its objectives and cancels their open tasks. The journal stays.",
       "archived": "Archived results",
-      "detailTitle": "Result"
+      "detailTitle": "Result",
+      "health": {
+        "noObjectives": "No objectives yet. Add the first lever.",
+        "unbalanced": "{{emptyObjective}} has no steps. The result is leaning on a single lever.",
+        "overdue": "You have {{count}} overdue task(s).",
+        "next": "Next step: {{title}}",
+        "allClear": "No pending steps. A good moment to add the next one."
+      }
     },
     "objectives": {
       "new": "+ Objective",
@@ -148,6 +155,11 @@
       "editTitle": "Edit objective",
       "namePlaceholder": "What has to happen for this result?",
       "importance": "Importance",
+      "doneWhen": "Done when",
+      "doneWhenPlaceholder": "How do you know it is finished?",
+      "doneWhenConfirm": "Done when: {{doneWhen}}.",
+      "activeStage": "Active stage",
+      "noConcreteStep": "This objective has no concrete step yet.",
       "archiveConfirm": "Archive this objective? Its open tasks are cancelled and the journal stays.",
       "detailTitle": "Objective",
       "stageOpenTasks": "{{stage}} still has {{count}} open task(s). Advance anyway?",
@@ -172,6 +184,15 @@
       "filterStatus": "Status",
       "filterSkill": "Skill",
       "filterDate": "Due before",
+      "moreFilters": "More filters",
+      "thisWeek": "This week",
+      "pickDate": "Pick a date",
+      "noDate": "No date",
+      "loose": "Loose",
+      "looseStep": "Loose step",
+      "assign": "Assign to an objective",
+      "skillPromptTitle": "Which skill does it add to?",
+      "skillPromptHint": "Pick the skill this task counts toward. It is saved for next time.",
       "count": "{{count}} task(s)",
       "reopen": "Reopen",
       "cancel": "Cancel task",

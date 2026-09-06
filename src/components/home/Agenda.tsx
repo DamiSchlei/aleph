@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { EmptyState, SectionTitle } from '@/components/ui/primitives'
 import { SortableList } from '@/components/ui/SortableList'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
+import { AssignSheet } from '@/components/task/AssignSheet'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { reorderTasks } from '@/data/actions'
@@ -21,6 +22,7 @@ export function Agenda() {
   const tasks = tasksForDay(state, today)
   const { toggle, dialog } = useTaskCompletion()
   const [editing, setEditing] = useState<Task | undefined>()
+  const [assigning, setAssigning] = useState<Task | undefined>()
   const done = tasks.filter((task) => isTaskDone(task.status)).length
 
   return (
@@ -52,6 +54,7 @@ export function Agenda() {
                 task={task}
                 onToggle={() => toggle(task)}
                 onOpen={() => setEditing(task)}
+                onAssign={() => setAssigning(task)}
                 handle={handle}
               />
             )
@@ -60,6 +63,11 @@ export function Agenda() {
       )}
       {dialog}
       <TaskFormSheet open={Boolean(editing)} task={editing} onClose={() => setEditing(undefined)} />
+      <AssignSheet
+        open={Boolean(assigning)}
+        task={assigning}
+        onClose={() => setAssigning(undefined)}
+      />
     </section>
   )
 }

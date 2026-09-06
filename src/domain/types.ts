@@ -65,6 +65,8 @@ export interface Objective {
   resultId: string
   name: string
   why?: string
+  /** Optional short definition of done, shown on the objective header. */
+  doneWhen?: string
   skillId?: string
   /** 1-4, drag order inside the result. */
   importance: number

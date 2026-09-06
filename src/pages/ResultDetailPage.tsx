@@ -3,17 +3,22 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
-import { ResultRelations } from '@/components/planning/ResultRelations'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
-import { Button, Card, EmptyState, ProgressBar } from '@/components/ui/primitives'
+import { Button, Card, EmptyState, ProgressBar, SectionTitle } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { SortableList } from '@/components/ui/SortableList'
 import { archiveResult, reorderObjectives } from '@/data/actions'
 import { canAddObjective, MAX_OBJECTIVES_PER_RESULT } from '@/domain/limits'
-import { objectiveProgress, objectivesOfResult, resultById, resultProgress, skillById } from '@/data/selectors'
+import {
+  nextTaskOfObjective,
+  objectiveProgress,
+  objectivesOfResult,
+  resultById,
+  resultHealth,
+} from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { formatDate } from '@/i18n/format'
-import { skillName, stageShort } from '@/i18n/labels'
+import { stageShort } from '@/i18n/labels'
 
 export function ResultDetailPage() {
   const { resultId = '' } = useParams()
@@ -22,8 +27,7 @@ export function ResultDetailPage() {
   const state = useAleph()
   const result = resultById(state, resultId)
   const objectives = result ? objectivesOfResult(state, result.id) : []
-  const progress = result ? resultProgress(state, result.id) : null
-  const skill = result ? skillById(state, result.skillId) : undefined
+  const health = result ? resultHealth(state, result.id) : null
   const [edit, setEdit] = useState(false)
   const [addObjective, setAddObjective] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
@@ -54,11 +58,16 @@ export function ResultDetailPage() {
         <h1 className="text-2xl font-semibold text-white">{result.name}</h1>
         {result.why ? <p className="mt-1 text-[15px] text-ink-400">{result.why}</p> : null}
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-ink-400">
-          {skill ? <span>{skillName(t, skill)}</span> : null}
           {result.targetDate ? <span>{formatDate(result.targetDate, state.character.locale)}</span> : null}
           <span>{t(`resultStatus.${result.status}`)}</span>
         </div>
       </header>
+
+      {health ? (
+        <Card>
+          <p className="text-[14px] leading-relaxed text-ink-200">{t(health.key, health.params)}</p>
+        </Card>
+      ) : null}
 
       <div className="flex gap-2">
         <Button variant="secondary" className="flex-1" onClick={() => setEdit(true)}>
@@ -69,34 +78,19 @@ export function ResultDetailPage() {
         </Button>
       </div>
 
-      {progress ? (
-        <Card>
-          <p className="text-[13px] text-ink-400">
-            {progress.tasksTotal === 0
-              ? t('planning.results.noTasks')
-              : t('planning.results.progress', { done: progress.tasksDone, total: progress.tasksTotal })}
-          </p>
-          <ProgressBar className="mt-2" ratio={progress.ratio} />
-          <p className="mt-3 text-[12px] text-ink-400">
-            {(['research', 'execution', 'review'] as const)
-              .map((stage) => `${stageShort(t, stage)} ${progress.objectivesByStage[stage]}`)
-              .join(' · ')}
-          </p>
-        </Card>
-      ) : null}
-
       <div>
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <h2 className="text-[13px] font-semibold tracking-[0.14em] text-ink-400 uppercase">
-            {t('planning.results.objectivesCount', {
-              count: objectives.length,
-              max: MAX_OBJECTIVES_PER_RESULT,
-            })}
-          </h2>
-          <Button disabled={atLimit} onClick={() => setAddObjective(true)}>
-            {t('planning.objectives.new')}
-          </Button>
-        </div>
+        <SectionTitle
+          action={
+            <Button disabled={atLimit} onClick={() => setAddObjective(true)}>
+              {t('planning.objectives.new')}
+            </Button>
+          }
+        >
+          {t('planning.results.objectivesCount', {
+            count: objectives.length,
+            max: MAX_OBJECTIVES_PER_RESULT,
+          })}
+        </SectionTitle>
         {atLimit ? (
           <p className="mb-3 text-[13px] leading-relaxed text-amber">{t('planning.objectives.limitReached')}</p>
         ) : null}
@@ -112,6 +106,7 @@ export function ResultDetailPage() {
               const objective = objectives.find((o) => o.id === id)
               if (!objective) return null
               const obj = objectiveProgress(state, objective.id)
+              const next = nextTaskOfObjective(state, objective.id)
               return (
                 <Card className="flex items-start gap-1 p-2">
                   <Link to={`/planning/objectives/${objective.id}`} className="min-w-0 flex-1 p-2">
@@ -124,6 +119,9 @@ export function ResultDetailPage() {
                         : t('planning.results.progress', { done: obj.tasksDone, total: obj.tasksTotal })}
                     </p>
                     <ProgressBar className="mt-2" ratio={obj.ratio} />
+                    <p className="mt-2 text-[12px] text-ink-200">
+                      {next ? next.title : t('planning.objectives.noConcreteStep')}
+                    </p>
                   </Link>
                   {handle}
                 </Card>
@@ -133,7 +131,6 @@ export function ResultDetailPage() {
         )}
       </div>
 
-      <ResultRelations objectives={objectives} />
       <JournalThread parentType="result" parentId={result.id} />
 
       <ResultFormSheet open={edit} result={result} onClose={() => setEdit(false)} />

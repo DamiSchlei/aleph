@@ -223,22 +223,78 @@ export function journalFor(state: AlephState, type: ParentType, id: string): Jou
     }))
 }
 
-// ----------------------------------------------------------------- relations
-
-export function relationsOf(state: AlephState, type: ParentType, id: string) {
-  return state.relations.filter(
-    (r) => (r.fromType === type && r.fromId === id) || (r.toType === type && r.toId === id),
-  )
-}
-
-/** Unfinished tasks this task declares a `depends_on` relation to. */
-export function blockingDependencies(state: AlephState, taskId: string): Task[] {
-  return state.relations
-    .filter((r) => r.kind === 'depends_on' && r.fromType === 'task' && r.fromId === taskId)
-    .map((r) => state.tasks.find((t) => t.id === r.toId))
-    .filter((t): t is Task => Boolean(t) && !isTaskDone(t!.status))
-}
-
 export function skillById(state: AlephState, id?: string): Skill | undefined {
   return id ? state.skills.find((s) => s.id === id) : undefined
+}
+
+// -------------------------------------------------------------- skill / steps
+
+/** A task with no due date sorts after dated ones; ties break on importance. */
+function byDueThenImportance(a: Task, b: Task): number {
+  const ad = a.dueAt ? toDayKey(a.dueAt) : '9999-99-99'
+  const bd = b.dueAt ? toDayKey(b.dueAt) : '9999-99-99'
+  if (ad !== bd) return ad < bd ? -1 : 1
+  return a.importance - b.importance
+}
+
+function isOpen(task: Task): boolean {
+  return task.status === 'pending' || task.status === 'in_progress'
+}
+
+/** Where a task's XP lands: its own skill, else the objective's, else the result's. */
+export function resolveTaskSkillId(state: AlephState, task: Task): string | undefined {
+  if (task.skillId) return task.skillId
+  const objective = task.objectiveId
+    ? state.objectives.find((o) => o.id === task.objectiveId)
+    : undefined
+  if (objective?.skillId) return objective.skillId
+  const resultId = task.resultId ?? objective?.resultId
+  const result = resultId ? state.results.find((r) => r.id === resultId) : undefined
+  return result?.skillId
+}
+
+/** The next concrete step of an objective: its first open task by due date, then order. */
+export function nextTaskOfObjective(state: AlephState, objectiveId: string): Task | undefined {
+  return tasksOfObjective(state, objectiveId)
+    .filter(isOpen)
+    .sort(byDueThenImportance)[0]
+}
+
+export interface ResultHealth {
+  key: string
+  params?: Record<string, string | number>
+}
+
+/**
+ * A single honest line about where a result stands. Precedence follows the brief:
+ * no objectives, then a lopsided split, then overdue work, then the next step.
+ */
+export function resultHealth(state: AlephState, resultId: string): ResultHealth {
+  const objectives = objectivesOfResult(state, resultId)
+  if (objectives.length === 0) return { key: 'planning.results.health.noObjectives' }
+
+  const counts = objectives.map((o) => ({
+    objective: o,
+    live: tasksOfObjective(state, o.id).filter((t) => t.status !== 'cancelled').length,
+  }))
+  const withWork = counts.filter((c) => c.live > 0)
+  const empty = counts.filter((c) => c.live === 0)
+  if (objectives.length >= 2 && withWork.length === 1 && empty.length >= 1) {
+    return {
+      key: 'planning.results.health.unbalanced',
+      params: { emptyObjective: empty[0].objective.name },
+    }
+  }
+
+  const resultTasks = tasksOfResult(state, resultId).filter(isOpen)
+  const now = Date.now()
+  const overdue = resultTasks.filter((t) => t.dueAt && deadlineOf(t.dueAt).getTime() < now)
+  if (overdue.length > 0) {
+    return { key: 'planning.results.health.overdue', params: { count: overdue.length } }
+  }
+
+  const next = [...resultTasks].sort(byDueThenImportance)[0]
+  if (next) return { key: 'planning.results.health.next', params: { title: next.title } }
+
+  return { key: 'planning.results.health.allClear' }
 }

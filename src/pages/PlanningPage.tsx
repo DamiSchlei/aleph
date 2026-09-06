@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
+import { AssignSheet } from '@/components/task/AssignSheet'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { SortableList } from '@/components/ui/SortableList'
@@ -16,7 +17,7 @@ import {
   Select,
 } from '@/components/ui/primitives'
 import { reorderResults } from '@/data/actions'
-import { activeResults, resultProgress, skillById } from '@/data/selectors'
+import { activeResults, resultHealth, resultProgress } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { MAX_OBJECTIVES_PER_RESULT } from '@/domain/limits'
 import { STAGE_ORDER } from '@/domain/stage'
@@ -91,13 +92,12 @@ function ResultsTab() {
             const result = results.find((r) => r.id === id)
             if (!result) return null
             const progress = resultProgress(state, result.id)
-            const skill = skillById(state, result.skillId)
+            const health = resultHealth(state, result.id)
             return (
               <Card className="flex items-start gap-1 p-2">
                 <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 p-2">
                   <p className="text-[16px] font-semibold text-white">{result.name}</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {skill ? <Badge>{skillName(t, skill)}</Badge> : null}
                     {result.targetDate ? <Badge tone="amber">{formatDate(result.targetDate, state.character.locale)}</Badge> : null}
                     <Badge tone="accent">
                       {t('planning.results.objectivesCount', {
@@ -125,6 +125,9 @@ function ResultsTab() {
                       (stage) => `${stageShort(t, stage)} ${progress.objectivesByStage[stage]}`,
                     ).join(' · ')}
                   </p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-ink-200">
+                    {t(health.key, health.params)}
+                  </p>
                 </Link>
                 {handle}
               </Card>
@@ -137,18 +140,22 @@ function ResultsTab() {
   )
 }
 
+const isLoose = (task: Task): boolean => !task.objectiveId && !task.resultId
+
 function TasksTab() {
   const { t } = useTranslation()
   const state = useAleph()
   const { toggle, dialog } = useTaskCompletion()
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<Task | undefined>()
+  const [assigning, setAssigning] = useState<Task | undefined>()
   const [resultId, setResultId] = useState('')
   const [objectiveId, setObjectiveId] = useState('')
   const [stage, setStage] = useState<StageId | ''>('')
   const [status, setStatus] = useState<TaskStatus | ''>('')
   const [skillId, setSkillId] = useState('')
   const [before, setBefore] = useState('')
+  const [moreFilters, setMoreFilters] = useState(false)
 
   const objectives = state.objectives.filter((o) => !resultId || o.resultId === resultId)
 
@@ -163,7 +170,13 @@ function TasksTab() {
         if (before && (!task.dueAt || task.dueAt.slice(0, 10) > before)) return false
         return true
       })
-      .sort((a, b) => a.importance - b.importance)
+      .sort((a, b) => {
+        // Loose steps float to the top so they are easy to assign.
+        const al = isLoose(a) ? 0 : 1
+        const bl = isLoose(b) ? 0 : 1
+        if (al !== bl) return al - bl
+        return a.importance - b.importance
+      })
   }, [state.tasks, resultId, objectiveId, stage, status, skillId, before])
 
   const clear = () => {
@@ -219,14 +232,6 @@ function TasksTab() {
             ),
           )}
         </Select>
-        <Select value={skillId} onChange={(e) => setSkillId(e.target.value)}>
-          <option value="">{t('planning.tasks.filterSkill')}</option>
-          {state.skills.map((skill) => (
-            <option key={skill.id} value={skill.id}>
-              {skillName(t, skill)}
-            </option>
-          ))}
-        </Select>
         <input
           type="date"
           value={before}
@@ -235,11 +240,26 @@ function TasksTab() {
           className="min-h-11 w-full rounded-2xl border border-white/8 bg-ink-800/80 px-3.5 text-[15px]"
         />
       </div>
+      {moreFilters ? (
+        <Select value={skillId} onChange={(e) => setSkillId(e.target.value)}>
+          <option value="">{t('planning.tasks.filterSkill')}</option>
+          {state.skills.map((skill) => (
+            <option key={skill.id} value={skill.id}>
+              {skillName(t, skill)}
+            </option>
+          ))}
+        </Select>
+      ) : null}
       <div className="flex items-center justify-between">
-        <p className="text-[13px] text-ink-400">{t('planning.tasks.count', { count: filtered.length })}</p>
-        <Button variant="ghost" onClick={clear}>
-          {t('planning.tasks.clearFilters')}
+        <Button variant="ghost" className="px-2" onClick={() => setMoreFilters((v) => !v)}>
+          {t('planning.tasks.moreFilters')}
         </Button>
+        <div className="flex items-center gap-2">
+          <p className="text-[13px] text-ink-400">{t('planning.tasks.count', { count: filtered.length })}</p>
+          <Button variant="ghost" onClick={clear}>
+            {t('planning.tasks.clearFilters')}
+          </Button>
+        </div>
       </div>
       {state.tasks.length === 0 ? (
         <EmptyState>{t('planning.tasks.empty')}</EmptyState>
@@ -253,6 +273,7 @@ function TasksTab() {
                 task={task}
                 onToggle={() => toggle(task)}
                 onOpen={() => setEditing(task)}
+                onAssign={() => setAssigning(task)}
                 showProjection
               />
             </li>
@@ -262,6 +283,11 @@ function TasksTab() {
       {dialog}
       <TaskFormSheet open={creating} onClose={() => setCreating(false)} />
       <TaskFormSheet open={Boolean(editing)} task={editing} onClose={() => setEditing(undefined)} />
+      <AssignSheet
+        open={Boolean(assigning)}
+        task={assigning}
+        onClose={() => setAssigning(undefined)}
+      />
     </div>
   )
 }
