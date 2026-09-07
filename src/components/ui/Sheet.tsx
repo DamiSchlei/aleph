@@ -73,16 +73,20 @@ export function ConfirmDialog({
   title,
   message,
   confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
+  onDismiss,
   tone = 'primary',
 }: {
   open: boolean
   title: string
   message: string
   confirmLabel?: string
+  cancelLabel?: string
   onConfirm: () => void
   onCancel: () => void
+  onDismiss?: () => void
   tone?: 'primary' | 'danger'
 }) {
   const { t } = useTranslation()
@@ -93,8 +97,8 @@ export function ConfirmDialog({
       <button
         type="button"
         aria-label={t('common.cancel')}
-        onClick={onCancel}
-        className="absolute inset-0 bg-ink-950/75 backdrop-blur-sm"
+        onClick={onDismiss ?? onCancel}
+        className="absolute inset-0 bg-ink-950/75"
       />
       <div
         role="alertdialog"
@@ -105,7 +109,7 @@ export function ConfirmDialog({
         <p className="mt-2 text-[15px] leading-relaxed text-ink-400">{message}</p>
         <div className="mt-5 flex gap-2">
           <Button variant="secondary" className="flex-1" onClick={onCancel}>
-            {t('common.cancel')}
+            {cancelLabel ?? t('common.cancel')}
           </Button>
           <Button
             variant={tone === 'danger' ? 'danger' : 'primary'}

@@ -12,6 +12,7 @@ import { STAGE_ORDER } from '@/domain/stage'
 import type {
   AlephState,
   Comment,
+  Difficulty,
   Objective,
   ParentType,
   Result,
@@ -23,6 +24,20 @@ import type {
 } from '@/domain/types'
 
 export function activeResults(state: AlephState): Result[] {
+  return state.results
+    .filter((r) => r.status !== 'archived')
+    .sort((a, b) => a.importance - b.importance)
+}
+
+/** Results the user is attending: status active only. Paused/archived/achieved do not count. */
+export function attendingResults(state: AlephState): Result[] {
+  return state.results
+    .filter((r) => r.status === 'active')
+    .sort((a, b) => a.importance - b.importance)
+}
+
+/** Results that may appear in create/edit/assign pickers. Archived never do. */
+export function pickerResults(state: AlephState): Result[] {
   return state.results
     .filter((r) => r.status !== 'archived')
     .sort((a, b) => a.importance - b.importance)
@@ -40,6 +55,11 @@ export function objectivesOfResult(state: AlephState, resultId: string): Objecti
   return state.objectives
     .filter((o) => o.resultId === resultId && !o.archivedAt)
     .sort((a, b) => a.importance - b.importance)
+}
+
+/** Live objectives of a result for pickers. Same as objectivesOfResult; archived stay hidden. */
+export function pickerObjectives(state: AlephState, resultId: string): Objective[] {
+  return objectivesOfResult(state, resultId)
 }
 
 export function tasksOfObjective(state: AlephState, objectiveId: string, stage?: StageId): Task[] {
@@ -93,7 +113,7 @@ export function objectiveProgress(state: AlephState, objectiveId: string) {
 // -------------------------------------------------------------------- agenda
 
 /** The day a task shows on: its due day, else its scheduled day. */
-function taskDayKey(task: Task): string | undefined {
+export function taskDayKey(task: Task): string | undefined {
   if (task.dueAt) return toDayKey(task.dueAt)
   if (task.scheduledFor) return toDayKey(task.scheduledFor)
   return undefined
@@ -127,24 +147,65 @@ export function tasksForDay(state: AlephState, dayKey: string): Task[] {
     .sort(byDayOrder)
 }
 
-export type AgendaFilter = 'today' | 'tomorrow' | 'week' | 'overdue' | 'pick'
+export type AgendaFilter = 'today' | 'tomorrow' | 'week' | 'overdue' | 'pick' | 'undated'
+
+export const AGENDA_FILTERS: AgendaFilter[] = [
+  'today',
+  'tomorrow',
+  'week',
+  'overdue',
+  'pick',
+  'undated',
+]
+
+/** Due date the Home composer stamps, following the active filter. */
+export function dueAtForFilter(
+  filter: AgendaFilter,
+  pickDate = '',
+  now: Date = new Date(),
+): string | undefined {
+  if (filter === 'undated') return undefined
+  if (filter === 'tomorrow') return toDayKey(addDays(now, 1))
+  if (filter === 'pick') return pickDate || toDayKey(now)
+  return toDayKey(now)
+}
+
+/** Calendar day for the 24h bar. Only Hoy and Elegir map to a single day. */
+export function agendaCalendarDay(
+  filter: AgendaFilter,
+  pickDate = '',
+  now: Date = new Date(),
+): string | undefined {
+  if (filter === 'today') return toDayKey(now)
+  if (filter === 'pick') return pickDate || toDayKey(now)
+  return undefined
+}
+
+export function isTaskOverdue(task: Task, now: Date = new Date()): boolean {
+  if (!task.dueAt || isTaskDone(task.status) || task.status === 'cancelled') return false
+  return deadlineOf(task.dueAt).getTime() < startOfDay(now).getTime()
+}
 
 /** The agenda for a Home date filter. Archived and cancelled tasks never appear. */
-export function agendaTasks(state: AlephState, filter: AgendaFilter, pickDate?: string): Task[] {
-  const todayKey = toDayKey(new Date())
+export function agendaTasks(
+  state: AlephState,
+  filter: AgendaFilter,
+  pickDate?: string,
+  now: Date = new Date(),
+): Task[] {
+  const todayKey = toDayKey(now)
   const matches = (task: Task): boolean => {
+    if (filter === 'undated') {
+      return isOpen(task) && !task.dueAt && !task.scheduledFor
+    }
     if (filter === 'overdue') {
-      return (
-        Boolean(task.dueAt) &&
-        !isTaskDone(task.status) &&
-        deadlineOf(task.dueAt!).getTime() < startOfDay(new Date()).getTime()
-      )
+      return isTaskOverdue(task, now)
     }
     const day = taskDayKey(task)
     if (!day) return false
     if (filter === 'today') return day === todayKey
-    if (filter === 'tomorrow') return day === toDayKey(addDays(new Date(), 1))
-    if (filter === 'week') return day >= todayKey && day <= toDayKey(addDays(startOfWeek(new Date()), 6))
+    if (filter === 'tomorrow') return day === toDayKey(addDays(now, 1))
+    if (filter === 'week') return day >= todayKey && day <= toDayKey(addDays(startOfWeek(now), 6))
     return day === (pickDate || todayKey)
   }
   return state.tasks
@@ -368,11 +429,15 @@ export interface ResultHealth {
 }
 
 /**
- * A single honest line about where a result stands. Precedence follows the brief:
- * no objectives, then a lopsided split, then overdue work, then the next step.
+ * A single honest line about where a result stands. Prefers an in-progress
+ * (execution) task, else research, else an empty lever.
  */
 export function resultHealth(state: AlephState, resultId: string): ResultHealth {
   const objectives = objectivesOfResult(state, resultId)
+  const resultTasks = tasksOfResult(state, resultId).filter(isOpen)
+  const next = [...resultTasks].sort(byMomentThenDue)[0]
+  if (next) return { key: 'planning.results.health.next', params: { title: next.title } }
+
   if (objectives.length === 0) return { key: 'planning.results.health.noObjectives' }
 
   const counts = objectives.map((o) => ({
@@ -388,15 +453,135 @@ export function resultHealth(state: AlephState, resultId: string): ResultHealth 
     }
   }
 
-  const resultTasks = tasksOfResult(state, resultId).filter(isOpen)
-  const now = Date.now()
-  const overdue = resultTasks.filter((t) => t.dueAt && deadlineOf(t.dueAt).getTime() < now)
-  if (overdue.length > 0) {
-    return { key: 'planning.results.health.overdue', params: { count: overdue.length } }
-  }
-
-  const next = [...resultTasks].sort(byMomentThenDue)[0]
-  if (next) return { key: 'planning.results.health.next', params: { title: next.title } }
-
   return { key: 'planning.results.health.allClear' }
+}
+
+/** The next concrete step of a result, preferring an in-progress task. */
+export function nextTaskOfResult(state: AlephState, resultId: string): Task | undefined {
+  return tasksOfResult(state, resultId)
+    .filter(isOpen)
+    .sort(byMomentThenDue)[0]
+}
+
+export interface PlanTotalRow {
+  result: Result
+  next: Task | undefined
+  stale: boolean
+}
+
+export function planTotalRows(state: AlephState, now: Date = new Date()): PlanTotalRow[] {
+  return attendingResults(state).map((result) => ({
+    result,
+    next: nextTaskOfResult(state, result.id),
+    stale: resultStaleThisWeek(state, result.id, now),
+  }))
+}
+
+function lastActivityAt(state: AlephState, resultId: string): string | undefined {
+  const completed = tasksOfResult(state, resultId)
+    .map((t) => t.completedAt)
+    .filter((value): value is string => Boolean(value))
+  const comments = journalFor(state, 'result', resultId).map((entry) => entry.comment.createdAt)
+  const stamps = [...completed, ...comments]
+  if (stamps.length === 0) return undefined
+  return stamps.sort()[stamps.length - 1]
+}
+
+/** No completed task and no journal in the last 7 days. */
+export function resultStaleThisWeek(
+  state: AlephState,
+  resultId: string,
+  now: Date = new Date(),
+): boolean {
+  const last = lastActivityAt(state, resultId)
+  if (!last) return true
+  return daysBetween(last, now) >= 7
+}
+
+/**
+ * Least-active attending result: never-touched first, else oldest last
+ * completed task or journal. Used when offering the bitácora instead of a 4th result.
+ */
+export function leastActiveAttending(state: AlephState): Result | undefined {
+  const attending = attendingResults(state)
+  if (attending.length === 0) return undefined
+  return [...attending].sort((a, b) => {
+    const la = lastActivityAt(state, a.id)
+    const lb = lastActivityAt(state, b.id)
+    if (!la && !lb) return a.importance - b.importance
+    if (!la) return -1
+    if (!lb) return 1
+    const byTime = la.localeCompare(lb)
+    return byTime !== 0 ? byTime : a.importance - b.importance
+  })[0]
+}
+
+export interface DayLoadSegment {
+  id: string
+  title: string
+  hours: number
+  difficulty: Difficulty
+}
+
+export interface DayLoad {
+  hours: number
+  capped: number
+  overflow: boolean
+  segments: DayLoadSegment[]
+}
+
+/** Open tasks dated that day, plus tasks completed that day that are also dated that day. */
+export function dayLoad(state: AlephState, dayKey: string): DayLoad {
+  const segments: DayLoadSegment[] = state.tasks
+    .filter((task) => {
+      if (task.status === 'cancelled' || isArchivedTask(state, task)) return false
+      if (taskDayKey(task) !== dayKey) return false
+      if (isOpen(task)) return true
+      return Boolean(
+        isTaskDone(task.status) && task.completedAt && toDayKey(task.completedAt) === dayKey,
+      )
+    })
+    .sort(byDayOrder)
+    .map((task) => ({
+      id: task.id,
+      title: task.title,
+      hours: task.estimatedHours,
+      difficulty: task.difficulty,
+    }))
+
+  const hours = Math.round(segments.reduce((sum, s) => sum + s.hours, 0) * 100) / 100
+  return {
+    hours,
+    capped: Math.min(hours, 24),
+    overflow: hours > 24,
+    segments,
+  }
+}
+
+export function latestCommentOnDay(state: AlephState, dayKey: string): Comment | undefined {
+  return [...state.comments]
+    .filter((comment) => toDayKey(comment.createdAt) === dayKey)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+}
+
+export function nextReviewDue(
+  state: AlephState,
+  objectiveId: string,
+  now: Date = new Date(),
+): string | undefined {
+  const objective = objectiveById(state, objectiveId)
+  if (!objective?.reviewEvery) return undefined
+  const last = journalFor(state, 'objective', objectiveId)[0]?.comment.createdAt
+  if (objective.reviewEvery === 'weekly') {
+    if (!last) return toDayKey(now)
+    return toDayKey(addDays(last, 7))
+  }
+  const n = Math.max(1, objective.reviewEveryN ?? 3)
+  const since = last ? new Date(last).getTime() : 0
+  const doneSince = tasksOfObjective(state, objectiveId).filter(
+    (task) =>
+      isTaskDone(task.status) && task.completedAt && new Date(task.completedAt).getTime() > since,
+  ).length
+  if (doneSince >= n) return toDayKey(now)
+  return undefined
 }

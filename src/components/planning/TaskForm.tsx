@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { Button, Chip, Field, Input, Select, Textarea } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
-import { createTask, updateTask } from '@/data/actions'
-import { objectivesOfResult } from '@/data/selectors'
+import { addComment, createTask, updateTask } from '@/data/actions'
+import { pickerObjectives, pickerResults } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import { addDays, startOfWeek, toDayKey } from '@/domain/dates'
@@ -29,12 +29,18 @@ export function TaskFormSheet({
   task,
   preset,
   moments,
+  blockedPrompt = false,
+  scoped = false,
 }: {
   open: boolean
   onClose: () => void
   task?: Task
   preset?: TaskPreset
   moments?: TaskMoments
+  /** Home: write without completing an overdue step. */
+  blockedPrompt?: boolean
+  /** Hide result/objective pickers when creating from an objective. */
+  scoped?: boolean
 }) {
   const { t } = useTranslation()
   const key = `${task?.id ?? 'new'}:${preset?.objectiveId ?? ''}:${open ? '1' : '0'}`
@@ -46,7 +52,14 @@ export function TaskFormSheet({
       title={task ? t('planning.tasks.editTitle') : t('planning.tasks.createTitle')}
       footer={null}
     >
-      <TaskFormBody task={task} preset={preset} moments={moments} onClose={onClose} />
+      <TaskFormBody
+        task={task}
+        preset={preset}
+        moments={moments}
+        blockedPrompt={blockedPrompt}
+        scoped={scoped}
+        onClose={onClose}
+      />
     </Sheet>
   )
 }
@@ -64,11 +77,15 @@ function TaskFormBody({
   task,
   preset,
   moments,
+  blockedPrompt,
+  scoped,
   onClose,
 }: {
   task?: Task
   preset?: TaskPreset
   moments?: TaskMoments
+  blockedPrompt?: boolean
+  scoped?: boolean
   onClose: () => void
 }) {
   const { t } = useTranslation()
@@ -82,8 +99,9 @@ function TaskFormBody({
   const [dueAt, setDueAt] = useState(task?.dueAt?.slice(0, 10) ?? preset?.dueAt ?? '')
   const [pickDate, setPickDate] = useState(false)
 
+  const [blockedNote, setBlockedNote] = useState('')
   const objectives = useMemo(
-    () => (resultId ? objectivesOfResult(state, resultId) : []),
+    () => (resultId ? pickerObjectives(state, resultId) : []),
     [resultId, state],
   )
 
@@ -120,38 +138,40 @@ function TaskFormBody({
           autoFocus
         />
       </Field>
-      <Field label={t('common.result')}>
-        <Select
-          value={resultId}
-          onChange={(e) => {
-            setResultId(e.target.value)
-            setObjectiveId('')
-          }}
-        >
-          <option value="">{t('common.unassigned')}</option>
-          {state.results
-            .filter((r) => r.status !== 'archived')
-            .map((result) => (
-              <option key={result.id} value={result.id}>
-                {result.name}
-              </option>
-            ))}
-        </Select>
-      </Field>
-      <Field label={t('common.objective')}>
-        <Select
-          value={objectiveId}
-          onChange={(e) => setObjectiveId(e.target.value)}
-          disabled={!resultId}
-        >
-          <option value="">{t('common.unassigned')}</option>
-          {objectives.map((objective) => (
-            <option key={objective.id} value={objective.id}>
-              {objective.name}
-            </option>
-          ))}
-        </Select>
-      </Field>
+      {scoped ? null : (
+        <>
+          <Field label={t('common.result')}>
+            <Select
+              value={resultId}
+              onChange={(e) => {
+                setResultId(e.target.value)
+                setObjectiveId('')
+              }}
+            >
+              <option value="">{t('common.unassigned')}</option>
+              {pickerResults(state).map((result) => (
+                <option key={result.id} value={result.id}>
+                  {result.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label={t('common.objective')}>
+            <Select
+              value={objectiveId}
+              onChange={(e) => setObjectiveId(e.target.value)}
+              disabled={!resultId}
+            >
+              <option value="">{t('common.unassigned')}</option>
+              {objectives.map((objective) => (
+                <option key={objective.id} value={objective.id}>
+                  {objective.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <Field label={t('common.estimatedHours')}>
           <Input
@@ -215,6 +235,30 @@ function TaskFormBody({
       <Field label={`${t('common.notes')} (${t('common.optional')})`}>
         <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
+
+      {blockedPrompt && task ? (
+        <Field label={t('home.literatureBlocked')}>
+          <div className="flex gap-2">
+            <Textarea
+              rows={2}
+              value={blockedNote}
+              onChange={(e) => setBlockedNote(e.target.value)}
+              placeholder={t('home.literatureBlocked')}
+              className="flex-1"
+            />
+            <Button
+              variant="secondary"
+              className="self-end"
+              disabled={!blockedNote.trim()}
+              onClick={() => {
+                if (addComment('task', task.id, blockedNote)) setBlockedNote('')
+              }}
+            >
+              {t('journal.post')}
+            </Button>
+          </div>
+        </Field>
+      ) : null}
 
       <div className="flex gap-2 pt-2">
         <Button variant="secondary" className="flex-1" onClick={onClose}>

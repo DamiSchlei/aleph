@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
@@ -17,10 +17,20 @@ import {
   ProgressBar,
   Select,
 } from '@/components/ui/primitives'
+import { ConfirmDialog } from '@/components/ui/Sheet'
 import { reorderResults, restoreResult } from '@/data/actions'
-import { activeResults, resultHealth, resultProgress, taskResultStatus } from '@/data/selectors'
+import {
+  activeResults,
+  attendingResults,
+  leastActiveAttending,
+  pickerObjectives,
+  pickerResults,
+  resultHealth,
+  resultProgress,
+  taskResultStatus,
+} from '@/data/selectors'
 import { useAleph } from '@/data/store'
-import { MAX_OBJECTIVES_PER_RESULT } from '@/domain/limits'
+import { MAX_OBJECTIVES_PER_RESULT, shouldSoftWarnActiveResults } from '@/domain/limits'
 import { STAGE_ORDER } from '@/domain/stage'
 import { formatDate, formatHours } from '@/i18n/format'
 import { skillName, stageShort } from '@/i18n/labels'
@@ -55,28 +65,46 @@ export function PlanningPage() {
 
 function ResultsTab() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const state = useAleph()
   const results = activeResults(state)
   const archived = state.results.filter((r) => r.status === 'archived')
+  const attendingCount = attendingResults(state).length
   const [open, setOpen] = useState(false)
   const [seed, setSeed] = useState<string | undefined>()
   const [showArchived, setShowArchived] = useState(false)
+  const [capOpen, setCapOpen] = useState(false)
 
   const openCreate = (name?: string) => {
     setSeed(name)
     setOpen(true)
   }
 
+  const requestCreate = (name?: string) => {
+    if (shouldSoftWarnActiveResults(attendingCount)) {
+      setSeed(name)
+      setCapOpen(true)
+      return
+    }
+    openCreate(name)
+  }
+
+  const writeJournal = () => {
+    setCapOpen(false)
+    const target = leastActiveAttending(state)
+    if (target) navigate(`/planning/results/${target.id}`)
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <p className="text-[14px] leading-relaxed text-ink-400">{t('planning.results.helper')}</p>
-      <Button onClick={() => openCreate()}>{t('planning.results.new')}</Button>
+      <Button onClick={() => requestCreate()}>{t('planning.results.new')}</Button>
       {results.length === 0 ? (
         <EmptyState
           action={
             <div className="flex max-w-sm flex-wrap justify-center gap-2">
               {CHIP_KEYS.map((key) => (
-                <Chip key={key} onClick={() => openCreate(t(`planning.results.chips.${key}`))}>
+                <Chip key={key} onClick={() => requestCreate(t(`planning.results.chips.${key}`))}>
                   {t(`planning.results.chips.${key}`)}
                 </Chip>
               ))}
@@ -166,6 +194,19 @@ function ResultsTab() {
       ) : null}
 
       <ResultFormSheet open={open} initialName={seed} onClose={() => setOpen(false)} />
+      <ConfirmDialog
+        open={capOpen}
+        title={t('planning.results.createTitle')}
+        message={t('planning.results.softCap', { count: attendingCount })}
+        confirmLabel={t('planning.results.writeJournal')}
+        cancelLabel={t('planning.results.createAnyway')}
+        onConfirm={writeJournal}
+        onCancel={() => {
+          setCapOpen(false)
+          openCreate(seed)
+        }}
+        onDismiss={() => setCapOpen(false)}
+      />
     </div>
   )
 }
@@ -188,7 +229,7 @@ function TasksTab() {
   const [before, setBefore] = useState('')
   const [moreFilters, setMoreFilters] = useState(false)
 
-  const objectives = state.objectives.filter((o) => !resultId || o.resultId === resultId)
+  const objectives = resultId ? pickerObjectives(state, resultId) : []
 
   const filtered = useMemo(() => {
     return state.tasks
@@ -233,7 +274,7 @@ function TasksTab() {
           }}
         >
           <option value="">{t('planning.tasks.filterResult')}</option>
-          {state.results.map((result) => (
+          {pickerResults(state).map((result) => (
             <option key={result.id} value={result.id}>
               {result.name}
             </option>

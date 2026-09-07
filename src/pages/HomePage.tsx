@@ -4,12 +4,16 @@ import { Avatar } from '@/components/character/Avatar'
 import { CustomizeSheet } from '@/components/character/CustomizeSheet'
 import { Agenda } from '@/components/home/Agenda'
 import { Composer } from '@/components/home/Composer'
+import { DateChips } from '@/components/home/DateChips'
+import { DayBar } from '@/components/home/DayBar'
+import { LiteratureLine } from '@/components/home/LiteratureLine'
+import { PlanTotal } from '@/components/home/PlanTotal'
 import { SkillsSheet } from '@/components/home/SkillsSheet'
 import { Button, ProgressBar } from '@/components/ui/primitives'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { useAleph } from '@/data/store'
+import { agendaCalendarDay, type AgendaFilter } from '@/data/selectors'
 import { formatMoney } from '@/i18n/format'
-import type { AgendaFilter } from '@/data/selectors'
 
 export function HomePage() {
   const { t } = useTranslation()
@@ -20,12 +24,16 @@ export function HomePage() {
   const [filter, setFilter] = useState<AgendaFilter>('today')
   const [pickDate, setPickDate] = useState('')
   const xpRatio = character.xpToNext > 0 ? character.xp / character.xpToNext : null
+  const dayKey = agendaCalendarDay(filter, pickDate)
 
   return (
-    <div className="flex flex-col gap-6 pt-4">
+    <div className="flex flex-col gap-6 pt-4 pb-10">
       <header className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold tracking-[0.22em] text-accent uppercase">{t('app.name')}</p>
+          <p className="mt-1 text-[11px] font-medium tracking-[0.16em] text-ink-400 uppercase">
+            {t('app.acronym')}
+          </p>
           <h1 className="mt-1 truncate text-2xl font-semibold text-white">{character.name}</h1>
           <p className="mt-0.5 text-[13px] text-ink-400">
             {t('common.level', { level: character.level })}
@@ -51,15 +59,17 @@ export function HomePage() {
         </Button>
       </div>
 
-      <p className="text-[14px] leading-relaxed text-ink-400">{t('home.hint')}</p>
-
       <Composer filter={filter} pickDate={pickDate} />
-      <Agenda
+      <DateChips
         filter={filter}
         pickDate={pickDate}
         onFilterChange={setFilter}
         onPickDateChange={setPickDate}
       />
+      <PlanTotal />
+      {dayKey ? <DayBar dayKey={dayKey} /> : null}
+      <Agenda filter={filter} pickDate={pickDate} />
+      <LiteratureLine />
 
       <CustomizeSheet open={customize} onClose={() => setCustomize(false)} pulseKey={pulseKey} />
       <SkillsSheet open={skills} onClose={() => setSkills(false)} />

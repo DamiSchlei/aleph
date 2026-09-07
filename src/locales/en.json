@@ -1,6 +1,7 @@
 {
   "app": {
     "name": "Aleph",
+    "acronym": "Arte · Literatura · Empresa",
     "tagline": "Your work, one character, three screens."
   },
   "nav": {
@@ -108,15 +109,29 @@
     "proposePlaceholder": "Jot down a step…",
     "proposeCta": "Add",
     "agendaTitle": "Today",
-    "agendaEmpty": "Nothing here yet. Jot one down above or create it in Planning.",
+    "agendaEmpty": "Nothing in the day. Jot a step or look at Total plan.",
     "agendaCount": "{{done}} of {{total}} done",
+    "undatedTitle": "No date",
     "filters": {
       "today": "Today",
       "tomorrow": "Tomorrow",
       "week": "This week",
       "overdue": "Overdue",
-      "pick": "Pick a date"
+      "pick": "Pick a date",
+      "undated": "All"
     },
+    "planTotal": "Total plan",
+    "planTotalEmpty": "A result is an enterprise. Create it in Planning.",
+    "seePlan": "See plan",
+    "noStepToday": "No step today",
+    "staleWeek": "No craft or journal this week.",
+    "dayBarTitle": "24-hour day",
+    "dayBarCaption": "{{count}} h noted of 24",
+    "dayBarOverflow": "Today's tasks add up to {{count}} h. The day has 24.",
+    "literature": "Literature",
+    "literatureEmpty": "Literature is what remains written after the step.",
+    "literatureDone": "What remains of this?",
+    "literatureBlocked": "What held you back?",
     "skillsTitle": "Skills",
     "newSkill": "New skill",
     "newSkillName": "Skill name",
@@ -153,6 +168,9 @@
       "whyPlaceholder": "Why does this matter to you?",
       "targetDate": "Target date",
       "primarySkill": "Primary skill",
+      "softCap": "You already have {{count}} active enterprises. What is holding you back in the ones you already named?",
+      "writeJournal": "Write in the journal",
+      "createAnyway": "Create anyway",
       "archiveConfirm": "Archiving this result sets it aside and its steps drop off the agenda. You can restore it any time.",
       "archived": "Archived results",
       "showArchived": "Show archived",
@@ -177,6 +195,14 @@
       "doneWhen": "Done when",
       "doneWhenPlaceholder": "How do you know it is finished?",
       "doneWhenConfirm": "Done when: {{doneWhen}}.",
+      "nonGoals": "What it is not",
+      "nonGoalsPlaceholder": "What sits outside this objective?",
+      "reviewEvery": "Review",
+      "reviewWeekly": "Weekly",
+      "reviewEveryN": "Every n tasks",
+      "reviewEveryNCount": "Every {{count}} tasks",
+      "reviewNext": "Next review {{date}}",
+      "nextStepCta": "What is the next concrete step?",
       "activeStage": "Active stage",
       "noConcreteStep": "This objective has no concrete step yet.",
       "noneInProgress": "Nothing in progress yet.",
@@ -229,7 +255,14 @@
       "cancel": "Cancel task",
       "actualHours": "Actual hours",
       "dependencyWarning": "This task depends on: {{tasks}}. Complete anyway?",
-      "alreadyRewarded": "This task was already rewarded."
+      "alreadyRewarded": "This task was already rewarded.",
+      "doneCheck": "Complete when",
+      "doneCheckPlaceholder": "How do you know this step is done?",
+      "checklist": "Checklist",
+      "checklistAdd": "Add item",
+      "checklistLimit": "If it needs more than 7 items, it is an objective.",
+      "referenceUrl": "Link",
+      "referenceUrlPlaceholder": "https://"
     }
   },
   "tracking": {
@@ -266,6 +299,7 @@
     "title": "Journal",
     "add": "Add comment",
     "placeholder": "What happened?",
+    "workingPlaceholder": "What happened? What is holding you back?",
     "empty": "This journal starts when you write the first comment.",
     "origin": {
       "result": "Result",

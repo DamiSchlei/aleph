@@ -48,7 +48,7 @@ function RowAction({ onClick, children }: { onClick: () => void; children: React
     <button
       type="button"
       onClick={onClick}
-      className="self-center rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-[12px] whitespace-nowrap text-ink-200 transition-colors hover:bg-white/8"
+      className="self-center min-h-11 rounded-2xl border border-white/10 bg-white/4 px-3 text-[13px] whitespace-nowrap text-ink-200 transition-colors hover:bg-white/8"
     >
       {children}
     </button>
@@ -67,6 +67,7 @@ export function TaskRow({
   showContext = true,
   showProjection = false,
   hideCheckbox = false,
+  density = 'full',
 }: {
   task: Task
   onToggle: () => void
@@ -79,6 +80,7 @@ export function TaskRow({
   showContext?: boolean
   showProjection?: boolean
   hideCheckbox?: boolean
+  density?: 'full' | 'home'
 }) {
   const { t } = useTranslation()
   const state = useAleph()
@@ -94,6 +96,15 @@ export function TaskRow({
   const canAssign = loose && !done && Boolean(onAssign)
   const canExecute = task.stage === 'research' && !done && Boolean(onExecute)
   const canReturn = task.stage === 'execution' && !done && Boolean(onReturn)
+  const home = density === 'home'
+  const meta = home
+    ? [
+        t('common.hours', { count: Number(formatHours(task.actualHours ?? task.estimatedHours, locale)) }),
+        loose ? t('planning.tasks.loose') : contextResult?.name,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : null
 
   return (
     <Card className="flex items-start gap-1 p-2">
@@ -118,6 +129,9 @@ export function TaskRow({
         >
           {task.title}
         </p>
+        {home ? (
+          <p className="mt-1 text-[13px] text-ink-400">{meta}</p>
+        ) : (
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           {skill ? (
             <Badge>
@@ -153,6 +167,7 @@ export function TaskRow({
             </Badge>
           ) : null}
         </div>
+        )}
       </button>
       {canExecute ? <RowAction onClick={onExecute!}>{t('planning.tasks.execute')}</RowAction> : null}
       {canReturn ? <RowAction onClick={onReturn!}>{t('planning.tasks.backToResearch')}</RowAction> : null}

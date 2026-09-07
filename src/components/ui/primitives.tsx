@@ -177,20 +177,23 @@ export function Chip({
   children,
   onClick,
   active,
+  className,
 }: {
   children: ReactNode
   onClick?: () => void
   active?: boolean
+  className?: string
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cx(
-        'min-h-9 rounded-full border px-3 py-1.5 text-[13px] transition-colors',
+        'min-h-11 rounded-full border px-3 py-1.5 text-[13px] transition-colors',
         active
           ? 'border-accent/50 bg-accent/15 text-accent'
           : 'border-white/10 bg-white/4 text-ink-200 hover:bg-white/8',
+        className,
       )}
     >
       {children}

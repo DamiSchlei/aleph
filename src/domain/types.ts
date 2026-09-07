@@ -68,12 +68,23 @@ export interface Objective {
   why?: string
   /** Optional short definition of done, shown on the objective header. */
   doneWhen?: string
+  /** Optional one-line "what this is not", edited only in the objective sheet. */
+  nonGoals?: string
+  /** Optional review cadence. No notifications; next due is derived. */
+  reviewEvery?: 'weekly' | 'every_n_tasks'
+  reviewEveryN?: number
   skillId?: string
   /** 1-4, drag order inside the result. */
   importance: number
   currentStage: StageId
   status: ObjectiveStatus
   archivedAt?: string
+}
+
+export interface TaskCheckItem {
+  id: string
+  text: string
+  done: boolean
 }
 
 export interface Task {
@@ -93,6 +104,10 @@ export interface Task {
   scheduledFor?: string
   /** Order inside a day's agenda on Home. */
   dayOrder?: number
+  /** One-line definition of done for this step. */
+  doneCheck?: string
+  checklist?: TaskCheckItem[]
+  referenceUrl?: string
   completedAt?: string
   status: TaskStatus
   xpGranted?: number

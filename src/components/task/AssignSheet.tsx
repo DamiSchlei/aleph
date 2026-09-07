@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button, Field, Select } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
 import { assignTaskToObjective } from '@/data/actions'
-import { activeResults, objectivesOfResult } from '@/data/selectors'
+import { pickerObjectives, pickerResults } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import type { Task } from '@/domain/types'
 
@@ -24,11 +24,11 @@ export function AssignSheet({
 function AssignBody({ open, task, onClose }: { open: boolean; task: Task; onClose: () => void }) {
   const { t } = useTranslation()
   const state = useAleph()
-  const results = activeResults(state)
+  const results = pickerResults(state)
   const [resultId, setResultId] = useState(task.resultId ?? '')
   const [objectiveId, setObjectiveId] = useState(task.objectiveId ?? '')
 
-  const objectives = resultId ? objectivesOfResult(state, resultId) : []
+  const objectives = resultId ? pickerObjectives(state, resultId) : []
   const selected = objectives.find((o) => o.id === objectiveId)
 
   const assign = () => {

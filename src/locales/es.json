@@ -1,6 +1,7 @@
 {
   "app": {
     "name": "Aleph",
+    "acronym": "Arte · Literatura · Empresa",
     "tagline": "Tu trabajo, un personaje, tres pantallas."
   },
   "nav": {
@@ -108,15 +109,29 @@
     "proposePlaceholder": "Anotá un paso…",
     "proposeCta": "Anotar",
     "agendaTitle": "Hoy",
-    "agendaEmpty": "Todavía no hay pasos acá. Anotá uno arriba o crealo en Planificación.",
+    "agendaEmpty": "Nada en el día. Anotá un paso o mirá Plan Total.",
     "agendaCount": "{{done}} de {{total}} listas",
+    "undatedTitle": "Sin fecha",
     "filters": {
       "today": "Hoy",
       "tomorrow": "Mañana",
       "week": "Esta semana",
       "overdue": "Vencidas",
-      "pick": "Elegir fecha"
+      "pick": "Elegir fecha",
+      "undated": "Todas"
     },
+    "planTotal": "Plan Total",
+    "planTotalEmpty": "Un resultado es una empresa. Creala en Planificación.",
+    "seePlan": "Ver plan",
+    "noStepToday": "Sin paso hoy",
+    "staleWeek": "Sin arte ni literatura esta semana.",
+    "dayBarTitle": "Día de 24 horas",
+    "dayBarCaption": "{{count}} h anotadas de 24",
+    "dayBarOverflow": "Las tareas de hoy suman {{count}} h. El día tiene 24.",
+    "literature": "Literatura",
+    "literatureEmpty": "La literatura es lo que queda escrito después del paso.",
+    "literatureDone": "¿Qué quedó de esto?",
+    "literatureBlocked": "¿Qué te detuvo?",
     "skillsTitle": "Habilidades",
     "newSkill": "Nueva habilidad",
     "newSkillName": "Nombre de la habilidad",
@@ -153,6 +168,9 @@
       "whyPlaceholder": "¿Para qué te importa?",
       "targetDate": "Fecha objetivo",
       "primarySkill": "Habilidad principal",
+      "softCap": "Ya tenés {{count}} empresas activas. ¿Qué te detiene en las que ya nombraste?",
+      "writeJournal": "Escribir en bitácora",
+      "createAnyway": "Crear igual",
       "archiveConfirm": "Si archivás este resultado se guarda aparte y sus pasos dejan de aparecer en la agenda. Podés restaurarlo cuando quieras.",
       "archived": "Resultados archivados",
       "showArchived": "Ver archivados",
@@ -177,6 +195,14 @@
       "doneWhen": "Listo cuando",
       "doneWhenPlaceholder": "¿Cómo sabés que está terminado?",
       "doneWhenConfirm": "Listo cuando: {{doneWhen}}.",
+      "nonGoals": "Qué no es",
+      "nonGoalsPlaceholder": "¿Qué queda afuera de este objetivo?",
+      "reviewEvery": "Revisar",
+      "reviewWeekly": "Cada semana",
+      "reviewEveryN": "Cada n tareas",
+      "reviewEveryNCount": "Cada {{count}} tareas",
+      "reviewNext": "Próxima revisión {{date}}",
+      "nextStepCta": "¿Cuál es el próximo paso concreto?",
       "activeStage": "Etapa activa",
       "noConcreteStep": "Este objetivo todavía no tiene un paso concreto.",
       "noneInProgress": "Nada en progreso todavía.",
@@ -229,7 +255,14 @@
       "cancel": "Cancelar tarea",
       "actualHours": "Horas reales",
       "dependencyWarning": "Esta tarea depende de: {{tasks}}. ¿La completás igual?",
-      "alreadyRewarded": "Esta tarea ya cobró su recompensa."
+      "alreadyRewarded": "Esta tarea ya cobró su recompensa.",
+      "doneCheck": "Hecho cuando",
+      "doneCheckPlaceholder": "¿Cómo sabés que este paso está hecho?",
+      "checklist": "Lista",
+      "checklistAdd": "Agregar ítem",
+      "checklistLimit": "Si necesita más de 7 ítems, es un objetivo.",
+      "referenceUrl": "Enlace",
+      "referenceUrlPlaceholder": "https://"
     }
   },
   "tracking": {
@@ -266,6 +299,7 @@
     "title": "Bitácora",
     "add": "Agregar comentario",
     "placeholder": "¿Qué pasó?",
+    "workingPlaceholder": "¿Qué pasó? ¿Qué te detiene?",
     "empty": "Esta bitácora empieza cuando escribas el primer comentario.",
     "origin": {
       "result": "Resultado",

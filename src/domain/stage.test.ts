@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { canAdvance, nextStage, openedStages, previousStage, STAGE_ORDER } from './stage'
-import { canAddObjective, MAX_OBJECTIVES_PER_RESULT } from './limits'
+import { canAddObjective, MAX_OBJECTIVES_PER_RESULT, shouldSoftWarnActiveResults } from './limits'
 import type { Objective } from './types'
 
 describe('stage order', () => {
@@ -53,5 +53,13 @@ describe('objective limit', () => {
   it('counts per result', () => {
     const objectives = [make('a'), make('b'), make('c'), make('d')]
     expect(canAddObjective(objectives, 'r2')).toBe(true)
+  })
+})
+
+describe('active result soft warn', () => {
+  it('warns when creating would make a fourth attending result', () => {
+    expect(shouldSoftWarnActiveResults(2)).toBe(false)
+    expect(shouldSoftWarnActiveResults(3)).toBe(true)
+    expect(shouldSoftWarnActiveResults(4)).toBe(true)
   })
 })
