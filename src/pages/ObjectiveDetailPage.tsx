@@ -7,13 +7,21 @@ import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { useTaskActions } from '@/components/task/useTaskActions'
-import { Button, Card, EmptyState, SectionTitle } from '@/components/ui/primitives'
+import { Button, EmptyState, SectionTitle } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { SortableList } from '@/components/ui/SortableList'
 import { archiveObjective, reorderTasks } from '@/data/actions'
-import { objectiveById, objectiveHealth, resultById, tasksOfObjective } from '@/data/selectors'
+import {
+  nextReviewDue,
+  nextTaskOfObjective,
+  objectiveById,
+  objectiveHealth,
+  resultById,
+  tasksOfObjective,
+} from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { isTaskDone } from '@/domain/economy'
+import { formatDate } from '@/i18n/format'
 import type { Task } from '@/domain/types'
 
 export function ObjectiveDetailPage() {
@@ -52,6 +60,8 @@ export function ObjectiveDetailPage() {
   const research = all.filter((tk) => tk.stage === 'research' && !isTaskDone(tk.status) && tk.status !== 'cancelled')
   const doneTasks = all.filter((tk) => isTaskDone(tk.status))
   const health = objectiveHealth(state, objective.id)
+  const next = nextTaskOfObjective(state, objective.id)
+  const reviewDue = nextReviewDue(state, objective.id)
 
   const momentProps = {
     onComplete: (tk: Task) => toggle(tk),
@@ -77,6 +87,22 @@ export function ObjectiveDetailPage() {
             {objective.doneWhen}
           </p>
         ) : null}
+        {next ? (
+          <p className="mt-2 text-[15px] text-ink-200">{next.title}</p>
+        ) : (
+          <button
+            type="button"
+            className="mt-2 min-h-11 text-left text-[15px] text-accent"
+            onClick={() => setCreating(true)}
+          >
+            {t('planning.objectives.nextStepCta')}
+          </button>
+        )}
+        {reviewDue ? (
+          <p className="mt-1 text-[13px] text-ink-400">
+            {t('planning.objectives.reviewNext', { date: formatDate(reviewDue, state.character.locale) })}
+          </p>
+        ) : null}
         <p className="mt-2 text-[14px] leading-relaxed text-ink-200">{t(health.key, health.params)}</p>
       </header>
 
@@ -90,35 +116,6 @@ export function ObjectiveDetailPage() {
       </div>
 
       <Button onClick={() => setCreating(true)}>{t('planning.tasks.new')}</Button>
-
-      <section>
-        <SectionTitle>{t('moments.execution')}</SectionTitle>
-        {execution.length === 0 ? (
-          <EmptyState>{t('planning.objectives.noneInProgress')}</EmptyState>
-        ) : (
-          <SortableList
-            ids={execution.map((tk) => tk.id)}
-            onReorder={(ids) => reorderTasks(ids, 'importance')}
-            handleLabel={t('common.reorderHint')}
-          >
-            {(id, handle) => {
-              const task = execution.find((tk) => tk.id === id)
-              if (!task) return null
-              return (
-                <TaskRow
-                  task={task}
-                  onToggle={() => toggle(task)}
-                  onReturn={() => actions.back(task)}
-                  onDelete={() => actions.requestDelete(task)}
-                  onOpen={() => setEditingTask(task)}
-                  handle={handle}
-                  showContext={false}
-                />
-              )
-            }}
-          </SortableList>
-        )}
-      </section>
 
       <section>
         <SectionTitle>{t('moments.research')}</SectionTitle>
@@ -143,6 +140,35 @@ export function ObjectiveDetailPage() {
                   handle={handle}
                   showContext={false}
                   hideCheckbox
+                />
+              )
+            }}
+          </SortableList>
+        )}
+      </section>
+
+      <section>
+        <SectionTitle>{t('moments.execution')}</SectionTitle>
+        {execution.length === 0 ? (
+          <EmptyState>{t('planning.objectives.noneInProgress')}</EmptyState>
+        ) : (
+          <SortableList
+            ids={execution.map((tk) => tk.id)}
+            onReorder={(ids) => reorderTasks(ids, 'importance')}
+            handleLabel={t('common.reorderHint')}
+          >
+            {(id, handle) => {
+              const task = execution.find((tk) => tk.id === id)
+              if (!task) return null
+              return (
+                <TaskRow
+                  task={task}
+                  onToggle={() => toggle(task)}
+                  onReturn={() => actions.back(task)}
+                  onDelete={() => actions.requestDelete(task)}
+                  onOpen={() => setEditingTask(task)}
+                  handle={handle}
+                  showContext={false}
                 />
               )
             }}
@@ -179,13 +205,12 @@ export function ObjectiveDetailPage() {
         </section>
       ) : null}
 
-      {all.length === 0 ? (
-        <Card>
-          <p className="text-[14px] text-ink-400">{t('planning.objectives.noConcreteStep')}</p>
-        </Card>
-      ) : null}
-
-      <JournalThread parentType="objective" parentId={objective.id} />
+      <JournalThread
+        parentType="objective"
+        parentId={objective.id}
+        placeholder={t('journal.workingPlaceholder')}
+        chronological
+      />
       {completionDialog}
       {actions.dialog}
 
@@ -198,6 +223,7 @@ export function ObjectiveDetailPage() {
       <TaskFormSheet
         open={creating}
         preset={{ resultId: objective.resultId, objectiveId: objective.id }}
+        scoped
         onClose={() => setCreating(false)}
       />
       <TaskFormSheet

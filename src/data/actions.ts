@@ -1,5 +1,5 @@
 import { getState, newId, setState } from './store'
-import { addCharacterXp, addSkillXp, computeReward, type Reward } from '@/domain/economy'
+import { addCharacterXp, addSkillXp, computeReward, isTaskDone, shouldPayReward, type Reward } from '@/domain/economy'
 import { MAX_OBJECTIVES_PER_RESULT, activeObjectivesOfResult, MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import type {
   Comment,
@@ -12,6 +12,7 @@ import type {
   ResultStatus,
   Skill,
   Task,
+  TaskCheckItem,
 } from '@/domain/types'
 
 const now = () => new Date().toISOString()
@@ -121,6 +122,9 @@ export interface ObjectiveInput {
   name: string
   why?: string
   doneWhen?: string
+  nonGoals?: string
+  reviewEvery?: 'weekly' | 'every_n_tasks'
+  reviewEveryN?: number
   skillId?: string
   importance?: number
 }
@@ -142,6 +146,9 @@ export function createObjective(input: ObjectiveInput): Objective {
     name: input.name.trim(),
     why: input.why?.trim() || undefined,
     doneWhen: input.doneWhen?.trim() || undefined,
+    nonGoals: input.nonGoals?.trim() || undefined,
+    reviewEvery: input.reviewEvery,
+    reviewEveryN: input.reviewEveryN,
     skillId: input.skillId || undefined,
     importance: input.importance ?? siblings.length + 1,
     currentStage: 'research',
@@ -194,6 +201,9 @@ export interface TaskInput {
   difficulty?: Difficulty
   dueAt?: string
   scheduledFor?: string
+  doneCheck?: string
+  checklist?: TaskCheckItem[]
+  referenceUrl?: string
 }
 
 /**
@@ -222,6 +232,9 @@ export function createTask(input: TaskInput): Task {
     importance: siblings.length,
     dueAt: input.dueAt || undefined,
     scheduledFor: input.scheduledFor || undefined,
+    doneCheck: input.doneCheck?.trim() || undefined,
+    checklist: input.checklist,
+    referenceUrl: input.referenceUrl?.trim() || undefined,
     status: 'pending',
     rewardApplied: false,
     createdAt: now(),
@@ -301,11 +314,12 @@ export interface CompletionOutcome {
   characterLevelsGained: number
   newLevel: number
   unlockedCosmetics: Cosmetic[]
+  paid: boolean
 }
 
 /**
- * Runs the economy once and only once. Returns null when the task is missing or
- * its reward was already paid.
+ * Marks a task done. Pays XP/money/skill XP once (`rewardApplied`). Reopened
+ * tasks can be completed again without a second payout.
  */
 export function completeTask(
   id: string,
@@ -313,7 +327,7 @@ export function completeTask(
 ): CompletionOutcome | null {
   const state = getState()
   const task = state.tasks.find((t) => t.id === id)
-  if (!task || task.rewardApplied) return null
+  if (!task || isTaskDone(task.status)) return null
 
   const completedAt = now()
   const objective = task.objectiveId
@@ -330,39 +344,36 @@ export function completeTask(
     activeResult: result?.status === 'active',
   })
 
-  const characterXp = addCharacterXp(state.character, reward.xp)
-  // Basic avatar layers are all free, so leveling up no longer unlocks cosmetics.
-  // A future shop would grant extras here instead.
-  const unlockedCosmetics: Cosmetic[] = []
-
-  // XP flows to the task's own skill, else it is inherited from the objective, then
-  // the result. A prompt at the call site may pass an explicit skill for loose work.
+  const pay = shouldPayReward(task)
   const explicitSkillId = options?.skillId
   const effectiveSkillId = explicitSkillId ?? task.skillId ?? objective?.skillId ?? result?.skillId
-  const skill = effectiveSkillId ? state.skills.find((s) => s.id === effectiveSkillId) : undefined
-  const skillXp = skill ? addSkillXp(skill, reward.xp) : null
+  const skill = pay && effectiveSkillId ? state.skills.find((s) => s.id === effectiveSkillId) : undefined
+  const characterXp = pay ? addCharacterXp(state.character, reward.xp) : null
+  const skillXp = pay && skill ? addSkillXp(skill, reward.xp) : null
+  const unlockedCosmetics: Cosmetic[] = []
 
   const completedTask: Task = {
     ...task,
-    // Only a prompt choice is persisted onto the task; inheritance stays derived.
     skillId: explicitSkillId ?? task.skillId,
     actualHours: options?.actualHours ?? task.actualHours,
     completedAt,
     status: reward.status,
-    xpGranted: reward.xp,
-    moneyGranted: reward.money,
+    xpGranted: pay ? reward.xp : task.xpGranted,
+    moneyGranted: pay ? reward.money : task.moneyGranted,
     rewardApplied: true,
   }
 
   setState((s) => ({
     ...s,
-    character: {
-      ...s.character,
-      level: characterXp.level,
-      xp: characterXp.xp,
-      xpToNext: characterXp.xpToNext,
-      money: s.character.money + reward.money,
-    },
+    character: characterXp
+      ? {
+          ...s.character,
+          level: characterXp.level,
+          xp: characterXp.xp,
+          xpToNext: characterXp.xpToNext,
+          money: s.character.money + reward.money,
+        }
+      : s.character,
     skills: skillXp
       ? s.skills.map((sk) =>
           sk.id === skill!.id ? { ...sk, level: skillXp.level, xp: skillXp.xp } : sk,
@@ -373,18 +384,19 @@ export function completeTask(
 
   return {
     task: completedTask,
-    reward,
+    reward: pay ? reward : { ...reward, xp: 0, money: 0 },
     skillId: effectiveSkillId,
     skillLevelsGained: skillXp?.levelsGained ?? 0,
-    characterLevelsGained: characterXp.levelsGained,
-    newLevel: characterXp.level,
+    characterLevelsGained: characterXp?.levelsGained ?? 0,
+    newLevel: characterXp?.level ?? state.character.level,
     unlockedCosmetics,
+    paid: pay,
   }
 }
 
-/** Reopens a task. The reward already paid is kept: rewards never get clawed back. */
+/** Reopens a task as research. The reward already paid is kept: no clawback. */
 export function reopenTask(id: string): void {
-  updateTask(id, { status: 'pending', completedAt: undefined })
+  updateTask(id, { status: 'pending', stage: 'research', completedAt: undefined })
 }
 
 // ----------------------------------------------------------------- journal

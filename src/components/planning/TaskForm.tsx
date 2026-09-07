@@ -5,11 +5,12 @@ import { Button, Chip, Field, Input, Select, Textarea } from '@/components/ui/pr
 import { Sheet } from '@/components/ui/Sheet'
 import { addComment, createTask, updateTask } from '@/data/actions'
 import { pickerObjectives, pickerResults } from '@/data/selectors'
-import { useAleph } from '@/data/store'
-import { MIN_ESTIMATED_HOURS } from '@/domain/limits'
+import { newId, useAleph } from '@/data/store'
+import { useFeedback } from '@/app/FeedbackProvider'
+import { MAX_CHECKLIST_ITEMS, MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import { addDays, startOfWeek, toDayKey } from '@/domain/dates'
 import { isTaskDone } from '@/domain/economy'
-import type { Difficulty, Task } from '@/domain/types'
+import type { Difficulty, Task, TaskCheckItem } from '@/domain/types'
 
 export interface TaskMoments {
   onComplete?: (task: Task) => void
@@ -90,6 +91,7 @@ function TaskFormBody({
 }) {
   const { t } = useTranslation()
   const state = useAleph()
+  const { notify } = useFeedback()
   const [title, setTitle] = useState(task?.title ?? '')
   const [notes, setNotes] = useState(task?.notes ?? '')
   const [resultId, setResultId] = useState(task?.resultId ?? preset?.resultId ?? '')
@@ -98,7 +100,9 @@ function TaskFormBody({
   const [difficulty, setDifficulty] = useState<Difficulty>(task?.difficulty ?? 'medium')
   const [dueAt, setDueAt] = useState(task?.dueAt?.slice(0, 10) ?? preset?.dueAt ?? '')
   const [pickDate, setPickDate] = useState(false)
-
+  const [doneCheck, setDoneCheck] = useState(task?.doneCheck ?? '')
+  const [checklist, setChecklist] = useState<TaskCheckItem[]>(task?.checklist ?? [])
+  const [referenceUrl, setReferenceUrl] = useState(task?.referenceUrl ?? '')
   const [blockedNote, setBlockedNote] = useState('')
   const objectives = useMemo(
     () => (resultId ? pickerObjectives(state, resultId) : []),
@@ -122,6 +126,12 @@ function TaskFormBody({
       difficulty,
       dueAt: dueAt || undefined,
       scheduledFor: dueAt || undefined,
+      doneCheck: doneCheck.trim() || undefined,
+      checklist: checklist.filter((item) => item.text.trim()).map((item) => ({
+        ...item,
+        text: item.text.trim(),
+      })),
+      referenceUrl: referenceUrl.trim() || undefined,
     }
     if (task) updateTask(task.id, payload)
     else createTask(payload)
@@ -234,6 +244,64 @@ function TaskFormBody({
       </Field>
       <Field label={`${t('common.notes')} (${t('common.optional')})`}>
         <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </Field>
+      <Field label={`${t('planning.tasks.doneCheck')} (${t('common.optional')})`}>
+        <Input
+          value={doneCheck}
+          onChange={(e) => setDoneCheck(e.target.value)}
+          placeholder={t('planning.tasks.doneCheckPlaceholder')}
+        />
+      </Field>
+      <Field label={`${t('planning.tasks.checklist')} (${t('common.optional')})`}>
+        <ul className="flex flex-col gap-2">
+          {checklist.map((item) => (
+            <li key={item.id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={item.done}
+                onChange={() =>
+                  setChecklist((current) =>
+                    current.map((entry) =>
+                      entry.id === item.id ? { ...entry, done: !entry.done } : entry,
+                    ),
+                  )
+                }
+                className="size-5 accent-accent-strong"
+              />
+              <Input
+                value={item.text}
+                onChange={(e) =>
+                  setChecklist((current) =>
+                    current.map((entry) =>
+                      entry.id === item.id ? { ...entry, text: e.target.value } : entry,
+                    ),
+                  )
+                }
+              />
+            </li>
+          ))}
+        </ul>
+        <Button
+          variant="secondary"
+          className="mt-2"
+          onClick={() => {
+            if (checklist.length >= MAX_CHECKLIST_ITEMS) {
+              notify(t('planning.tasks.checklistLimit'))
+              return
+            }
+            setChecklist((current) => [...current, { id: newId('check'), text: '', done: false }])
+          }}
+        >
+          {t('planning.tasks.checklistAdd')}
+        </Button>
+      </Field>
+      <Field label={`${t('planning.tasks.referenceUrl')} (${t('common.optional')})`}>
+        <Input
+          type="url"
+          value={referenceUrl}
+          onChange={(e) => setReferenceUrl(e.target.value)}
+          placeholder={t('planning.tasks.referenceUrlPlaceholder')}
+        />
       </Field>
 
       {blockedPrompt && task ? (

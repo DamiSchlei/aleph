@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Badge, Card, cx } from '@/components/ui/primitives'
+import { Badge, Button, Card, cx } from '@/components/ui/primitives'
 import { RowMenu } from '@/components/ui/RowMenu'
 import { useAleph } from '@/data/store'
 import { objectiveById, resultById, skillById } from '@/data/selectors'
@@ -169,7 +169,11 @@ export function TaskRow({
         </div>
         )}
       </button>
-      {canExecute ? <RowAction onClick={onExecute!}>{t('planning.tasks.execute')}</RowAction> : null}
+      {canExecute ? (
+        <Button className="self-center shrink-0 px-3" onClick={onExecute!}>
+          {t('planning.tasks.execute')}
+        </Button>
+      ) : null}
       {canReturn ? <RowAction onClick={onReturn!}>{t('planning.tasks.backToResearch')}</RowAction> : null}
       {canAssign ? <RowAction onClick={onAssign!}>{t('planning.tasks.assign')}</RowAction> : null}
       {onDelete ? (

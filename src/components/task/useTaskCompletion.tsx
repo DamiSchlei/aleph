@@ -30,7 +30,7 @@ export function useTaskCompletion(): {
 
   const run = (taskId: string, skillId?: string, literature?: boolean) => {
     const outcome = completeTask(taskId, skillId ? { skillId } : undefined)
-    if (outcome) celebrate(outcome)
+    if (outcome?.paid) celebrate(outcome)
     if (literature && outcome) setLiteratureTaskId(taskId)
   }
 

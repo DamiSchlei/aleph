@@ -10,14 +10,19 @@ import type { ParentType } from '@/domain/types'
 export function JournalThread({
   parentType,
   parentId,
+  placeholder,
+  chronological = false,
 }: {
   parentType: ParentType
   parentId: string
+  placeholder?: string
+  chronological?: boolean
 }) {
   const { t } = useTranslation()
   const state = useAleph()
   const locale = state.character.locale
   const entries = journalFor(state, parentType, parentId)
+  const ordered = chronological ? [...entries].reverse() : entries
   const [body, setBody] = useState('')
 
   const post = () => {
@@ -35,18 +40,18 @@ export function JournalThread({
           rows={2}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder={t('journal.placeholder')}
+          placeholder={placeholder ?? t('journal.placeholder')}
           className="flex-1"
         />
         <Button className="self-end" disabled={!body.trim()} onClick={post}>
           {t('journal.post')}
         </Button>
       </div>
-      {entries.length === 0 ? (
+      {ordered.length === 0 ? (
         <EmptyState>{t('journal.empty')}</EmptyState>
       ) : (
         <ol className="flex flex-col gap-2">
-          {entries.map(({ comment, originType, originTitle }) => (
+          {ordered.map(({ comment, originType, originTitle }) => (
             <li key={comment.id} className="rounded-2xl border border-white/6 bg-ink-900/50 px-3 py-2.5">
               <p className="text-[12px] text-ink-400">
                 {formatDateTime(comment.createdAt, locale)}
