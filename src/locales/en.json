@@ -243,6 +243,7 @@
       "loose": "Loose",
       "looseStep": "Loose step",
       "assign": "Assign to an objective",
+      "assignShort": "Assign",
       "execute": "Execute",
       "complete": "Complete",
       "backToResearch": "Back to research",

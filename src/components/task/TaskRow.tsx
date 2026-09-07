@@ -175,7 +175,11 @@ export function TaskRow({
         </Button>
       ) : null}
       {canReturn ? <RowAction onClick={onReturn!}>{t('planning.tasks.backToResearch')}</RowAction> : null}
-      {canAssign ? <RowAction onClick={onAssign!}>{t('planning.tasks.assign')}</RowAction> : null}
+      {canAssign ? (
+        <RowAction onClick={onAssign!}>
+          {home ? t('planning.tasks.assignShort') : t('planning.tasks.assign')}
+        </RowAction>
+      ) : null}
       {onDelete ? (
         <RowMenu items={[{ label: t('common.delete'), tone: 'danger', onClick: onDelete }]} />
       ) : null}

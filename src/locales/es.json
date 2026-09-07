@@ -243,6 +243,7 @@
       "loose": "Suelto",
       "looseStep": "Paso suelto",
       "assign": "Asignar a un objetivo",
+      "assignShort": "Asignar",
       "execute": "Ejecutar",
       "complete": "Completar",
       "backToResearch": "Volver a investigación",
