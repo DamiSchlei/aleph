@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
-import { Button, Card, EmptyState, ProgressBar, SectionTitle } from '@/components/ui/primitives'
+import { Button, Card, EmptyState, Page, ProgressBar, SectionTitle } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { SortableList } from '@/components/ui/SortableList'
 import { archiveResult, reorderObjectives, restoreResult } from '@/data/actions'
@@ -52,7 +52,7 @@ export function ResultDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 pt-4">
+    <Page className="flex flex-col gap-5 pt-4">
       <button type="button" onClick={() => navigate('/planning')} className="min-h-11 self-start text-[14px] text-ink-400">
         ← {t('planning.title')}
       </button>
@@ -160,6 +160,6 @@ export function ResultDetailPage() {
           navigate('/planning')
         }}
       />
-    </div>
+    </Page>
   )
 }

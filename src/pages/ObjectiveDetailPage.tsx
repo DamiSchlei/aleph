@@ -7,7 +7,7 @@ import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { useTaskActions } from '@/components/task/useTaskActions'
-import { Button, EmptyState, SectionTitle } from '@/components/ui/primitives'
+import { Button, EmptyState, Page, SectionTitle } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { SortableList } from '@/components/ui/SortableList'
 import { archiveObjective, reorderTasks } from '@/data/actions'
@@ -70,7 +70,7 @@ export function ObjectiveDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 pt-4">
+    <Page className="flex flex-col gap-5 pt-4">
       <button
         type="button"
         onClick={() => navigate(`/planning/results/${objective.resultId}`)}
@@ -243,6 +243,6 @@ export function ObjectiveDetailPage() {
           navigate(`/planning/results/${objective.resultId}`)
         }}
       />
-    </div>
+    </Page>
   )
 }

@@ -14,6 +14,7 @@ import {
   Card,
   Chip,
   EmptyState,
+  Page,
   ProgressBar,
   Select,
 } from '@/components/ui/primitives'
@@ -45,7 +46,7 @@ export function PlanningPage() {
   const [tab, setTab] = useState<PlanningTab>('results')
 
   return (
-    <div className="flex flex-col gap-5 pt-4">
+    <Page className="flex flex-col gap-5 pt-4">
       <header>
         <h1 className="text-2xl font-semibold text-white">{t('planning.title')}</h1>
         <p className="mt-1 text-[15px] leading-relaxed text-ink-400">{t('planning.subtitle')}</p>
@@ -59,7 +60,7 @@ export function PlanningPage() {
         </Chip>
       </div>
       {tab === 'results' ? <ResultsTab /> : <TasksTab />}
-    </div>
+    </Page>
   )
 }
 
@@ -177,7 +178,7 @@ function ResultsTab() {
               {archived.map((result) => (
                 <li
                   key={result.id}
-                  className="flex items-center justify-between gap-2 rounded-2xl border border-white/6 bg-ink-900/50 px-3 py-2"
+                  className="flex items-center justify-between gap-2 rounded-2xl border border-white/8 bg-ink-900 px-3 py-2"
                 >
                   <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1">
                     <p className="truncate text-[15px] text-ink-200">{result.name}</p>

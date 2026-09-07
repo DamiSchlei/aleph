@@ -7,7 +7,7 @@ export function Shell() {
 
   return (
     <div className="min-h-dvh">
-      <main className="safe-top mx-auto w-full max-w-lg px-4 pb-[calc(var(--tab-bar-height)+2rem)]">
+      <main className="safe-top mx-auto w-full max-w-lg px-4 pb-[calc(var(--tab-bar-height)+env(safe-area-inset-bottom,0px)+2.75rem)]">
         <Outlet />
       </main>
       <TabBar />

@@ -52,7 +52,7 @@ export function JournalThread({
       ) : (
         <ol className="flex flex-col gap-2">
           {ordered.map(({ comment, originType, originTitle }) => (
-            <li key={comment.id} className="rounded-2xl border border-white/6 bg-ink-900/50 px-3 py-2.5">
+            <li key={comment.id} className="rounded-2xl border border-white/8 bg-ink-900 px-3 py-2.5">
               <p className="text-[12px] text-ink-400">
                 {formatDateTime(comment.createdAt, locale)}
                 {' · '}

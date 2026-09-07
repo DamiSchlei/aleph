@@ -35,19 +35,19 @@ export function Sheet({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center">
       <button
         type="button"
         aria-label={t('common.close')}
         onClick={onClose}
-        className="absolute inset-0 bg-ink-950/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-ink-950"
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
         className={cx(
-          'animate-rise relative flex max-h-[90dvh] w-full flex-col rounded-t-4xl border border-white/8 bg-ink-900 sm:max-w-lg sm:rounded-4xl',
+          'animate-rise relative flex h-dvh max-h-dvh w-full max-w-lg flex-col bg-ink-950 sm:my-auto sm:h-auto sm:max-h-[90dvh] sm:rounded-3xl sm:border sm:border-white/8 sm:bg-ink-900',
           className,
         )}
       >
@@ -98,12 +98,12 @@ export function ConfirmDialog({
         type="button"
         aria-label={t('common.cancel')}
         onClick={onDismiss ?? onCancel}
-        className="absolute inset-0 bg-ink-950/75"
+        className="absolute inset-0 bg-ink-950"
       />
       <div
         role="alertdialog"
         aria-modal="true"
-        className="animate-rise relative w-full max-w-sm rounded-3xl border border-white/8 bg-ink-900 p-5"
+        className="animate-rise relative w-full max-w-sm rounded-2xl border border-white/8 bg-ink-900 p-5"
       >
         <h2 className="text-[17px] font-semibold text-white">{title}</h2>
         <p className="mt-2 text-[15px] leading-relaxed text-ink-400">{message}</p>

@@ -62,7 +62,7 @@ export function Card({
     <div
       {...rest}
       className={cx(
-        'rounded-3xl border border-white/6 bg-ink-900/70 p-4 shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]',
+        'rounded-2xl border border-white/8 bg-ink-900 p-4',
         className,
       )}
     >
@@ -164,9 +164,22 @@ export function ProgressBar({
   )
 }
 
+export function Page({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div
+      className={cx(
+        '-mx-4 min-h-[calc(100dvh-var(--tab-bar-height))] bg-ink-950 px-4',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
 export function EmptyState({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <div className="rounded-3xl border border-dashed border-white/10 px-4 py-8 text-center">
+    <div className="rounded-2xl border border-dashed border-white/10 px-4 py-8 text-center">
       <p className="text-[15px] leading-relaxed text-ink-400">{children}</p>
       {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
