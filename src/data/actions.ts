@@ -1,5 +1,6 @@
 import { getState, newId, setState } from './store'
 import { addCharacterXp, addSkillXp, computeReward, isTaskDone, shouldPayReward, type Reward } from '@/domain/economy'
+import { toDayKey } from '@/domain/dates'
 import { MAX_OBJECTIVES_PER_RESULT, activeObjectivesOfResult, MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import type {
   Comment,
@@ -13,6 +14,8 @@ import type {
   Skill,
   Task,
   TaskCheckItem,
+  WalkerEntry,
+  WalkerMood,
 } from '@/domain/types'
 
 const now = () => new Date().toISOString()
@@ -61,6 +64,7 @@ export function createSkill(input: { name: string; icon: string; color?: string 
 export interface ResultInput {
   name: string
   why?: string
+  law?: string
   skillId?: string
   targetDate?: string
 }
@@ -71,6 +75,7 @@ export function createResult(input: ResultInput): Result {
     id: newId('result'),
     name: input.name.trim(),
     why: input.why?.trim() || undefined,
+    law: input.law?.trim() || undefined,
     skillId: input.skillId || undefined,
     targetDate: input.targetDate || undefined,
     importance: state.results.length,
@@ -121,6 +126,7 @@ export interface ObjectiveInput {
   resultId: string
   name: string
   why?: string
+  ser?: string
   doneWhen?: string
   nonGoals?: string
   reviewEvery?: 'weekly' | 'every_n_tasks'
@@ -145,6 +151,7 @@ export function createObjective(input: ObjectiveInput): Objective {
     resultId: input.resultId,
     name: input.name.trim(),
     why: input.why?.trim() || undefined,
+    ser: input.ser?.trim() || undefined,
     doneWhen: input.doneWhen?.trim() || undefined,
     nonGoals: input.nonGoals?.trim() || undefined,
     reviewEvery: input.reviewEvery,
@@ -413,5 +420,37 @@ export function addComment(parentType: ParentType, parentId: string, body: strin
   }
   setState((s) => ({ ...s, comments: [...s.comments, comment] }))
   return comment
+}
+
+export function addWalkerEntry(input: { body: string; mood?: WalkerMood }): WalkerEntry | null {
+  const body = input.body.trim()
+  if (!body) return null
+  const entry: WalkerEntry = {
+    id: newId('walker'),
+    body,
+    mood: input.mood,
+    createdAt: now(),
+  }
+  setState((s) => ({ ...s, walkerEntries: [...s.walkerEntries, entry] }))
+  return entry
+}
+
+/** Updates today's latest walker entry mood. No-ops when there is no entry today. */
+export function setWalkerMood(mood: WalkerMood): void {
+  const today = toDayKey(new Date())
+  setState((s) => {
+    let latestToday = -1
+    for (let i = s.walkerEntries.length - 1; i >= 0; i -= 1) {
+      if (toDayKey(s.walkerEntries[i].createdAt) === today) {
+        latestToday = i
+        break
+      }
+    }
+    if (latestToday < 0) return s
+    const walkerEntries = s.walkerEntries.map((entry, index) =>
+      index === latestToday ? { ...entry, mood } : entry,
+    )
+    return { ...s, walkerEntries }
+  })
 }
 

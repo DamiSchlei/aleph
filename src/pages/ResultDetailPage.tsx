@@ -59,6 +59,12 @@ export function ResultDetailPage() {
       <header>
         <h1 className="text-2xl font-semibold text-white">{result.name}</h1>
         {result.why ? <p className="mt-1 text-[15px] text-ink-400">{result.why}</p> : null}
+        {result.law ? (
+          <p className="mt-2 text-[15px] leading-relaxed text-ink-200">
+            <span className="text-ink-400">{t('planning.results.law')}: </span>
+            {result.law}
+          </p>
+        ) : null}
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-ink-400">
           {result.targetDate ? <span>{formatDate(result.targetDate, state.character.locale)}</span> : null}
           <span>{t(`resultStatus.${result.status}`)}</span>

@@ -21,6 +21,8 @@ import type {
   Skill,
   StageId,
   Task,
+  WalkerEntry,
+  WalkerMood,
 } from '@/domain/types'
 
 export function activeResults(state: AlephState): Result[] {
@@ -562,6 +564,20 @@ export function latestCommentOnDay(state: AlephState, dayKey: string): Comment |
   return [...state.comments]
     .filter((comment) => toDayKey(comment.createdAt) === dayKey)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+}
+
+export function recentWalkerEntries(state: AlephState, limit = 3): WalkerEntry[] {
+  return [...state.walkerEntries]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit)
+}
+
+export function todayWalkerMood(state: AlephState, now: Date = new Date()): WalkerMood | undefined {
+  const today = toDayKey(now)
+  const latestToday = [...state.walkerEntries]
+    .filter((entry) => toDayKey(entry.createdAt) === today)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+  return latestToday?.mood
 }
 
 export function nextReviewDue(

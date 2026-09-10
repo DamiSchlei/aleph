@@ -19,11 +19,13 @@ export function ResultForm({
   const { t } = useTranslation()
   const [name, setName] = useState(result?.name ?? initialName ?? '')
   const [why, setWhy] = useState(result?.why ?? '')
+  const [law, setLaw] = useState(result?.law ?? '')
   const [targetDate, setTargetDate] = useState(result?.targetDate ?? '')
 
   const reset = (next?: Result, seed?: string) => {
     setName(next?.name ?? seed ?? '')
     setWhy(next?.why ?? '')
+    setLaw(next?.law ?? '')
     setTargetDate(next?.targetDate ?? '')
   }
 
@@ -39,12 +41,14 @@ export function ResultForm({
       updateResult(result.id, {
         name: trimmed,
         why: why.trim() || undefined,
+        law: law.trim() || undefined,
         targetDate: targetDate || undefined,
       })
     } else {
       createResult({
         name: trimmed,
         why: why.trim() || undefined,
+        law: law.trim() || undefined,
         targetDate: targetDate || undefined,
       })
     }
@@ -86,6 +90,16 @@ export function ResultForm({
             value={why}
             onChange={(e) => setWhy(e.target.value)}
             placeholder={t('planning.results.whyPlaceholder')}
+          />
+        </Field>
+        <Field
+          label={`${t('planning.results.law')} (${t('common.optional')})`}
+          hint={t('planning.results.lawHelper')}
+        >
+          <Textarea
+            rows={2}
+            value={law}
+            onChange={(e) => setLaw(e.target.value)}
           />
         </Field>
         <Field label={`${t('planning.results.targetDate')} (${t('common.optional')})`}>
