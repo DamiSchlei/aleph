@@ -6,6 +6,7 @@ import { Sheet } from '@/components/ui/Sheet'
 import { cosmeticsByCategory } from '@/data/cosmetics'
 import { equipCosmetic, renameCharacter } from '@/data/actions'
 import { useAleph } from '@/data/store'
+import { useOnboarding } from '@/components/onboarding/Onboarding'
 import { cosmeticName } from '@/i18n/labels'
 import type { CosmeticCategory } from '@/domain/types'
 
@@ -32,6 +33,7 @@ export function CustomizeSheet({
 }) {
   const { t } = useTranslation()
   const { character } = useAleph()
+  const { replay } = useOnboarding()
   const [tab, setTab] = useState<CosmeticCategory>('skin')
   const [name, setName] = useState(character.name)
 
@@ -90,6 +92,17 @@ export function CustomizeSheet({
           )
         })}
       </ul>
+
+      <button
+        type="button"
+        className="mt-6 min-h-11 w-full text-center text-[15px] text-ink-400"
+        onClick={() => {
+          onClose()
+          replay()
+        }}
+      >
+        {t('character.seeMap')}
+      </button>
     </Sheet>
   )
 }

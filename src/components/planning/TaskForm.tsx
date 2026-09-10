@@ -242,7 +242,7 @@ function TaskFormBody({
           />
         ) : null}
       </Field>
-      <Field label={`${t('common.notes')} (${t('common.optional')})`}>
+      <Field label={`${t('common.notes')} (${t('common.optional')})`} hint={t('planning.tasks.notesHelper')}>
         <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
       <Field label={`${t('planning.tasks.doneCheck')} (${t('common.optional')})`}>

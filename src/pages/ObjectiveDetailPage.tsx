@@ -80,6 +80,12 @@ export function ObjectiveDetailPage() {
       </button>
       <header>
         <h1 className="text-2xl font-semibold text-white">{objective.name}</h1>
+        {objective.ser ? (
+          <p className="mt-1 text-[15px] leading-relaxed text-ink-200">
+            <span className="text-ink-400">{t('planning.objectives.ser')}: </span>
+            {objective.ser}
+          </p>
+        ) : null}
         {objective.why ? <p className="mt-1 text-[15px] text-ink-400">{objective.why}</p> : null}
         {objective.doneWhen ? (
           <p className="mt-2 text-[13px] text-ink-200">

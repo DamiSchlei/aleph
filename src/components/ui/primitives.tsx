@@ -93,7 +93,7 @@ export function Field({
     <label className="block">
       <span className="mb-1.5 block text-[13px] font-medium text-ink-400">{label}</span>
       {children}
-      {hint ? <span className="mt-1 block text-xs text-ink-400">{hint}</span> : null}
+      {hint ? <span className="mt-1 block text-[13px] leading-relaxed text-ink-400">{hint}</span> : null}
     </label>
   )
 }

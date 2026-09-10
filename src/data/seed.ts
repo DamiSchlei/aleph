@@ -45,6 +45,7 @@ export function initialState(locale: Character['locale'] = 'es'): AlephState {
     objectives: [],
     tasks: [],
     comments: [],
+    walkerEntries: [],
     relations: [],
   }
 }

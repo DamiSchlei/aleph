@@ -9,6 +9,7 @@ import { DayBar } from '@/components/home/DayBar'
 import { LiteratureLine } from '@/components/home/LiteratureLine'
 import { PlanTotal } from '@/components/home/PlanTotal'
 import { SkillsSheet } from '@/components/home/SkillsSheet'
+import { WalkerJournal } from '@/components/home/WalkerJournal'
 import { Button, ProgressBar } from '@/components/ui/primitives'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { useAleph } from '@/data/store'
@@ -69,6 +70,7 @@ export function HomePage() {
       <PlanTotal />
       {dayKey ? <DayBar dayKey={dayKey} /> : null}
       <Agenda filter={filter} pickDate={pickDate} />
+      <WalkerJournal />
       <LiteratureLine />
 
       <CustomizeSheet open={customize} onClose={() => setCustomize(false)} pulseKey={pulseKey} />

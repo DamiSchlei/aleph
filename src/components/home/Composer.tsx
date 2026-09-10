@@ -22,6 +22,7 @@ export function Composer({ filter, pickDate }: { filter: AgendaFilter; pickDate:
       }}
     >
       <Input
+        id="home-composer"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t('home.proposePlaceholder')}

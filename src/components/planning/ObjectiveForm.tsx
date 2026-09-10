@@ -43,6 +43,7 @@ function FormBody({
 }) {
   const { t } = useTranslation()
   const [name, setName] = useState(objective?.name ?? '')
+  const [ser, setSer] = useState(objective?.ser ?? '')
   const [why, setWhy] = useState(objective?.why ?? '')
   const [doneWhen, setDoneWhen] = useState(objective?.doneWhen ?? '')
   const [nonGoals, setNonGoals] = useState(objective?.nonGoals ?? '')
@@ -66,6 +67,7 @@ function FormBody({
     if (objective) {
       updateObjective(objective.id, {
         name: trimmed,
+        ser: ser.trim() || undefined,
         why: why.trim() || undefined,
         doneWhen: doneWhen.trim() || undefined,
         ...extra,
@@ -74,6 +76,7 @@ function FormBody({
       createObjective({
         resultId,
         name: trimmed,
+        ser: ser.trim() || undefined,
         why: why.trim() || undefined,
         doneWhen: doneWhen.trim() || undefined,
       })
@@ -83,12 +86,20 @@ function FormBody({
 
   return (
     <div className="flex flex-col gap-4">
-      <Field label={t('common.name')}>
+      <Field label={t('planning.objectives.action')}>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('planning.objectives.namePlaceholder')}
           autoFocus
+        />
+      </Field>
+      <Field label={`${t('planning.objectives.ser')} (${t('common.optional')})`}>
+        <Textarea
+          rows={2}
+          value={ser}
+          onChange={(e) => setSer(e.target.value)}
+          placeholder={t('planning.objectives.serPlaceholder')}
         />
       </Field>
       <Field label={`${t('common.why')} (${t('common.optional')})`}>

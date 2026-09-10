@@ -55,6 +55,8 @@ export interface Result {
   id: string
   name: string
   why?: string
+  /** Optional law of the situation: how this (or you) must Be so another can take it. */
+  law?: string
   skillId?: string
   targetDate?: string
   importance: number
@@ -66,6 +68,8 @@ export interface Objective {
   resultId: string
   name: string
   why?: string
+  /** Optional Being: how this / you must Be so another can take it (or so you can access). */
+  ser?: string
   /** Optional short definition of done, shown on the objective header. */
   doneWhen?: string
   /** Optional one-line "what this is not", edited only in the objective sheet. */
@@ -124,6 +128,16 @@ export interface Comment {
   createdAt: string
 }
 
+export type WalkerMood = 'up' | 'tight' | 'low'
+
+/** Personal journal across results. Not mixed with result/objective/task comments. */
+export interface WalkerEntry {
+  id: string
+  body: string
+  mood?: WalkerMood
+  createdAt: string
+}
+
 export interface Relation {
   id: string
   fromType: ParentType
@@ -162,5 +176,6 @@ export interface AlephState {
   objectives: Objective[]
   tasks: Task[]
   comments: Comment[]
+  walkerEntries: WalkerEntry[]
   relations: Relation[]
 }

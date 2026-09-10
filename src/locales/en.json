@@ -137,7 +137,16 @@
     "newSkillName": "Skill name",
     "newSkillIcon": "Icon",
     "openTaskDetail": "Open task",
-    "completeTask": "Complete task"
+    "completeTask": "Complete task",
+    "walker": {
+      "title": "Journal",
+      "placeholder": "How are you? How do the blocks differ?",
+      "mood": {
+        "up": "Good",
+        "tight": "Tight",
+        "low": "Low"
+      }
+    }
   },
   "planning": {
     "title": "Planning",
@@ -147,7 +156,7 @@
       "tasks": "Tasks"
     },
     "results": {
-      "helper": "A result is what you want to achieve. Inside it you add up to 4 objectives.",
+      "helper": "A result is an enterprise. Inside, up to 4 objectives (being + action).",
       "new": "+ New result",
       "empty": "No results yet.",
       "emptyHint": "Start with one of these, or write your own.",
@@ -157,17 +166,19 @@
         "body": "A body routine held for 8 weeks"
       },
       "objectivesCount": "{{count}} of {{max}} objectives",
-      "noObjectives": "No objectives yet",
+      "noObjectives": "Add the first lever (being + action).",
       "noTasks": "No tasks yet",
       "progress": "{{done}} of {{total}} tasks",
       "hours": "{{done}} h of {{total}} h",
       "pipeline": "Objectives by stage",
       "createTitle": "New result",
       "editTitle": "Edit result",
-      "namePlaceholder": "What do you want to achieve?",
-      "whyPlaceholder": "Why does this matter to you?",
+      "namePlaceholder": "What has to exist?",
+      "whyPlaceholder": "Who or what world are you negotiating this with?",
       "targetDate": "Target date",
       "primarySkill": "Primary skill",
+      "law": "How it must be",
+      "lawHelper": "How does this have to be so the other can take it? Or how do you have to be to access it?",
       "softCap": "You already have {{count}} active enterprises. What is holding you back in the ones you already named?",
       "writeJournal": "Write in the journal",
       "createAnyway": "Create anyway",
@@ -178,7 +189,7 @@
       "restore": "Restore",
       "detailTitle": "Result",
       "health": {
-        "noObjectives": "No objectives yet. Add the first lever.",
+        "noObjectives": "Add the first lever (being + action).",
         "unbalanced": "{{emptyObjective}} has no steps. The result is leaning on a single lever.",
         "overdue": "You have {{count}} overdue task(s).",
         "next": "Next step: {{title}}",
@@ -190,7 +201,10 @@
       "limitReached": "This result already has 4 objectives. Archive one or create another result.",
       "createTitle": "New objective",
       "editTitle": "Edit objective",
-      "namePlaceholder": "What has to happen for this result?",
+      "namePlaceholder": "What has to happen?",
+      "action": "Action",
+      "ser": "Being",
+      "serPlaceholder": "How do you have to be — or how does this have to be — so the other can take it?",
       "importance": "Importance",
       "doneWhen": "Done when",
       "doneWhenPlaceholder": "How do you know it is finished?",
@@ -225,6 +239,7 @@
       "createTitle": "New task",
       "editTitle": "Edit task",
       "titlePlaceholder": "What is the next concrete step?",
+      "notesHelper": "Name the state, the scene, the data, the inventory. Naming is part of the step.",
       "empty": "No tasks. Create them from a result or propose a block on Home.",
       "emptyFiltered": "No tasks match these filters.",
       "projected": "Projected",
@@ -299,8 +314,8 @@
   "journal": {
     "title": "Journal",
     "add": "Add comment",
-    "placeholder": "What happened?",
-    "workingPlaceholder": "What happened? What is holding you back?",
+    "placeholder": "What is here now, what follows, what stopped you?",
+    "workingPlaceholder": "What is here now, what follows, what stopped you?",
     "empty": "This journal starts when you write the first comment.",
     "origin": {
       "result": "Result",
@@ -348,7 +363,8 @@
       "accessory": "Accessories",
       "background": "Background"
     },
-    "xpProgress": "{{xp}} / {{xpToNext}} XP"
+    "xpProgress": "{{xp}} / {{xpToNext}} XP",
+    "seeMap": "See the map"
   },
   "cosmetics": {
     "skin": {
@@ -415,5 +431,38 @@
     "fri": "Fri",
     "sat": "Sat",
     "sun": "Sun"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "start": "Start",
+    "screens": {
+      "aleph": {
+        "title": "Aleph",
+        "line": "Arte · Literatura · Empresa",
+        "body": "A point to see the day and the plan together."
+      },
+      "result": {
+        "title": "Result",
+        "label": "Enterprise",
+        "body1": "The new thing you negotiate with the world and with yourself.",
+        "body2": "Sometimes you offer an object so another will desire it. Sometimes you want to access one. In both there is a script of desire.",
+        "body3": "Few active enterprises."
+      },
+      "objective": {
+        "title": "Objective",
+        "label": "Being + Action",
+        "body1": "Being: how something or someone must be so another can take it — or how you must be to access.",
+        "body2": "Action: the steps that put that being to the test.",
+        "body3": "Up to 4 per result."
+      },
+      "task": {
+        "title": "Task",
+        "label": "Craft + Literature",
+        "body1": "The step of the one who does it. It can be born loose on Home.",
+        "body2": "Naming accompanies: what is here now, what follows, data, inventory, what stopped you.",
+        "body3": "Failures are written to see how they differ."
+      }
+    }
   }
 }
