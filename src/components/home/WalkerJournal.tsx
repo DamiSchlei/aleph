@@ -40,7 +40,7 @@ export function WalkerJournal() {
         ))}
       </div>
       <form
-        className="flex gap-2"
+        className="flex flex-col gap-2"
         onSubmit={(e) => {
           e.preventDefault()
           post()
@@ -50,7 +50,6 @@ export function WalkerJournal() {
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder={t('home.walker.placeholder')}
-          className="flex-1"
         />
         <Button type="submit" disabled={!body.trim()}>
           {t('journal.post')}

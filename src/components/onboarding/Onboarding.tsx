@@ -104,7 +104,7 @@ function Onboarding({
 
         <div className="flex flex-1 flex-col justify-center py-8">
           {isAleph ? null : (
-            <p className="text-[13px] font-semibold tracking-[0.2em] text-ink-400 uppercase">
+            <p className="text-[13px] font-semibold tracking-[0.14em] text-ink-400">
               {t(`onboarding.screens.${key}.label`)}
             </p>
           )}
@@ -117,7 +117,7 @@ function Onboarding({
             {t(`onboarding.screens.${key}.title`)}
           </h1>
           {isAleph ? (
-            <p className="mt-5 text-[15px] font-medium tracking-[0.16em] text-ink-400 uppercase">
+            <p className="mt-5 text-[15px] font-medium tracking-[0.08em] text-ink-400">
               {t('onboarding.screens.aleph.line')}
             </p>
           ) : null}
