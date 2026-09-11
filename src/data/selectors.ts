@@ -7,6 +7,7 @@ import {
   startOfDay,
   startOfWeek,
   toDayKey,
+  weekDayKeys,
 } from '@/domain/dates'
 import { STAGE_ORDER } from '@/domain/stage'
 import type {
@@ -21,8 +22,6 @@ import type {
   Skill,
   StageId,
   Task,
-  WalkerEntry,
-  WalkerMood,
 } from '@/domain/types'
 
 export function activeResults(state: AlephState): Result[] {
@@ -215,19 +214,15 @@ export function agendaTasks(
     .sort(byDayOrder)
 }
 
-/** The single open task Home highlights: in_progress beats pending, same agenda order. */
+/** First open agenda task, preferring one already in progress. */
 export function featuredAgendaTask(
   state: AlephState,
-  filter: AgendaFilter,
+  filter: AgendaFilter = 'today',
   pickDate?: string,
   now: Date = new Date(),
-): Task | null {
-  const open = agendaTasks(state, filter, pickDate, now).filter(
-    (task) => !isTaskDone(task.status) && task.status !== 'cancelled',
-  )
-  const inProgress = open.find((task) => task.status === 'in_progress')
-  if (inProgress) return inProgress
-  return open[0] ?? null
+): Task | undefined {
+  const open = agendaTasks(state, filter, pickDate, now).filter((task) => !isTaskDone(task.status))
+  return open.find((task) => task.status === 'in_progress') ?? open[0]
 }
 
 // ------------------------------------------------------------------ tracking
@@ -283,6 +278,49 @@ export function trackingStats(state: AlephState, today: Date = new Date()): Trac
   }
 }
 
+export interface SeriesPulse {
+  seriesId: string
+  title: string
+  planned: number
+  done: number
+  missed: number
+}
+
+/**
+ * Per-series counts for the week starting at weekStart (Monday).
+ * missed = scheduled this week with day < today and status not done.
+ */
+export function weekSeriesPulse(
+  state: AlephState,
+  weekStart: Date | string,
+  today: Date = new Date(),
+): SeriesPulse[] {
+  const weekDays = new Set(weekDayKeys(weekStart))
+  const todayKey = toDayKey(today)
+  const groups = new Map<string, Task[]>()
+
+  for (const task of state.tasks) {
+    if (!task.seriesId || task.status === 'cancelled') continue
+    const day = taskDayKey(task)
+    if (!day || !weekDays.has(day)) continue
+    const list = groups.get(task.seriesId) ?? []
+    list.push(task)
+    groups.set(task.seriesId, list)
+  }
+
+  return [...groups.entries()]
+    .map(([seriesId, tasks]) => {
+      const planned = tasks.length
+      const done = tasks.filter((task) => isTaskDone(task.status)).length
+      const missed = tasks.filter((task) => {
+        const day = taskDayKey(task)
+        return Boolean(day && day < todayKey && !isTaskDone(task.status))
+      }).length
+      return { seriesId, title: tasks[0].title, planned, done, missed }
+    })
+    .filter((pulse) => pulse.planned > 0)
+}
+
 export interface SkillActivity {
   mostActive: Skill | null
   quietest: Skill | null
@@ -303,26 +341,6 @@ export function skillActivity(state: AlephState): SkillActivity {
     quietest: sorted[sorted.length - 1].skill,
     totalXp,
   }
-}
-
-export interface WeekSentenceParts {
-  movedSkills: Skill[]
-  quietSkills: Skill[]
-}
-
-/** Skills that earned XP this week vs those that stayed quiet. */
-export function weekSentenceParts(state: AlephState, today: Date = new Date()): WeekSentenceParts {
-  const weekStart = startOfWeek(today).getTime()
-  const movedIds = new Set<string>()
-  for (const task of state.tasks) {
-    if (!isTaskDone(task.status) || !task.completedAt) continue
-    if (new Date(task.completedAt).getTime() < weekStart) continue
-    const skillId = resolveTaskSkillId(state, task)
-    if (skillId) movedIds.add(skillId)
-  }
-  const movedSkills = state.skills.filter((skill) => movedIds.has(skill.id))
-  const quietSkills = state.skills.filter((skill) => !movedIds.has(skill.id))
-  return { movedSkills, quietSkills }
 }
 
 // ------------------------------------------------------------------- journal
@@ -493,6 +511,18 @@ export function resultHealth(state: AlephState, resultId: string): ResultHealth 
   return { key: 'planning.results.health.allClear' }
 }
 
+/** Earliest live objective stage on the result; undefined when there are no objectives. */
+export function stageFocusOfResult(state: AlephState, resultId: string): StageId | undefined {
+  const objectives = objectivesOfResult(state, resultId)
+  if (objectives.length === 0) return undefined
+  for (const stage of STAGE_ORDER) {
+    if (objectives.some((objective) => deriveObjectiveStage(state, objective.id) === stage)) {
+      return stage
+    }
+  }
+  return undefined
+}
+
 /** The next concrete step of a result, preferring an in-progress task. */
 export function nextTaskOfResult(state: AlephState, resultId: string): Task | undefined {
   return tasksOfResult(state, resultId)
@@ -599,20 +629,6 @@ export function latestCommentOnDay(state: AlephState, dayKey: string): Comment |
   return [...state.comments]
     .filter((comment) => toDayKey(comment.createdAt) === dayKey)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
-}
-
-export function recentWalkerEntries(state: AlephState, limit = 3): WalkerEntry[] {
-  return [...state.walkerEntries]
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .slice(0, limit)
-}
-
-export function todayWalkerMood(state: AlephState, now: Date = new Date()): WalkerMood | undefined {
-  const today = toDayKey(now)
-  const latestToday = [...state.walkerEntries]
-    .filter((entry) => toDayKey(entry.createdAt) === today)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
-  return latestToday?.mood
 }
 
 export function nextReviewDue(

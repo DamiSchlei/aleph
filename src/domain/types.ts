@@ -55,8 +55,6 @@ export interface Result {
   id: string
   name: string
   why?: string
-  /** Optional law of the situation: how this (or you) must Be so another can take it. */
-  law?: string
   skillId?: string
   targetDate?: string
   importance: number
@@ -68,8 +66,6 @@ export interface Objective {
   resultId: string
   name: string
   why?: string
-  /** Optional Being: how this / you must Be so another can take it (or so you can access). */
-  ser?: string
   /** Optional short definition of done, shown on the objective header. */
   doneWhen?: string
   /** Optional one-line "what this is not", edited only in the objective sheet. */
@@ -112,6 +108,10 @@ export interface Task {
   doneCheck?: string
   checklist?: TaskCheckItem[]
   referenceUrl?: string
+  /** Shared id for weekly blocks that are still Tasks, not a Block entity. */
+  seriesId?: string
+  /** ISO weekdays 1=Mon … 7=Sun. */
+  seriesWeekdays?: number[]
   completedAt?: string
   status: TaskStatus
   xpGranted?: number
@@ -125,16 +125,6 @@ export interface Comment {
   parentType: ParentType
   parentId: string
   body: string
-  createdAt: string
-}
-
-export type WalkerMood = 'up' | 'tight' | 'low'
-
-/** Personal journal across results. Not mixed with result/objective/task comments. */
-export interface WalkerEntry {
-  id: string
-  body: string
-  mood?: WalkerMood
   createdAt: string
 }
 
@@ -176,6 +166,5 @@ export interface AlephState {
   objectives: Objective[]
   tasks: Task[]
   comments: Comment[]
-  walkerEntries: WalkerEntry[]
   relations: Relation[]
 }

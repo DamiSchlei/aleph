@@ -53,19 +53,17 @@ export function ResultDetailPage() {
 
   return (
     <Page className="flex flex-col gap-5 pt-4">
-      <button type="button" onClick={() => navigate('/planning')} className="min-h-11 self-start text-[14px] text-ink-400">
+      <button
+        type="button"
+        onClick={() => navigate('/planning')}
+        className="min-h-11 self-start text-[14px] text-text-3"
+      >
         ← {t('planning.title')}
       </button>
       <header>
         <h1 className="text-2xl font-semibold text-white">{result.name}</h1>
-        {result.why ? <p className="mt-1 text-[15px] text-ink-400">{result.why}</p> : null}
-        {result.law ? (
-          <p className="mt-2 text-[15px] leading-relaxed text-ink-200">
-            <span className="text-ink-400">{t('planning.results.law')}: </span>
-            {result.law}
-          </p>
-        ) : null}
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-ink-400">
+        {result.why ? <p className="mt-1 text-[15px] text-text-3">{result.why}</p> : null}
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-text-3">
           {result.targetDate ? <span>{formatDate(result.targetDate, state.character.locale)}</span> : null}
           <span>{t(`resultStatus.${result.status}`)}</span>
         </div>
@@ -73,7 +71,7 @@ export function ResultDetailPage() {
 
       {health ? (
         <Card>
-          <p className="text-[14px] leading-relaxed text-ink-200">{t(health.key, health.params)}</p>
+          <p className="text-[14px] leading-relaxed text-text-3">{t(health.key, health.params)}</p>
         </Card>
       ) : null}
 
@@ -127,15 +125,15 @@ export function ResultDetailPage() {
                 <Card className="flex items-start gap-1 p-2">
                   <Link to={`/planning/objectives/${objective.id}`} className="min-w-0 flex-1 p-2">
                     <p className="font-medium text-white">{objective.name}</p>
-                    <p className="mt-1 text-[12px] text-ink-400">
+                    <p className="mt-1 text-[12px] text-text-3">
                       {stageShort(t, deriveObjectiveStage(state, objective.id))}
                       {' · '}
                       {obj.tasksTotal === 0
                         ? t('planning.results.noTasks')
                         : t('planning.results.progress', { done: obj.tasksDone, total: obj.tasksTotal })}
                     </p>
-                    <ProgressBar className="mt-2" ratio={obj.ratio} />
-                    <p className="mt-2 text-[12px] text-ink-200">
+                    {obj.tasksTotal > 0 ? <ProgressBar className="mt-2" ratio={obj.ratio} /> : null}
+                    <p className="mt-2 text-[12px] text-text-3">
                       {next ? next.title : t('planning.objectives.noConcreteStep')}
                     </p>
                   </Link>

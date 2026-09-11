@@ -105,19 +105,21 @@
     "work": "Trabajo"
   },
   "home": {
-    "greeting": "Buen día",
-    "stepToday": "Paso de hoy",
-    "stepTodayEmpty": "Nada en el día. Anotá un paso.",
-    "seeDay": "Ver el día",
-    "writingTitle": "Lo que queda escrito",
-    "writingHint": "Después del paso.",
-    "activeEnterprises": "{{count}} empresas activas",
-    "completeCta": "Completar",
-    "moveCta": "Mover",
     "hint": "Completá tareas para ganar XP y dinero.",
     "proposePlaceholder": "Anotá un paso…",
     "proposeCta": "Anotar",
     "agendaTitle": "Hoy",
+    "greeting": "Hola",
+    "stepToday": "El paso de hoy",
+    "stepTodayEmpty": "Hoy no hay un paso.",
+    "seeDay": "Ver el día",
+    "writingTitle": "Escritura",
+    "writingHint": "El walker y la literatura quedan plegados hasta que los abras.",
+    "activeEnterprises": "{{names}}",
+    "completeCta": "Completá",
+    "moveCta": "Mové",
+    "seriesMissed": "Se cayeron {{count}} bloque(s) esta semana.",
+    "seriesHeld": "Esta semana sostuviste los bloques.",
     "agendaEmpty": "Nada en el día. Anotá un paso.",
     "agendaCount": "{{done}} de {{total}} listas",
     "undatedTitle": "Sin fecha",
@@ -146,28 +148,18 @@
     "newSkillName": "Nombre de la habilidad",
     "newSkillIcon": "Ícono",
     "openTaskDetail": "Abrir tarea",
-    "completeTask": "Completar tarea",
-    "walker": {
-      "title": "Bitácora",
-      "placeholder": "¿Cómo vas? ¿En qué se diferencian los frenos?",
-      "mood": {
-        "up": "Bien",
-        "tight": "Tirante",
-        "low": "Bajo"
-      }
-    }
+    "completeTask": "Completar tarea"
   },
   "planning": {
-    "filtersSheetTitle": "Filtros",
-    "openFilters": "Filtros",
     "title": "Planificación",
     "subtitle": "Resultados, objetivos y tareas para acercarte a lo que querés.",
+    "openFilters": "Filtros",
     "tabs": {
       "results": "Resultados",
       "tasks": "Tareas"
     },
     "results": {
-      "helper": "Un resultado es una empresa. Adentro, hasta 4 objetivos (ser + acción).",
+      "helper": "Un resultado es lo que querés lograr. Adentro sumás hasta 4 objetivos.",
       "new": "+ Nuevo resultado",
       "empty": "Aún no hay resultados.",
       "emptyHint": "Arrancá con uno de estos o escribí el tuyo.",
@@ -177,19 +169,17 @@
         "body": "Cuerpo con rutina sostenida 8 semanas"
       },
       "objectivesCount": "{{count}} de {{max}} objetivos",
-      "noObjectives": "Sumá la primera palanca (ser + acción).",
+      "noObjectives": "Todavía sin objetivos",
       "noTasks": "Todavía sin tareas",
       "progress": "{{done}} de {{total}} tareas",
       "hours": "{{done}} h de {{total}} h",
       "pipeline": "Objetivos por etapa",
       "createTitle": "Nuevo resultado",
       "editTitle": "Editar resultado",
-      "namePlaceholder": "¿Qué tiene que existir?",
-      "whyPlaceholder": "¿Con quién o con qué mundo negociás esto?",
+      "namePlaceholder": "¿Qué querés lograr?",
+      "whyPlaceholder": "¿Para qué te importa?",
       "targetDate": "Fecha objetivo",
       "primarySkill": "Habilidad principal",
-      "law": "Cómo debe ser",
-      "lawHelper": "¿Cómo tiene que ser esto para que el otro lo tome? ¿O cómo tenés que ser vos para acceder?",
       "softCap": "Ya tenés {{count}} empresas activas. ¿Qué te detiene en las que ya nombraste?",
       "writeJournal": "Escribir en bitácora",
       "createAnyway": "Crear igual",
@@ -200,7 +190,7 @@
       "restore": "Restaurar",
       "detailTitle": "Resultado",
       "health": {
-        "noObjectives": "Sumá la primera palanca (ser + acción).",
+        "noObjectives": "Todavía no hay objetivos. Sumá la primera palanca.",
         "unbalanced": "{{emptyObjective}} no tiene pasos. El resultado queda apoyado en una sola palanca.",
         "overdue": "Tenés {{count}} tarea(s) vencida(s).",
         "next": "Próximo paso: {{title}}",
@@ -212,10 +202,7 @@
       "limitReached": "Este resultado ya tiene 4 objetivos. Archivá uno o creá otro resultado.",
       "createTitle": "Nuevo objetivo",
       "editTitle": "Editar objetivo",
-      "namePlaceholder": "¿Qué tiene que pasar?",
-      "action": "Acción",
-      "ser": "Ser",
-      "serPlaceholder": "¿Cómo tenés que ser — o cómo tiene que ser esto — para que el otro lo tome?",
+      "namePlaceholder": "¿Qué tiene que pasar para llegar al resultado?",
       "importance": "Importancia",
       "doneWhen": "Listo cuando",
       "doneWhenPlaceholder": "¿Cómo sabés que está terminado?",
@@ -250,7 +237,6 @@
       "createTitle": "Nueva tarea",
       "editTitle": "Editar tarea",
       "titlePlaceholder": "¿Cuál es el próximo paso concreto?",
-      "notesHelper": "Nombrá estado, escenario, datos, inventario. Nombrar es parte del paso.",
       "empty": "No hay tareas. Crealas desde un resultado o proponé un bloque en la Home.",
       "emptyFiltered": "Ninguna tarea coincide con estos filtros.",
       "projected": "Proyectado",
@@ -262,7 +248,13 @@
       "filterStatus": "Estado",
       "filterSkill": "Habilidad",
       "filterDate": "Vence antes de",
-      "moreFilters": "Más filtros",
+      "seriesTitle": "Bloques de la semana",
+      "seriesHint": "Una tarea por cada día que marques. El compositor de Inicio sigue siendo un solo paso.",
+      "seriesWeek": "Esta semana",
+      "seriesMonth": "Este mes",
+      "seriesPreview": "{{count}} × {{hours}} h",
+      "seriesCapped": "Tope de 20 bloques.",
+      "seriesPart": "Bloque {{date}}",
       "thisWeek": "Esta semana",
       "pickDate": "Elegir",
       "noDate": "Sin fecha",
@@ -271,7 +263,12 @@
       "assign": "Asignar a un objetivo",
       "assignShort": "Asignar",
       "execute": "Ejecutar",
+      "executeTitle": "Ejecutar",
+      "executeComment": "¿Qué vas a hacer?",
       "complete": "Completar",
+      "closeTitle": "Cerrar el paso",
+      "closeHours": "Horas reales",
+      "closeComment": "¿Qué quedó de esto?",
       "backToResearch": "Volver a investigación",
       "executeNoNote": "No hay nota de este paso. ¿Ejecutar igual?",
       "deleteConfirm": "¿Eliminar esta tarea? No suma XP y no se puede deshacer.",
@@ -295,13 +292,12 @@
   "tracking": {
     "title": "Seguimiento",
     "subtitle": "Cumplimiento de tus tareas en los tiempos y horas esperados.",
-    "weekSentenceMoved": "Esta semana se movió {{moved}}. {{quiet}} quedó callada.",
-    "weekSentenceMovedOnly": "Esta semana se movió {{moved}}.",
-    "weekSentenceNone": "Todavía no hay semana que contar.",
-    "skillsAlive": "La más viva: {{name}}",
-    "skillsQuiet": "La más callada: {{name}}",
     "emptyLine": "Todavía no hay tareas para medir. Completá la primera y acá aparece tu ritmo.",
     "weekLine": "Esta semana hiciste {{hours}} horas y cumpliste {{onTime}} de {{total}} tareas a tiempo.",
+    "weekSentenceNone": "Esta semana no hay trabajo cerrado.",
+    "weekSentenceMoved": "Esta semana cerraste {{onTime}} de {{total}} a tiempo · {{hours}} h.",
+    "weekSentenceMovedOnly": "Esta semana no cerraste nada.",
+    "seriesPulse": "{{title}}: {{done}}/{{planned}} · {{missed}} abajo",
     "cards": {
       "completed": "Completadas",
       "onTime": "A tiempo",
@@ -330,8 +326,8 @@
   "journal": {
     "title": "Bitácora",
     "add": "Agregar comentario",
-    "placeholder": "¿Qué hay ahora, qué sigue, qué te detuvo?",
-    "workingPlaceholder": "¿Qué hay ahora, qué sigue, qué te detuvo?",
+    "placeholder": "¿Qué pasó?",
+    "workingPlaceholder": "¿Qué pasó? ¿Qué te detiene?",
     "empty": "Esta bitácora empieza cuando escribas el primer comentario.",
     "origin": {
       "result": "Resultado",
@@ -359,7 +355,6 @@
     "levelUpTitle": "Nivel {{level}}",
     "levelUpUnlocked": "Desbloqueaste ítems",
     "levelUpNothing": "Seguí así.",
-    "moneyPill": "{{money}}",
     "name": "Nombre del personaje",
     "language": "Idioma",
     "new": "Nuevo",
@@ -380,8 +375,7 @@
       "accessory": "Accesorios",
       "background": "Fondo"
     },
-    "xpProgress": "{{xp}} / {{xpToNext}} XP",
-    "seeMap": "Ver el mapa"
+    "xpProgress": "{{xp}} / {{xpToNext}} XP"
   },
   "cosmetics": {
     "skin": {
@@ -434,7 +428,6 @@
     }
   },
   "toast": {
-    "gotReward": "Quedó hecho. +{{xp}} XP · {{money}}",
     "reward": "+{{xp}} XP · +{{money}} $ · {{hours}} h",
     "rewardWithSkill": "+{{xp}} XP · +{{money}} $ · {{hours}} h · {{skill}}",
     "skillLevelUp": "{{skill}} llegó al nivel {{level}}",
@@ -449,52 +442,5 @@
     "fri": "Vie",
     "sat": "Sáb",
     "sun": "Dom"
-  },
-  "onboarding": {
-    "skip": "Saltar",
-    "next": "Siguiente",
-    "start": "Empezar",
-    "actName": {
-      "title": "Nombrate",
-      "body": "Un personaje para sostener el trabajo.",
-      "cta": "Seguir"
-    },
-    "actResult": {
-      "title": "¿Qué tiene que existir?",
-      "body": "Un resultado es una empresa. Arrancá con una."
-    },
-    "actTask": {
-      "title": "El paso de hoy",
-      "body": "Escribí un paso concreto. Cae en Inicio.",
-      "cta": "Arrancar el día"
-    },
-    "screens": {
-      "aleph": {
-        "title": "Aleph",
-        "line": "Arte · Literatura · Empresa",
-        "body": "Un punto para ver el día y el plan juntos."
-      },
-      "result": {
-        "title": "Resultado",
-        "label": "Empresa",
-        "body1": "Lo nuevo que negociás con el mundo y con vos.",
-        "body2": "A veces ofrecés un objeto para que otro lo desee. A veces querés acceder a uno. En los dos hay un guion del deseo.",
-        "body3": "Pocas empresas activas."
-      },
-      "objective": {
-        "title": "Objetivo",
-        "label": "Ser + Acción",
-        "body1": "Ser: cómo tiene que ser algo o alguien para que otro lo tome — o cómo tenés que ser vos para acceder.",
-        "body2": "Acción: los pasos que ponen a prueba ese ser.",
-        "body3": "Hasta 4 por resultado."
-      },
-      "task": {
-        "title": "Tarea",
-        "label": "Arte + Literatura",
-        "body1": "El paso de quien lo hace. Puede nacer suelto en Inicio.",
-        "body2": "Nombrar acompaña: qué hay ahora, qué sigue, datos, inventario, qué te detuvo.",
-        "body3": "Las fallas se escriben para ver en qué se diferencian."
-      }
-    }
   }
 }

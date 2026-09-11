@@ -13,12 +13,10 @@ export function TaskCheckbox({
   done,
   onToggle,
   label,
-  compact = false,
 }: {
   done: boolean
   onToggle: () => void
   label: string
-  compact?: boolean
 }) {
   return (
     <button
@@ -27,20 +25,16 @@ export function TaskCheckbox({
       aria-checked={done}
       aria-label={label}
       onClick={onToggle}
-      className={cx(
-        'flex shrink-0 items-center justify-center rounded-2xl transition-colors hover:bg-white/5',
-        compact ? 'size-8' : 'size-11',
-      )}
+      className="flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors hover:bg-white/5"
     >
       <span
         className={cx(
-          'flex items-center justify-center border transition-colors',
-          compact ? 'size-5 rounded-full border' : 'size-6 rounded-xl border-2',
-          done ? 'border-mint bg-mint text-ink-950' : 'border-text-3',
+          'flex size-6 items-center justify-center rounded-xl border-2 transition-colors',
+          done ? 'border-mint bg-mint text-ink-950' : 'border-ink-600',
         )}
       >
         {done ? (
-          <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="3">
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="3">
             <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         ) : null}
@@ -73,6 +67,7 @@ export function TaskRow({
   showContext = true,
   showProjection = false,
   hideCheckbox = false,
+  className,
   density = 'full',
 }: {
   task: Task
@@ -87,6 +82,7 @@ export function TaskRow({
   showProjection?: boolean
   hideCheckbox?: boolean
   density?: 'full' | 'home'
+  className?: string
 }) {
   const { t } = useTranslation()
   const state = useAleph()
@@ -103,35 +99,17 @@ export function TaskRow({
   const canExecute = task.stage === 'research' && !done && Boolean(onExecute)
   const canReturn = task.stage === 'execution' && !done && Boolean(onReturn)
   const home = density === 'home'
-  const hoursLabel = formatHours(task.actualHours ?? task.estimatedHours, locale)
-
-  if (home) {
-    return (
-      <div className="surface-row flex min-h-11 items-center rounded-2xl px-3 py-2.5">
-        <TaskCheckbox
-          done={done}
-          onToggle={onToggle}
-          label={t('home.completeTask')}
-          compact
-        />
-        <button
-          type="button"
-          onClick={onOpen}
-          disabled={!onOpen}
-          className="min-w-0 flex-1 px-2 text-left"
-        >
-          <p className={cx('truncate text-[14px] font-medium', done ? 'text-text-3 line-through' : 'text-white')}>
-            {task.title}
-          </p>
-        </button>
-        <span className="shrink-0 text-[12px] text-text-3">{hoursLabel}</span>
-        {handle}
-      </div>
-    )
-  }
+  const meta = home
+    ? [
+        t('common.hours', { count: Number(formatHours(task.actualHours ?? task.estimatedHours, locale)) }),
+        loose ? t('planning.tasks.loose') : contextResult?.name,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : null
 
   return (
-    <Card className="flex items-start gap-1 p-2">
+    <Card className={cx('flex items-start gap-1 p-2', className)}>
       {hideCheckbox ? null : (
         <TaskCheckbox done={done} onToggle={onToggle} label={t('home.completeTask')} />
       )}
@@ -148,11 +126,14 @@ export function TaskRow({
         <p
           className={cx(
             'text-[15px] leading-snug font-medium',
-            done ? 'text-text-3 line-through' : 'text-white',
+            done ? 'text-ink-400 line-through' : 'text-white',
           )}
         >
           {task.title}
         </p>
+        {home ? (
+          <p className="mt-1 text-[13px] text-ink-400">{meta}</p>
+        ) : (
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           {skill ? (
             <Badge>
@@ -188,6 +169,7 @@ export function TaskRow({
             </Badge>
           ) : null}
         </div>
+        )}
       </button>
       {canExecute ? (
         <Button className="self-center shrink-0 px-3" onClick={onExecute!}>
@@ -195,7 +177,11 @@ export function TaskRow({
         </Button>
       ) : null}
       {canReturn ? <RowAction onClick={onReturn!}>{t('planning.tasks.backToResearch')}</RowAction> : null}
-      {canAssign ? <RowAction onClick={onAssign!}>{t('planning.tasks.assign')}</RowAction> : null}
+      {canAssign ? (
+        <RowAction onClick={onAssign!}>
+          {home ? t('planning.tasks.assignShort') : t('planning.tasks.assign')}
+        </RowAction>
+      ) : null}
       {onDelete ? (
         <RowMenu items={[{ label: t('common.delete'), tone: 'danger', onClick: onDelete }]} />
       ) : null}

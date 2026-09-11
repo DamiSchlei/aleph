@@ -15,7 +15,7 @@ export function RewardToast({ toasts }: { toasts: ToastMessage[] }) {
         <div
           key={toast.id}
           className={cx(
-            'reward-toast max-w-sm rounded-2xl border px-4 py-2.5 text-center text-[15px] font-semibold shadow-lg backdrop-blur',
+            'animate-rise max-w-sm rounded-2xl border px-4 py-2.5 text-center text-[15px] font-semibold shadow-lg backdrop-blur',
             toast.tone === 'info'
               ? 'border-white/10 bg-ink-800/95 text-ink-200'
               : 'border-mint/30 bg-mint/15 text-mint',

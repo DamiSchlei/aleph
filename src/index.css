@@ -1,29 +1,36 @@
 @import 'tailwindcss';
 
 @theme {
+  --color-ink-950: #050814;
+  --color-ink-900: #0A1022;
+  --color-ink-800: #121A32;
+  --color-ink-700: #1A2544;
+
+  --color-text: #FFFFFF;
+  --color-text-2: #E8EEFB;
+  --color-text-3: #93A0C2;
+
+  --color-accent: #5CE1FF;
+  --color-accent-strong: #2EC8FF;
+  --color-violet: #C084FC;
+  --color-mint: #34F1B4;
+  --color-amber: #FFB020;
+  --color-rose: #FF6B8A;
+
+  --color-surface: #10182E;
+  --color-surface-2: #162240;
+  --color-line: rgb(255 255 255 / 0.14);
+
+  --font-sans: 'Inter var', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Fraunces', 'Newsreader', ui-serif, Georgia, serif;
+}
 
-  --color-ink-950: #070b16;
-  --color-ink-900: #0b1020;
-  --color-ink-800: #121a30;
-  --color-ink-700: #1b2540;
-  --color-ink-600: #263252;
-  --color-ink-400: #9aa8c7;
-  --color-ink-200: #e4eaf6;
-  --color-text: #ffffff;
-  --color-text-2: #e4eaf6;
-  --color-text-3: #9aa8c7;
-  --color-surface: #121a2c;
-  --color-surface-2: #182238;
-  --color-row: #0e1526;
-  --color-accent: #7dd3fc;
-  --color-accent-strong: #38bdf8;
-  --color-violet: #a78bfa;
-  --color-mint: #34d399;
-  --color-amber: #fbbf24;
-  --color-rose: #fb7185;
-
-  --font-sans: 'Inter var', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+/* Aliases for screens not migrated yet. Slices 2-3 move every ink-200 / ink-400
+   call site onto text-2 / text-3 and then this block is deleted. */
+@theme {
+  --color-ink-600: var(--color-ink-700);
+  --color-ink-400: var(--color-text-3);
+  --color-ink-200: var(--color-text-2);
 }
 
 :root {
@@ -40,7 +47,8 @@ body,
 body {
   margin: 0;
   background:
-    radial-gradient(90% 48% at 50% -8%, rgb(224 242 254 / 0.32) 0%, rgb(56 189 248 / 0.18) 22%, rgb(14 23 42 / 0) 68%),
+    radial-gradient(90% 50% at 70% 0%, rgb(46 200 255 / 0.22) 0%, transparent 55%),
+    radial-gradient(70% 40% at 10% 10%, rgb(192 132 252 / 0.10) 0%, transparent 50%),
     var(--color-ink-950);
   color: var(--color-text-2);
   font-family: var(--font-sans);
@@ -62,8 +70,18 @@ select {
 
 /* Native selects render their popup with the OS palette; keep options readable. */
 select option {
-  color: #0b1020;
-  background: #f8fafc;
+  color: var(--color-ink-950);
+  background: var(--color-text-2);
+}
+
+/* The brief names the secondary and tertiary type colors "text-2" / "text-3",
+   so those spellings resolve as well as the generated text-text-2 / text-text-3. */
+@utility text-2 {
+  color: var(--color-text-2);
+}
+
+@utility text-3 {
+  color: var(--color-text-3);
 }
 
 @utility safe-bottom {
@@ -72,24 +90,6 @@ select option {
 
 @utility safe-top {
   padding-top: env(safe-area-inset-top, 0px);
-}
-
-@utility font-display {
-  font-family: var(--font-display);
-}
-
-@utility surface-raised {
-  border: 1px solid rgb(125 211 252 / 0.18);
-  background: var(--color-surface-2);
-}
-
-@utility surface-row {
-  background: var(--color-row);
-}
-
-@utility pill {
-  background: var(--color-ink-700);
-  color: var(--color-text);
 }
 
 @utility no-scrollbar {
@@ -142,19 +142,6 @@ select option {
   animation: aleph-rise 220ms ease-out;
 }
 
-.reward-toast {
-  animation: aleph-rise 280ms ease-out, reward-glow 600ms ease-out;
-}
-
-@keyframes reward-glow {
-  0% {
-    box-shadow: 0 0 0 0 rgb(52 211 153 / 0.35);
-  }
-  100% {
-    box-shadow: 0 8px 24px rgb(52 211 153 / 0.12);
-  }
-}
-
 .animate-fade {
   animation: aleph-fade 160ms ease-out;
 }
@@ -162,8 +149,7 @@ select option {
 @media (prefers-reduced-motion: reduce) {
   .animate-pop,
   .animate-rise,
-  .animate-fade,
-  .reward-toast {
+  .animate-fade {
     animation: none;
   }
 }

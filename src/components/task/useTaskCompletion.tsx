@@ -1,95 +1,175 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Chip } from '@/components/ui/primitives'
+import { Button, Chip, Field, Input, Textarea } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
-import { LiteraturePrompt } from '@/components/home/LiteraturePrompt'
-import { completeTask, reopenTask } from '@/data/actions'
+import { closeTask, executeTaskWithNote, reopenTask } from '@/data/actions'
 import { resolveTaskSkillId } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
+import { MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import { isTaskDone } from '@/domain/economy'
 import { skillName } from '@/i18n/labels'
 import type { Task } from '@/domain/types'
 
 /**
- * Single entry point for checking a task off. It pays the reward once and routes
- * XP to the resolved skill. When a task has no skill to inherit, it asks which
- * skill the work counts toward and remembers the answer on the task.
+ * Shared Home + Planning hook. Execute and close both require their sheet
+ * fields; there is no mute skip. One comment lives on the close sheet.
  */
 export function useTaskCompletion(): {
-  toggle: (task: Task, options?: { askLiterature?: boolean }) => void
+  execute: (task: Task) => void
+  close: (task: Task) => void
+  toggle: (task: Task) => void
   dialog: ReactNode
-  literature: ReactNode
 } {
   const state = useAleph()
   const { celebrate } = useFeedback()
   const { t } = useTranslation()
-  const [asking, setAsking] = useState<Task | null>(null)
-  const [askLiterature, setAskLiterature] = useState(false)
-  const [literatureTaskId, setLiteratureTaskId] = useState<string | undefined>()
+  const [executing, setExecuting] = useState<Task | null>(null)
+  const [executeComment, setExecuteComment] = useState('')
+  const [closing, setClosing] = useState<Task | null>(null)
+  const [closeHours, setCloseHours] = useState('')
+  const [closeComment, setCloseComment] = useState('')
+  const [closeSkillId, setCloseSkillId] = useState('')
 
-  const run = (taskId: string, skillId?: string, literature?: boolean) => {
-    const outcome = completeTask(taskId, skillId ? { skillId } : undefined)
-    if (outcome?.paid) celebrate(outcome)
-    if (literature && outcome) setLiteratureTaskId(taskId)
+  const resetExecute = () => {
+    setExecuting(null)
+    setExecuteComment('')
   }
 
-  const toggle = (task: Task, options?: { askLiterature?: boolean }) => {
+  const resetClose = () => {
+    setClosing(null)
+    setCloseHours('')
+    setCloseComment('')
+    setCloseSkillId('')
+  }
+
+  const execute = (task: Task) => {
+    if (task.stage !== 'research' || isTaskDone(task.status)) return
+    setExecuting(task)
+    setExecuteComment('')
+  }
+
+  const close = (task: Task) => {
+    if (isTaskDone(task.status)) return
+    setClosing(task)
+    setCloseHours(String(task.actualHours ?? task.estimatedHours))
+    setCloseComment('')
+    setCloseSkillId(resolveTaskSkillId(state, task) ?? '')
+  }
+
+  const toggle = (task: Task) => {
     if (isTaskDone(task.status)) {
       reopenTask(task.id)
       return
     }
-    const wantLiterature = Boolean(options?.askLiterature)
-    const resolved = resolveTaskSkillId(state, task)
-    if (!resolved && state.skills.length > 0) {
-      setAsking(task)
-      setAskLiterature(wantLiterature)
-      return
-    }
-    run(task.id, undefined, wantLiterature)
+    close(task)
   }
 
-  const choose = (skillId?: string) => {
-    if (asking) run(asking.id, skillId, askLiterature)
-    setAsking(null)
-    setAskLiterature(false)
+  const submitExecute = () => {
+    if (!executing || !executeComment.trim()) return
+    executeTaskWithNote(executing.id, executeComment)
+    resetExecute()
   }
+
+  const submitClose = () => {
+    if (!closing) return
+    const hours = Number(closeHours)
+    if (!closeComment.trim() || !Number.isFinite(hours) || hours < MIN_ESTIMATED_HOURS) return
+    const outcome = closeTask(closing.id, {
+      actualHours: hours,
+      comment: closeComment,
+      skillId: closeSkillId || undefined,
+    })
+    if (outcome?.paid) celebrate(outcome)
+    resetClose()
+  }
+
+  const hoursOk =
+    Number.isFinite(Number(closeHours)) && Number(closeHours) >= MIN_ESTIMATED_HOURS
+  const needsSkill = Boolean(closing) && !resolveTaskSkillId(state, closing!) && state.skills.length > 0
 
   const dialog = (
-    <Sheet
-      open={asking !== null}
-      onClose={() => {
-        setAsking(null)
-        setAskLiterature(false)
-      }}
-      title={t('planning.tasks.skillPromptTitle')}
-    >
-      <div className="flex flex-col gap-4">
-        <p className="text-[14px] leading-relaxed text-ink-400">
-          {t('planning.tasks.skillPromptHint')}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {state.skills.map((skill) => (
-            <Chip key={skill.id} onClick={() => choose(skill.id)}>
-              {skillName(t, skill)}
-            </Chip>
-          ))}
+    <>
+      <Sheet
+        open={executing !== null}
+        onClose={resetExecute}
+        title={t('planning.tasks.executeTitle')}
+        footer={
+          <div className="flex gap-2">
+            <Button variant="secondary" className="flex-1" onClick={resetExecute}>
+              {t('common.cancel')}
+            </Button>
+            <Button className="flex-1" disabled={!executeComment.trim()} onClick={submitExecute}>
+              {t('planning.tasks.execute')}
+            </Button>
+          </div>
+        }
+      >
+        <Field label={t('planning.tasks.executeComment')}>
+          <Textarea
+            rows={3}
+            value={executeComment}
+            onChange={(e) => setExecuteComment(e.target.value)}
+            placeholder={t('planning.tasks.executeComment')}
+            autoFocus
+          />
+        </Field>
+      </Sheet>
+
+      <Sheet
+        open={closing !== null}
+        onClose={resetClose}
+        title={t('planning.tasks.closeTitle')}
+        footer={
+          <div className="flex gap-2">
+            <Button variant="secondary" className="flex-1" onClick={resetClose}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              className="flex-1"
+              disabled={!hoursOk || !closeComment.trim()}
+              onClick={submitClose}
+            >
+              {t('planning.tasks.complete')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <Field label={t('planning.tasks.closeHours')}>
+            <Input
+              type="number"
+              min={MIN_ESTIMATED_HOURS}
+              step={0.25}
+              value={closeHours}
+              onChange={(e) => setCloseHours(e.target.value)}
+            />
+          </Field>
+          <Field label={t('planning.tasks.closeComment')}>
+            <Textarea
+              rows={3}
+              value={closeComment}
+              onChange={(e) => setCloseComment(e.target.value)}
+              placeholder={t('planning.tasks.closeComment')}
+            />
+          </Field>
+          {needsSkill ? (
+            <div className="flex flex-wrap gap-2">
+              {state.skills.map((skill) => (
+                <Chip
+                  key={skill.id}
+                  active={closeSkillId === skill.id}
+                  onClick={() => setCloseSkillId(skill.id)}
+                >
+                  {skillName(t, skill)}
+                </Chip>
+              ))}
+            </div>
+          ) : null}
         </div>
-        <Button variant="ghost" onClick={() => choose(undefined)}>
-          {t('common.noSkill')}
-        </Button>
-      </div>
-    </Sheet>
+      </Sheet>
+    </>
   )
 
-  const literature = (
-    <LiteraturePrompt
-      open={Boolean(literatureTaskId)}
-      taskId={literatureTaskId}
-      kind="done"
-      onClose={() => setLiteratureTaskId(undefined)}
-    />
-  )
-
-  return { toggle, dialog, literature }
+  return { execute, close, toggle, dialog }
 }

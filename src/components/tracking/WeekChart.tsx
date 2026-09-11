@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Card, EmptyState, SectionTitle } from '@/components/ui/primitives'
+import { Card, SectionTitle } from '@/components/ui/primitives'
 import { startOfWeek, toDayKey, addDays } from '@/domain/dates'
 import type { TrackingStats } from '@/data/selectors'
 
@@ -15,28 +15,27 @@ export function WeekChart({ stats, today = new Date() }: { stats: TrackingStats;
     return { key, dayKey, count }
   })
   const max = Math.max(1, ...week.map((d) => d.count))
-  const empty = week.every((d) => d.count === 0)
 
   return (
     <section>
       <SectionTitle>{t('tracking.chart.title')}</SectionTitle>
       <Card className="relative py-4">
-        {empty ? (
-          <EmptyState>{t('tracking.chart.empty')}</EmptyState>
-        ) : (
-          <div className="flex h-36 items-end justify-between gap-1.5">
-            {week.map((day) => (
-              <div key={day.dayKey} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
-                <span className="text-[11px] text-ink-400">{day.count || ''}</span>
+        <div className="flex h-36 items-end justify-between gap-1.5">
+          {week.map((day) => (
+            <div key={day.dayKey} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
+              <span className="text-[11px] text-text-3">{day.count || ''}</span>
+              {day.count > 0 ? (
                 <div
                   className="w-full max-w-8 rounded-t-lg bg-accent-strong/80"
-                  style={{ height: `${(day.count / max) * 100}%`, minHeight: day.count > 0 ? 6 : 0 }}
+                  style={{ height: `${(day.count / max) * 100}%`, minHeight: 6 }}
                 />
-                <span className="text-[11px] font-medium text-ink-400">{t(`weekdays.${day.key}`)}</span>
-              </div>
-            ))}
-          </div>
-        )}
+              ) : (
+                <span className="mb-1 h-1.5 w-1.5 rounded-full bg-white/25" aria-hidden="true" />
+              )}
+              <span className="text-[11px] font-medium text-text-3">{t(`weekdays.${day.key}`)}</span>
+            </div>
+          ))}
+        </div>
       </Card>
     </section>
   )
