@@ -1,7 +1,7 @@
 import { DEFAULT_SKILLS, initialState, newCharacter, STATE_VERSION } from './seed'
 import { MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import { xpToNextForLevel } from '@/domain/economy'
-import type { AlephState, Locale, Objective, Result, Task, WalkerEntry, WalkerMood } from '@/domain/types'
+import type { AlephState, Locale, Objective, Result, Task } from '@/domain/types'
 
 export const STORAGE_KEY = 'aleph.state.v1'
 
@@ -79,23 +79,6 @@ function adoptLegacy(raw: LegacyState): Partial<AlephState> {
   return { results, objectives, tasks }
 }
 
-const WALKER_MOODS: WalkerMood[] = ['up', 'tight', 'low']
-
-function normalizeWalkerEntries(raw: unknown): WalkerEntry[] {
-  if (!Array.isArray(raw)) return []
-  return raw.flatMap((entry) => {
-    if (!entry || typeof entry !== 'object') return []
-    const row = entry as Partial<WalkerEntry>
-    if (typeof row.id !== 'string' || typeof row.body !== 'string' || typeof row.createdAt !== 'string') {
-      return []
-    }
-    const mood = WALKER_MOODS.includes(row.mood as WalkerMood) ? (row.mood as WalkerMood) : undefined
-    return [{ id: row.id, body: row.body, createdAt: row.createdAt, mood }]
-  })
-}
-
-/** Fills in anything a stored state is missing so old snapshots keep working. */
-
 /** Fills in anything a stored state is missing so old snapshots keep working. */
 export function normalize(input: unknown): AlephState {
   const base = initialState(detectLocale())
@@ -140,7 +123,6 @@ export function normalize(input: unknown): AlephState {
     objectives: raw.objectives ?? adopted.objectives ?? [],
     tasks,
     comments: raw.comments ?? [],
-    walkerEntries: normalizeWalkerEntries(raw.walkerEntries),
     relations: raw.relations ?? [],
   }
 }

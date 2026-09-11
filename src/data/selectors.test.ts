@@ -4,9 +4,9 @@ import {
   agendaCalendarDay,
   agendaTasks,
   attendingResults,
-  featuredAgendaTask,
   dayLoad,
   dueAtForFilter,
+  featuredAgendaTask,
   latestCommentOnDay,
   leastActiveAttending,
   pickerObjectives,
@@ -14,6 +14,7 @@ import {
   planTotalRows,
   resultHealth,
   resultStaleThisWeek,
+  weekSeriesPulse,
 } from './selectors'
 import type { AlephState, Comment, Objective, Result, Task } from '@/domain/types'
 
@@ -79,66 +80,24 @@ describe('dueAtForFilter', () => {
 })
 
 describe('featuredAgendaTask', () => {
-  it('prefers in_progress, excludes done, respects day order', () => {
+  it('picks the first non-done agenda task and prefers in_progress', () => {
     const s = state({
       tasks: [
-        task({
-          id: 'pending-first',
-          title: 'Pending first',
-          dueAt: '2026-09-07',
-          scheduledFor: '2026-09-07',
-          dayOrder: 0,
-        }),
-        task({
-          id: 'in-progress',
-          title: 'In progress',
-          dueAt: '2026-09-07',
-          scheduledFor: '2026-09-07',
-          dayOrder: 1,
-          status: 'in_progress',
-        }),
-        task({
-          id: 'done',
-          title: 'Done',
-          dueAt: '2026-09-07',
-          scheduledFor: '2026-09-07',
-          status: 'done_on_time',
-          completedAt: '2026-09-07T10:00:00.000Z',
-        }),
-        task({
-          id: 'cancelled',
-          title: 'Cancelled',
-          dueAt: '2026-09-07',
-          scheduledFor: '2026-09-07',
-          status: 'cancelled',
-        }),
+        task({ id: 'done', title: 'Done', dueAt: '2026-09-07', status: 'done_on_time', completedAt: '2026-09-07T09:00:00.000Z' }),
+        task({ id: 'pending', title: 'Pending', dueAt: '2026-09-07', status: 'pending' }),
+        task({ id: 'active', title: 'Active', dueAt: '2026-09-07', status: 'in_progress' }),
       ],
     })
-    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).toBe('in-progress')
-    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).not.toBe('done')
-    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).not.toBe('cancelled')
+    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).toBe('active')
   })
 
-  it('returns first open task in agenda order when none are in progress', () => {
+  it('returns undefined when every agenda task is done', () => {
     const s = state({
       tasks: [
-        task({
-          id: 'second',
-          title: 'Second',
-          dueAt: '2026-09-07',
-          scheduledFor: '2026-09-07',
-          dayOrder: 1,
-        }),
-        task({
-          id: 'first',
-          title: 'First',
-          dueAt: '2026-09-07',
-          scheduledFor: '2026-09-07',
-          dayOrder: 0,
-        }),
+        task({ id: 'done', title: 'Done', dueAt: '2026-09-07', status: 'done_on_time', completedAt: '2026-09-07T09:00:00.000Z' }),
       ],
     })
-    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).toBe('first')
+    expect(featuredAgendaTask(s, 'today', undefined, NOW)).toBeUndefined()
   })
 })
 
@@ -296,5 +255,50 @@ describe('literature day', () => {
       ],
     })
     expect(latestCommentOnDay(s, '2026-09-07')?.body).toBe('later')
+  })
+})
+
+describe('weekSeriesPulse', () => {
+  const friday = new Date('2026-09-11T12:00:00')
+  const weekStart = new Date('2026-09-07T00:00:00')
+
+  it('counts planned, done, and missed blocks for the week', () => {
+    const s = state({
+      tasks: [
+        task({
+          id: 'mon',
+          title: 'Entrenar',
+          seriesId: 's1',
+          dueAt: '2026-09-07',
+          status: 'pending',
+        }),
+        task({
+          id: 'wed',
+          title: 'Entrenar',
+          seriesId: 's1',
+          dueAt: '2026-09-09',
+          status: 'done_on_time',
+          completedAt: '2026-09-09T18:00:00.000Z',
+          rewardApplied: true,
+        }),
+        task({
+          id: 'fri',
+          title: 'Entrenar',
+          seriesId: 's1',
+          dueAt: '2026-09-11',
+          status: 'pending',
+        }),
+        task({
+          id: 'next',
+          title: 'Entrenar',
+          seriesId: 's1',
+          dueAt: '2026-09-14',
+          status: 'pending',
+        }),
+      ],
+    })
+    expect(weekSeriesPulse(s, weekStart, friday)).toEqual([
+      { seriesId: 's1', title: 'Entrenar', planned: 3, done: 1, missed: 1 },
+    ])
   })
 })

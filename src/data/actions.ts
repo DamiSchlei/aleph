@@ -1,7 +1,8 @@
 import { getState, newId, setState } from './store'
 import { addCharacterXp, addSkillXp, computeReward, isTaskDone, shouldPayReward, type Reward } from '@/domain/economy'
-import { toDayKey } from '@/domain/dates'
-import { MAX_OBJECTIVES_PER_RESULT, activeObjectivesOfResult, MIN_ESTIMATED_HOURS } from '@/domain/limits'
+import { MAX_OBJECTIVES_PER_RESULT, MAX_SERIES_BLOCKS, activeObjectivesOfResult, MIN_ESTIMATED_HOURS } from '@/domain/limits'
+import { seriesDayKeys } from '@/domain/dates'
+import { taskDayKey } from '@/data/selectors'
 import type {
   Comment,
   Cosmetic,
@@ -14,8 +15,6 @@ import type {
   Skill,
   Task,
   TaskCheckItem,
-  WalkerEntry,
-  WalkerMood,
 } from '@/domain/types'
 
 const now = () => new Date().toISOString()
@@ -64,7 +63,6 @@ export function createSkill(input: { name: string; icon: string; color?: string 
 export interface ResultInput {
   name: string
   why?: string
-  law?: string
   skillId?: string
   targetDate?: string
 }
@@ -75,7 +73,6 @@ export function createResult(input: ResultInput): Result {
     id: newId('result'),
     name: input.name.trim(),
     why: input.why?.trim() || undefined,
-    law: input.law?.trim() || undefined,
     skillId: input.skillId || undefined,
     targetDate: input.targetDate || undefined,
     importance: state.results.length,
@@ -126,7 +123,6 @@ export interface ObjectiveInput {
   resultId: string
   name: string
   why?: string
-  ser?: string
   doneWhen?: string
   nonGoals?: string
   reviewEvery?: 'weekly' | 'every_n_tasks'
@@ -151,7 +147,6 @@ export function createObjective(input: ObjectiveInput): Objective {
     resultId: input.resultId,
     name: input.name.trim(),
     why: input.why?.trim() || undefined,
-    ser: input.ser?.trim() || undefined,
     doneWhen: input.doneWhen?.trim() || undefined,
     nonGoals: input.nonGoals?.trim() || undefined,
     reviewEvery: input.reviewEvery,
@@ -211,6 +206,8 @@ export interface TaskInput {
   doneCheck?: string
   checklist?: TaskCheckItem[]
   referenceUrl?: string
+  seriesId?: string
+  seriesWeekdays?: number[]
 }
 
 /**
@@ -242,6 +239,8 @@ export function createTask(input: TaskInput): Task {
     doneCheck: input.doneCheck?.trim() || undefined,
     checklist: input.checklist,
     referenceUrl: input.referenceUrl?.trim() || undefined,
+    seriesId: input.seriesId,
+    seriesWeekdays: input.seriesWeekdays,
     status: 'pending',
     rewardApplied: false,
     createdAt: now(),
@@ -250,11 +249,69 @@ export function createTask(input: TaskInput): Task {
   return task
 }
 
+export type SeriesHorizon = 'week' | 'month'
+
+export interface TaskSeriesInput extends TaskInput {
+  weekdays: number[]
+  hoursPerBlock: number
+  horizon: SeriesHorizon
+}
+
+/**
+ * Weekly blocks as Tasks. One Task per matching weekday from today through the
+ * horizon. Skips past dates and existing seriesId+day rows. Caps at 20. Never
+ * creates a Block entity.
+ */
+export function createTaskSeries(input: TaskSeriesInput, now: Date = new Date()): Task[] {
+  const weekdays = [...new Set(input.weekdays.filter((day) => day >= 1 && day <= 7))].sort((a, b) => a - b)
+  const title = input.title.trim()
+  if (!title || weekdays.length === 0) return []
+
+  const seriesId = input.seriesId || newId('series')
+  const hoursPerBlock = Math.max(MIN_ESTIMATED_HOURS, input.hoursPerBlock)
+  const days = seriesDayKeys(weekdays, input.horizon, now, MAX_SERIES_BLOCKS)
+  const existing = getState().tasks
+  const created: Task[] = []
+
+  for (const day of days) {
+    const taken = [...existing, ...created].some(
+      (task) =>
+        task.seriesId === seriesId &&
+        task.status !== 'cancelled' &&
+        taskDayKey(task) === day,
+    )
+    if (taken) continue
+    created.push(
+      createTask({
+        ...input,
+        title,
+        estimatedHours: hoursPerBlock,
+        dueAt: day,
+        scheduledFor: day,
+        seriesId,
+        seriesWeekdays: weekdays,
+      }),
+    )
+  }
+
+  return created
+}
+
 /** "Ejecutar": move a research task into the execution moment. */
 export function executeTask(id: string): void {
   const task = getState().tasks.find((t) => t.id === id)
   if (!task || task.stage !== 'research') return
   updateTask(id, { stage: 'execution', status: 'in_progress' })
+}
+
+/** Execute only with a required comment. Does not pay. */
+export function executeTaskWithNote(id: string, comment: string): boolean {
+  const trimmed = comment.trim()
+  if (!trimmed) return false
+  const task = getState().tasks.find((t) => t.id === id)
+  if (!task || task.stage !== 'research') return false
+  executeTask(id)
+  return Boolean(addComment('task', id, trimmed))
 }
 
 /** "Volver a investigación": send an execution task back to research. */
@@ -401,6 +458,20 @@ export function completeTask(
   }
 }
 
+/** Close only with required hours and one comment. Uses actualHours in the payout. */
+export function closeTask(
+  id: string,
+  input: { actualHours: number; comment: string; skillId?: string },
+): CompletionOutcome | null {
+  const comment = input.comment.trim()
+  const actualHours = Number(input.actualHours)
+  if (!comment || !Number.isFinite(actualHours) || actualHours < MIN_ESTIMATED_HOURS) return null
+  const outcome = completeTask(id, { actualHours, skillId: input.skillId })
+  if (!outcome) return null
+  addComment('task', id, comment)
+  return outcome
+}
+
 /** Reopens a task as research. The reward already paid is kept: no clawback. */
 export function reopenTask(id: string): void {
   updateTask(id, { status: 'pending', stage: 'research', completedAt: undefined })
@@ -420,37 +491,5 @@ export function addComment(parentType: ParentType, parentId: string, body: strin
   }
   setState((s) => ({ ...s, comments: [...s.comments, comment] }))
   return comment
-}
-
-export function addWalkerEntry(input: { body: string; mood?: WalkerMood }): WalkerEntry | null {
-  const body = input.body.trim()
-  if (!body) return null
-  const entry: WalkerEntry = {
-    id: newId('walker'),
-    body,
-    mood: input.mood,
-    createdAt: now(),
-  }
-  setState((s) => ({ ...s, walkerEntries: [...s.walkerEntries, entry] }))
-  return entry
-}
-
-/** Updates today's latest walker entry mood. No-ops when there is no entry today. */
-export function setWalkerMood(mood: WalkerMood): void {
-  const today = toDayKey(new Date())
-  setState((s) => {
-    let latestToday = -1
-    for (let i = s.walkerEntries.length - 1; i >= 0; i -= 1) {
-      if (toDayKey(s.walkerEntries[i].createdAt) === today) {
-        latestToday = i
-        break
-      }
-    }
-    if (latestToday < 0) return s
-    const walkerEntries = s.walkerEntries.map((entry, index) =>
-      index === latestToday ? { ...entry, mood } : entry,
-    )
-    return { ...s, walkerEntries }
-  })
 }
 

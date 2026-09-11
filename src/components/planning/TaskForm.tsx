@@ -3,14 +3,24 @@ import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { Button, Chip, Field, Input, Select, Textarea } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
-import { addComment, createTask, updateTask } from '@/data/actions'
+import { addComment, createTask, createTaskSeries, updateTask } from '@/data/actions'
 import { pickerObjectives, pickerResults } from '@/data/selectors'
 import { newId, useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
-import { MAX_CHECKLIST_ITEMS, MIN_ESTIMATED_HOURS } from '@/domain/limits'
-import { addDays, startOfWeek, toDayKey } from '@/domain/dates'
+import { MAX_CHECKLIST_ITEMS, MAX_SERIES_BLOCKS, MIN_ESTIMATED_HOURS } from '@/domain/limits'
+import { addDays, isoWeekday, seriesDayKeys, startOfWeek, toDayKey } from '@/domain/dates'
 import { isTaskDone } from '@/domain/economy'
 import type { Difficulty, Task, TaskCheckItem } from '@/domain/types'
+
+const ISO_WEEKDAYS = [
+  { iso: 1, key: 'mon' },
+  { iso: 2, key: 'tue' },
+  { iso: 3, key: 'wed' },
+  { iso: 4, key: 'thu' },
+  { iso: 5, key: 'fri' },
+  { iso: 6, key: 'sat' },
+  { iso: 7, key: 'sun' },
+] as const
 
 export interface TaskMoments {
   onComplete?: (task: Task) => void
@@ -104,6 +114,9 @@ function TaskFormBody({
   const [checklist, setChecklist] = useState<TaskCheckItem[]>(task?.checklist ?? [])
   const [referenceUrl, setReferenceUrl] = useState(task?.referenceUrl ?? '')
   const [blockedNote, setBlockedNote] = useState('')
+  const [asSeries, setAsSeries] = useState(false)
+  const [weekdays, setWeekdays] = useState<number[]>([])
+  const [horizon, setHorizon] = useState<'week' | 'month'>('week')
   const objectives = useMemo(
     () => (resultId ? pickerObjectives(state, resultId) : []),
     [resultId, state],
@@ -112,6 +125,17 @@ function TaskFormBody({
   const today = todayKey()
   const weekEnd = weekEndKey()
   const showMoments = task && !isTaskDone(task.status) && moments
+  const seriesHours = Math.max(MIN_ESTIMATED_HOURS, Number(hours) || 1)
+  const seriesDates = asSeries && !task ? seriesDayKeys(weekdays, horizon, new Date(), MAX_SERIES_BLOCKS) : []
+  const seriesWouldOverflow =
+    asSeries && !task && seriesDayKeys(weekdays, horizon, new Date(), MAX_SERIES_BLOCKS + 1).length > MAX_SERIES_BLOCKS
+  const canSave = Boolean(title.trim()) && (!asSeries || Boolean(task) || seriesDates.length > 0)
+
+  const toggleWeekday = (iso: number) => {
+    setWeekdays((current) =>
+      current.includes(iso) ? current.filter((day) => day !== iso) : [...current, iso].sort((a, b) => a - b),
+    )
+  }
 
   const save = () => {
     const trimmed = title.trim()
@@ -133,8 +157,19 @@ function TaskFormBody({
       })),
       referenceUrl: referenceUrl.trim() || undefined,
     }
-    if (task) updateTask(task.id, payload)
-    else createTask(payload)
+    if (task) {
+      updateTask(task.id, payload)
+    } else if (asSeries) {
+      if (seriesDates.length === 0) return
+      createTaskSeries({
+        ...payload,
+        weekdays,
+        hoursPerBlock: estimatedHours,
+        horizon,
+      })
+    } else {
+      createTask(payload)
+    }
     onClose()
   }
 
@@ -200,6 +235,60 @@ function TaskFormBody({
           </Select>
         </Field>
       </div>
+      {task ? (
+        task.seriesId && task.dueAt ? (
+          <p className="text-[13px] text-text-3">{t('planning.tasks.seriesPart', { date: task.dueAt })}</p>
+        ) : null
+      ) : (
+        <Field label={t('planning.tasks.seriesTitle')} hint={t('planning.tasks.seriesHint')}>
+          <Chip
+            active={asSeries}
+            onClick={() => {
+              if (asSeries) {
+                setAsSeries(false)
+                return
+              }
+              setAsSeries(true)
+              setWeekdays((current) => (current.length > 0 ? current : [isoWeekday(new Date())]))
+            }}
+          >
+            {t('planning.tasks.seriesTitle')}
+          </Chip>
+          {asSeries ? (
+            <>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {ISO_WEEKDAYS.map((day) => (
+                  <Chip
+                    key={day.iso}
+                    active={weekdays.includes(day.iso)}
+                    onClick={() => toggleWeekday(day.iso)}
+                  >
+                    {t(`weekdays.${day.key}`)}
+                  </Chip>
+                ))}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Chip active={horizon === 'week'} onClick={() => setHorizon('week')}>
+                  {t('planning.tasks.seriesWeek')}
+                </Chip>
+                <Chip active={horizon === 'month'} onClick={() => setHorizon('month')}>
+                  {t('planning.tasks.seriesMonth')}
+                </Chip>
+              </div>
+              <p className="mt-2 text-[13px] text-text-2">
+                {t('planning.tasks.seriesPreview', {
+                  count: seriesDates.length,
+                  hours: seriesHours,
+                })}
+              </p>
+              {seriesWouldOverflow ? (
+                <p className="mt-1 text-[13px] text-amber">{t('planning.tasks.seriesCapped')}</p>
+              ) : null}
+            </>
+          ) : null}
+        </Field>
+      )}
+      {asSeries && !task ? null : (
       <Field label={`${t('common.dueDate')} (${t('common.optional')})`}>
         <div className="flex flex-wrap gap-2">
           <Chip
@@ -242,7 +331,8 @@ function TaskFormBody({
           />
         ) : null}
       </Field>
-      <Field label={`${t('common.notes')} (${t('common.optional')})`} hint={t('planning.tasks.notesHelper')}>
+      )}
+      <Field label={`${t('common.notes')} (${t('common.optional')})`}>
         <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
       <Field label={`${t('planning.tasks.doneCheck')} (${t('common.optional')})`}>
@@ -332,7 +422,7 @@ function TaskFormBody({
         <Button variant="secondary" className="flex-1" onClick={onClose}>
           {t('common.cancel')}
         </Button>
-        <Button className="flex-1" disabled={!title.trim()} onClick={save}>
+        <Button className="flex-1" disabled={!canSave} onClick={save}>
           {t('common.save')}
         </Button>
       </div>

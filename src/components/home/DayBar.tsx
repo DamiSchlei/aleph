@@ -20,7 +20,7 @@ export function DayBar({ dayKey }: { dayKey: string }) {
 
   return (
     <section>
-      <p className="mb-2 text-[11px] font-semibold tracking-[0.16em] text-text-3 uppercase">
+      <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
         {t('home.dayBarTitle')}
       </p>
       <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-ink-800">
@@ -37,7 +37,7 @@ export function DayBar({ dayKey }: { dayKey: string }) {
           ))}
         </div>
       </div>
-      <p className="mt-2 text-[12px] text-text-3">
+      <p className="mt-2 text-[13px] text-text-3">
         {t('home.dayBarCaption', { count: formatHours(load.hours, locale) })}
       </p>
       {load.overflow ? (

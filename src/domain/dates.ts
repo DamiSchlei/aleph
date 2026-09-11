@@ -63,3 +63,36 @@ export function weekDayKeys(value: Date | string): string[] {
 export function lastSevenDayKeys(today: Date | string = new Date()): string[] {
   return Array.from({ length: 7 }, (_, i) => toDayKey(addDays(today, i - 6)))
 }
+
+/** Monday=1 … Sunday=7. */
+export function isoWeekday(value: Date | string): number {
+  const day = (typeof value === 'string' ? parseLocal(value) : value).getDay()
+  return day === 0 ? 7 : day
+}
+
+/** Last calendar day of the month containing `value`. */
+export function endOfMonth(value: Date | string): Date {
+  const d = startOfDay(value)
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0)
+}
+
+/**
+ * Matching weekdays from today through the horizon, never past dates.
+ * Caps at `cap` (20 for series). ISO weekdays: 1=Mon … 7=Sun.
+ */
+export function seriesDayKeys(
+  weekdays: number[],
+  horizon: 'week' | 'month',
+  today: Date | string = new Date(),
+  cap = 20,
+): string[] {
+  const wanted = new Set(weekdays.filter((day) => day >= 1 && day <= 7))
+  if (wanted.size === 0 || cap <= 0) return []
+  const start = startOfDay(today)
+  const end = horizon === 'week' ? addDays(startOfWeek(start), 6) : endOfMonth(start)
+  const keys: string[] = []
+  for (let cursor = start; toDayKey(cursor) <= toDayKey(end) && keys.length < cap; cursor = addDays(cursor, 1)) {
+    if (wanted.has(isoWeekday(cursor))) keys.push(toDayKey(cursor))
+  }
+  return keys
+}

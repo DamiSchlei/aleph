@@ -10,6 +10,9 @@ export const SOFT_WARN_ACTIVE_RESULTS = 4
 
 export const MAX_CHECKLIST_ITEMS = 7
 
+/** Weekly series cap: one Task per matching day, never a Block entity. */
+export const MAX_SERIES_BLOCKS = 20
+
 export function activeObjectivesOfResult(objectives: Objective[], resultId: string): Objective[] {
   return objectives.filter((o) => o.resultId === resultId && !o.archivedAt)
 }

@@ -33,9 +33,9 @@ export function KpiCards({ stats, locale }: { stats: TrackingStats; locale: Loca
     <div className="grid grid-cols-2 gap-2">
       {cards.map((card) => (
         <Card key={card.label} className="py-3">
-          <p className="text-[12px] font-medium tracking-wide text-ink-400 uppercase">{card.label}</p>
+          <p className="text-[12px] font-medium tracking-wide text-text-3 uppercase">{card.label}</p>
           <p className="mt-1 text-[22px] font-semibold text-white">{card.value}</p>
-          {card.caption ? <p className="text-[12px] text-ink-400">{card.caption}</p> : null}
+          {card.caption ? <p className="text-[12px] text-text-3">{card.caption}</p> : null}
         </Card>
       ))}
     </div>

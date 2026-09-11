@@ -41,7 +41,7 @@ export function ResultProgress() {
                       >
                         {result.name}
                       </Link>
-                      <span className="text-[12px] text-ink-400">
+                      <span className="text-[12px] text-text-3">
                         {progress.ratio === null
                           ? t('tracking.results.noTasks')
                           : t('planning.results.progress', {
@@ -50,16 +50,16 @@ export function ResultProgress() {
                             })}
                       </span>
                     </div>
-                    {skill ? <p className="text-[12px] text-ink-400">{skillName(t, skill)}</p> : null}
-                    <ProgressBar ratio={progress.ratio} />
-                    <p className="text-[12px] text-ink-400">
+                    {skill ? <p className="text-[12px] text-text-3">{skillName(t, skill)}</p> : null}
+                    {progress.tasksTotal > 0 ? <ProgressBar ratio={progress.ratio} /> : null}
+                    <p className="text-[12px] text-text-3">
                       {expanded ? t('tracking.results.collapse') : t('tracking.results.expand')}
                     </p>
                   </button>
                   {expanded ? (
                     <ul className="mt-3 flex flex-col gap-2 border-t border-white/6 pt-3">
                       {objectives.length === 0 ? (
-                        <li className="text-[13px] text-ink-400">{t('planning.results.noObjectives')}</li>
+                        <li className="text-[13px] text-text-3">{t('planning.results.noObjectives')}</li>
                       ) : (
                         objectives.map((objective) => {
                           const obj = objectiveProgress(state, objective.id)
@@ -72,9 +72,9 @@ export function ResultProgress() {
                                 >
                                   {objective.name}
                                 </Link>
-                                <span className="text-[12px] text-ink-400">{stageShort(t, objective.currentStage)}</span>
+                                <span className="text-[12px] text-text-3">{stageShort(t, objective.currentStage)}</span>
                               </div>
-                              <ProgressBar className="mt-1.5" ratio={obj.ratio} />
+                              {obj.tasksTotal > 0 ? <ProgressBar className="mt-1.5" ratio={obj.ratio} /> : null}
                             </li>
                           )
                         })

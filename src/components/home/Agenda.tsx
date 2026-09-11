@@ -1,46 +1,36 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { SectionTitle } from '@/components/ui/primitives'
-import { SortableList } from '@/components/ui/SortableList'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
-import { AssignSheet } from '@/components/task/AssignSheet'
-import { TaskRow } from '@/components/task/TaskRow'
+import { TaskCheckbox } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
-import { useTaskActions } from '@/components/task/useTaskActions'
-import { reorderTasks } from '@/data/actions'
 import { agendaTasks, isTaskOverdue, type AgendaFilter } from '@/data/selectors'
 import { useAleph } from '@/data/store'
-import { formatLongDate } from '@/i18n/format'
+import { formatHours, formatLongDate } from '@/i18n/format'
 import { isTaskDone } from '@/domain/economy'
+import { cx } from '@/components/ui/primitives'
 import type { Task } from '@/domain/types'
+
+const AGENDA_MAX = 4
+
+export const AGENDA_ROW_CLASS =
+  'rounded-2xl bg-ink-900/80 px-3 py-2.5 min-h-11 flex items-center gap-3'
 
 export function Agenda({
   filter,
   pickDate,
-  maxVisible,
-  excludeTaskId,
 }: {
   filter: AgendaFilter
   pickDate: string
-  maxVisible?: number
-  excludeTaskId?: string
 }) {
   const { t } = useTranslation()
   const state = useAleph()
   const locale = state.character.locale
-  const [expanded, setExpanded] = useState(false)
-  const allTasks = agendaTasks(state, filter, pickDate).filter(
-    (task) => task.id !== excludeTaskId,
-  )
-  const tasks =
-    maxVisible && !expanded && allTasks.length > maxVisible
-      ? allTasks.slice(0, maxVisible)
-      : allTasks
-  const { toggle, dialog: completionDialog, literature } = useTaskCompletion()
-  const actions = useTaskActions()
+  const tasks = agendaTasks(state, filter, pickDate)
+  const { toggle, dialog: completionDialog } = useTaskCompletion()
   const [editing, setEditing] = useState<Task | undefined>()
-  const [assigning, setAssigning] = useState<Task | undefined>()
-  const done = allTasks.filter((task) => isTaskDone(task.status)).length
+  const [expanded, setExpanded] = useState(false)
+  const overflow = tasks.length > AGENDA_MAX
+  const visible = overflow && !expanded ? tasks.slice(0, AGENDA_MAX) : tasks
 
   const title =
     filter === 'undated'
@@ -51,79 +41,69 @@ export function Agenda({
           : t('home.filters.pick')
         : t(`home.filters.${filter}`)
 
-  const momentProps = {
-    onComplete: (tk: Task) => toggle(tk, { askLiterature: true }),
-    onExecute: (tk: Task) => actions.execute(tk),
-    onReturn: (tk: Task) => actions.back(tk),
-  }
-
-  const sheets = (
-    <>
-      {completionDialog}
-      {actions.dialog}
-      {literature}
-      <TaskFormSheet
-        open={Boolean(editing)}
-        task={editing}
-        moments={momentProps}
-        blockedPrompt={editing ? isTaskOverdue(editing) && !isTaskDone(editing.status) : false}
-        onClose={() => setEditing(undefined)}
-      />
-      <AssignSheet
-        open={Boolean(assigning)}
-        task={assigning}
-        onClose={() => setAssigning(undefined)}
-      />
-    </>
-  )
-
-  if (allTasks.length === 0) return sheets
-
   return (
     <section className="flex flex-col gap-2">
-      <SectionTitle
-        action={
-          <span className="text-[12px] text-text-3">
-            {t('home.agendaCount', { done, total: allTasks.length })}
-          </span>
-        }
-      >
-        {title}
-      </SectionTitle>
+      <p className="text-[11px] font-medium tracking-[0.16em] text-text-3 uppercase">{title}</p>
 
-      <SortableList
-        ids={tasks.map((task) => task.id)}
-        onReorder={(ids) => reorderTasks(ids, 'dayOrder')}
-        handleLabel={t('common.reorderHint')}
-      >
-        {(id, handle) => {
-          const task = tasks.find((item) => item.id === id)
-          if (!task) return null
-          return (
-            <TaskRow
-              task={task}
-              density="home"
-              onToggle={() => toggle(task, { askLiterature: true })}
-              onOpen={() => setEditing(task)}
-              onAssign={() => setAssigning(task)}
-              onDelete={() => actions.requestDelete(task)}
-              handle={handle}
-            />
-          )
-        }}
-      </SortableList>
+      {tasks.length === 0 ? (
+        <p className="text-[14px] leading-relaxed text-text-3">{t('home.agendaEmpty')}</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {visible.map((task) => {
+            const done = isTaskDone(task.status)
+            const overdue = isTaskOverdue(task)
+            const hours = t('common.hours', {
+              count: Number(formatHours(task.actualHours ?? task.estimatedHours, locale)),
+            })
+            return (
+              <li key={task.id}>
+                <div className={AGENDA_ROW_CLASS}>
+                  <TaskCheckbox
+                    done={done}
+                    onToggle={() => toggle(task)}
+                    label={t('home.completeTask')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditing(task)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <p
+                      className={cx(
+                        'truncate text-[14px]',
+                        done ? 'text-text-3 line-through' : 'text-white',
+                      )}
+                    >
+                      {task.title}
+                    </p>
+                  </button>
+                  <span className={cx('shrink-0 text-[12px]', overdue ? 'text-amber' : 'text-text-3')}>
+                    {hours}
+                  </span>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
 
-      {maxVisible && !expanded && allTasks.length > maxVisible ? (
+      {overflow && !expanded ? (
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="min-h-11 w-full text-center text-[13px] text-text-3"
+          className="self-start text-[13px] text-accent"
         >
           {t('home.seeDay')}
         </button>
       ) : null}
 
-      {sheets}
+      {completionDialog}
+      <TaskFormSheet
+        open={Boolean(editing)}
+        task={editing}
+        blockedPrompt={editing ? isTaskOverdue(editing) && !isTaskDone(editing.status) : false}
+        onClose={() => setEditing(undefined)}
+      />
     </section>
   )
 }
