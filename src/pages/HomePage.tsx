@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/character/Avatar'
 import { CustomizeSheet } from '@/components/character/CustomizeSheet'
@@ -6,73 +7,134 @@ import { Agenda } from '@/components/home/Agenda'
 import { Composer } from '@/components/home/Composer'
 import { DateChips } from '@/components/home/DateChips'
 import { DayBar } from '@/components/home/DayBar'
-import { LiteratureLine } from '@/components/home/LiteratureLine'
-import { PlanTotal } from '@/components/home/PlanTotal'
 import { SkillsSheet } from '@/components/home/SkillsSheet'
-import { WalkerJournal } from '@/components/home/WalkerJournal'
-import { Button, ProgressBar } from '@/components/ui/primitives'
+import { TodayStep } from '@/components/home/TodayStep'
+import { WritingFold } from '@/components/home/WritingFold'
+import { AssignSheet } from '@/components/task/AssignSheet'
+import { useTaskCompletion } from '@/components/task/useTaskCompletion'
+import { ProgressBar } from '@/components/ui/primitives'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { useAleph } from '@/data/store'
-import { agendaCalendarDay, type AgendaFilter } from '@/data/selectors'
+import {
+  agendaCalendarDay,
+  attendingResults,
+  featuredAgendaTask,
+  type AgendaFilter,
+} from '@/data/selectors'
 import { formatMoney } from '@/i18n/format'
+import { isTaskDone } from '@/domain/economy'
+import type { Task } from '@/domain/types'
 
 export function HomePage() {
   const { t } = useTranslation()
-  const { character } = useAleph()
+  const state = useAleph()
+  const { character } = state
   const { pulseKey } = useFeedback()
   const [customize, setCustomize] = useState(false)
   const [skills, setSkills] = useState(false)
   const [filter, setFilter] = useState<AgendaFilter>('today')
   const [pickDate, setPickDate] = useState('')
+  const [assigning, setAssigning] = useState<Task | undefined>()
+  const [writingOpenSignal, setWritingOpenSignal] = useState(0)
+  const completingId = useRef<string | null>(null)
+
+  const { toggle, dialog: completionDialog, literature } = useTaskCompletion()
   const xpRatio = character.xpToNext > 0 ? character.xp / character.xpToNext : null
   const dayKey = agendaCalendarDay(filter, pickDate)
+  const featured = featuredAgendaTask(state, filter, pickDate)
+  const activeCount = attendingResults(state).length
+  const capAgenda = filter === 'today' || filter === 'pick'
+
+  useEffect(() => {
+    if (!completingId.current) return
+    const task = state.tasks.find((item) => item.id === completingId.current)
+    if (task && isTaskDone(task.status)) {
+      setWritingOpenSignal((n) => n + 1)
+      completingId.current = null
+    }
+  }, [state.tasks])
+
+  const completeFeatured = () => {
+    if (!featured) return
+    completingId.current = featured.id
+    toggle(featured, { askLiterature: true })
+  }
 
   return (
-    <div className="flex flex-col gap-6 pt-4 pb-10">
-      <header className="flex items-start gap-3">
+    <div className="flex flex-col gap-8 pt-5 pb-10">
+      <header className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold tracking-[0.22em] text-accent uppercase">{t('app.name')}</p>
-          <p className="mt-1 text-[11px] font-medium tracking-[0.16em] text-ink-400 uppercase">
-            {t('app.acronym')}
-          </p>
-          <h1 className="mt-1 truncate text-2xl font-semibold text-white">{character.name}</h1>
-          <p className="mt-0.5 text-[13px] text-ink-400">
-            {t('common.level', { level: character.level })}
-            {' · '}
-            {t('common.money')} {formatMoney(character.money, character.locale)}
-          </p>
-          <p className="mt-2 text-[12px] text-ink-400">
-            {t('character.xpProgress', { xp: character.xp, xpToNext: character.xpToNext })}
-          </p>
-          <ProgressBar className="mt-1.5" ratio={xpRatio} />
+          <p className="text-[12px] font-medium tracking-[0.16em] text-text-3 uppercase">{t('home.greeting')}</p>
+          <h1 className="font-display mt-1 truncate text-[38px] leading-none text-white">{character.name}</h1>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="pill inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium">
+              {t('common.level', { level: character.level })}
+            </span>
+            <span className="pill inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-medium">
+              {t('character.moneyPill', { money: formatMoney(character.money, character.locale) })}
+            </span>
+          </div>
+          <ProgressBar className="mt-4 h-1.5" ratio={xpRatio} />
         </div>
-        <button type="button" onClick={() => setCustomize(true)} className="shrink-0">
-          <Avatar avatar={character.avatar} size={92} pulseKey={pulseKey} />
+        <button
+          type="button"
+          onClick={() => setCustomize(true)}
+          className="shrink-0 rounded-3xl ring-1 ring-white/20 shadow-[0_0_40px_rgba(56,189,248,0.25)]"
+        >
+          <Avatar avatar={character.avatar} size={136} pulseKey={pulseKey} />
         </button>
       </header>
 
-      <div className="flex gap-2">
-        <Button variant="secondary" className="flex-1" onClick={() => setCustomize(true)}>
-          {t('character.customize')}
-        </Button>
-        <Button variant="secondary" className="flex-1" onClick={() => setSkills(true)}>
-          {t('home.skillsTitle')}
-        </Button>
+      <TodayStep
+        task={featured}
+        onComplete={completeFeatured}
+        onMove={() => featured && setAssigning(featured)}
+      />
+
+      <div className="flex flex-col gap-2">
+        <Composer filter={filter} pickDate={pickDate} />
+        <DateChips
+          filter={filter}
+          pickDate={pickDate}
+          onFilterChange={setFilter}
+          onPickDateChange={setPickDate}
+        />
       </div>
 
-      <Composer filter={filter} pickDate={pickDate} />
-      <DateChips
+      <Agenda
         filter={filter}
         pickDate={pickDate}
-        onFilterChange={setFilter}
-        onPickDateChange={setPickDate}
+        maxVisible={capAgenda ? 4 : undefined}
+        excludeTaskId={featured?.id}
       />
-      <PlanTotal />
-      {dayKey ? <DayBar dayKey={dayKey} /> : null}
-      <Agenda filter={filter} pickDate={pickDate} />
-      <WalkerJournal />
-      <LiteratureLine />
 
+      <div className="flex flex-col">
+        {activeCount > 0 ? (
+          <p className="min-h-11 text-[12px] tracking-[0.16em] text-text-3 uppercase">
+            {t('home.activeEnterprises', { count: activeCount })}
+          </p>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setSkills(true)}
+          className="flex min-h-11 w-full items-center text-left text-[12px] font-medium tracking-[0.16em] text-text-3 uppercase"
+        >
+          {t('home.skillsTitle')}
+        </button>
+        <Link
+          to="/planning"
+          className="flex min-h-11 w-full items-center text-left text-[12px] font-medium tracking-[0.16em] text-text-3 uppercase"
+        >
+          {t('home.planTotal')}
+        </Link>
+        <WritingFold openSignal={writingOpenSignal}>
+          {dayKey ? <DayBar dayKey={dayKey} /> : null}
+        </WritingFold>
+      </div>
+
+      {completionDialog}
+      {literature}
+      <AssignSheet open={Boolean(assigning)} task={assigning} onClose={() => setAssigning(undefined)} />
       <CustomizeSheet open={customize} onClose={() => setCustomize(false)} pulseKey={pulseKey} />
       <SkillsSheet open={skills} onClose={() => setSkills(false)} />
     </div>

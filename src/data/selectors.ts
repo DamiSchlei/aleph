@@ -215,6 +215,21 @@ export function agendaTasks(
     .sort(byDayOrder)
 }
 
+/** The single open task Home highlights: in_progress beats pending, same agenda order. */
+export function featuredAgendaTask(
+  state: AlephState,
+  filter: AgendaFilter,
+  pickDate?: string,
+  now: Date = new Date(),
+): Task | null {
+  const open = agendaTasks(state, filter, pickDate, now).filter(
+    (task) => !isTaskDone(task.status) && task.status !== 'cancelled',
+  )
+  const inProgress = open.find((task) => task.status === 'in_progress')
+  if (inProgress) return inProgress
+  return open[0] ?? null
+}
+
 // ------------------------------------------------------------------ tracking
 
 export interface TrackingStats {
@@ -288,6 +303,26 @@ export function skillActivity(state: AlephState): SkillActivity {
     quietest: sorted[sorted.length - 1].skill,
     totalXp,
   }
+}
+
+export interface WeekSentenceParts {
+  movedSkills: Skill[]
+  quietSkills: Skill[]
+}
+
+/** Skills that earned XP this week vs those that stayed quiet. */
+export function weekSentenceParts(state: AlephState, today: Date = new Date()): WeekSentenceParts {
+  const weekStart = startOfWeek(today).getTime()
+  const movedIds = new Set<string>()
+  for (const task of state.tasks) {
+    if (!isTaskDone(task.status) || !task.completedAt) continue
+    if (new Date(task.completedAt).getTime() < weekStart) continue
+    const skillId = resolveTaskSkillId(state, task)
+    if (skillId) movedIds.add(skillId)
+  }
+  const movedSkills = state.skills.filter((skill) => movedIds.has(skill.id))
+  const quietSkills = state.skills.filter((skill) => !movedIds.has(skill.id))
+  return { movedSkills, quietSkills }
 }
 
 // ------------------------------------------------------------------- journal

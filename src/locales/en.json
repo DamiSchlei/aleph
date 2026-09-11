@@ -105,11 +105,20 @@
     "work": "Work"
   },
   "home": {
+    "greeting": "Good day",
+    "stepToday": "Today's step",
+    "stepTodayEmpty": "Nothing in the day. Jot a step.",
+    "seeDay": "See the day",
+    "writingTitle": "What remains written",
+    "writingHint": "After the step.",
+    "activeEnterprises": "{{count}} active enterprises",
+    "completeCta": "Complete",
+    "moveCta": "Move",
     "hint": "Complete tasks to earn XP and money.",
     "proposePlaceholder": "Jot down a step…",
     "proposeCta": "Add",
     "agendaTitle": "Today",
-    "agendaEmpty": "Nothing in the day. Jot a step or look at Total plan.",
+    "agendaEmpty": "Nothing in the day. Jot a step.",
     "agendaCount": "{{done}} of {{total}} done",
     "undatedTitle": "No date",
     "filters": {
@@ -149,6 +158,8 @@
     }
   },
   "planning": {
+    "filtersSheetTitle": "Filters",
+    "openFilters": "Filters",
     "title": "Planning",
     "subtitle": "Results, objectives and tasks that move you toward what you want.",
     "tabs": {
@@ -284,6 +295,11 @@
   "tracking": {
     "title": "Tracking",
     "subtitle": "Whether your tasks landed in the time and hours you expected.",
+    "weekSentenceMoved": "This week {{moved}} moved. {{quiet}} stayed quiet.",
+    "weekSentenceMovedOnly": "This week {{moved}} moved.",
+    "weekSentenceNone": "There is no week to tell yet.",
+    "skillsAlive": "Most alive: {{name}}",
+    "skillsQuiet": "Quietest: {{name}}",
     "emptyLine": "Nothing to measure yet. Complete the first task and your pace shows up here.",
     "weekLine": "This week you logged {{hours}} hours and finished {{onTime}} of {{total}} tasks on time.",
     "cards": {
@@ -343,6 +359,7 @@
     "levelUpTitle": "Level {{level}}",
     "levelUpUnlocked": "New items unlocked",
     "levelUpNothing": "Keep going.",
+    "moneyPill": "{{money}}",
     "name": "Character name",
     "language": "Language",
     "new": "New",
@@ -417,6 +434,7 @@
     }
   },
   "toast": {
+    "gotReward": "Done. +{{xp}} XP · {{money}}",
     "reward": "+{{xp}} XP · +{{money}} $ · {{hours}} h",
     "rewardWithSkill": "+{{xp}} XP · +{{money}} $ · {{hours}} h · {{skill}}",
     "skillLevelUp": "{{skill}} reached level {{level}}",
@@ -436,6 +454,20 @@
     "skip": "Skip",
     "next": "Next",
     "start": "Start",
+    "actName": {
+      "title": "Name yourself",
+      "body": "A character to hold the work.",
+      "cta": "Continue"
+    },
+    "actResult": {
+      "title": "What has to exist?",
+      "body": "A result is an enterprise. Start with one."
+    },
+    "actTask": {
+      "title": "Today's step",
+      "body": "Write one concrete step. It lands on Home.",
+      "cta": "Start the day"
+    },
     "screens": {
       "aleph": {
         "title": "Aleph",

@@ -105,11 +105,20 @@
     "work": "Trabajo"
   },
   "home": {
+    "greeting": "Buen día",
+    "stepToday": "Paso de hoy",
+    "stepTodayEmpty": "Nada en el día. Anotá un paso.",
+    "seeDay": "Ver el día",
+    "writingTitle": "Lo que queda escrito",
+    "writingHint": "Después del paso.",
+    "activeEnterprises": "{{count}} empresas activas",
+    "completeCta": "Completar",
+    "moveCta": "Mover",
     "hint": "Completá tareas para ganar XP y dinero.",
     "proposePlaceholder": "Anotá un paso…",
     "proposeCta": "Anotar",
     "agendaTitle": "Hoy",
-    "agendaEmpty": "Nada en el día. Anotá un paso o mirá Plan Total.",
+    "agendaEmpty": "Nada en el día. Anotá un paso.",
     "agendaCount": "{{done}} de {{total}} listas",
     "undatedTitle": "Sin fecha",
     "filters": {
@@ -149,6 +158,8 @@
     }
   },
   "planning": {
+    "filtersSheetTitle": "Filtros",
+    "openFilters": "Filtros",
     "title": "Planificación",
     "subtitle": "Resultados, objetivos y tareas para acercarte a lo que querés.",
     "tabs": {
@@ -284,6 +295,11 @@
   "tracking": {
     "title": "Seguimiento",
     "subtitle": "Cumplimiento de tus tareas en los tiempos y horas esperados.",
+    "weekSentenceMoved": "Esta semana se movió {{moved}}. {{quiet}} quedó callada.",
+    "weekSentenceMovedOnly": "Esta semana se movió {{moved}}.",
+    "weekSentenceNone": "Todavía no hay semana que contar.",
+    "skillsAlive": "La más viva: {{name}}",
+    "skillsQuiet": "La más callada: {{name}}",
     "emptyLine": "Todavía no hay tareas para medir. Completá la primera y acá aparece tu ritmo.",
     "weekLine": "Esta semana hiciste {{hours}} horas y cumpliste {{onTime}} de {{total}} tareas a tiempo.",
     "cards": {
@@ -343,6 +359,7 @@
     "levelUpTitle": "Nivel {{level}}",
     "levelUpUnlocked": "Desbloqueaste ítems",
     "levelUpNothing": "Seguí así.",
+    "moneyPill": "{{money}}",
     "name": "Nombre del personaje",
     "language": "Idioma",
     "new": "Nuevo",
@@ -417,6 +434,7 @@
     }
   },
   "toast": {
+    "gotReward": "Quedó hecho. +{{xp}} XP · {{money}}",
     "reward": "+{{xp}} XP · +{{money}} $ · {{hours}} h",
     "rewardWithSkill": "+{{xp}} XP · +{{money}} $ · {{hours}} h · {{skill}}",
     "skillLevelUp": "{{skill}} llegó al nivel {{level}}",
@@ -436,6 +454,20 @@
     "skip": "Saltar",
     "next": "Siguiente",
     "start": "Empezar",
+    "actName": {
+      "title": "Nombrate",
+      "body": "Un personaje para sostener el trabajo.",
+      "cta": "Seguir"
+    },
+    "actResult": {
+      "title": "¿Qué tiene que existir?",
+      "body": "Un resultado es una empresa. Arrancá con una."
+    },
+    "actTask": {
+      "title": "El paso de hoy",
+      "body": "Escribí un paso concreto. Cae en Inicio.",
+      "cta": "Arrancar el día"
+    },
     "screens": {
       "aleph": {
         "title": "Aleph",

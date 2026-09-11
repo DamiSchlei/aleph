@@ -23,7 +23,7 @@ export function DateChips({
             key={key}
             active={filter === key}
             onClick={() => onFilterChange(key)}
-            className="shrink-0"
+            className="min-h-8 shrink-0 px-2.5 py-1 text-[12px]"
           >
             {t(`home.filters.${key}`)}
           </Chip>

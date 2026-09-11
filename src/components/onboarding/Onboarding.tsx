@@ -1,10 +1,19 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button, cx } from '@/components/ui/primitives'
+import { Avatar } from '@/components/character/Avatar'
+import { Button, Chip, Input, cx } from '@/components/ui/primitives'
+import { captureLooseTask, createResult, equipCosmetic, renameCharacter } from '@/data/actions'
 import { isOnboardingDone, markOnboardingDone, resetOnboarding } from '@/data/onboarding'
+import { useAleph } from '@/data/store'
+import { toDayKey } from '@/domain/dates'
 
-const STEPS = ['aleph', 'result', 'objective', 'task'] as const
+const STEPS = ['name', 'result', 'task'] as const
+
+const SKIN_OPTIONS = ['skin_sand', 'skin_amber'] as const
+const HAIR_OPTIONS = ['hair_short', 'hair_bun'] as const
+
+const RESULT_CHIPS = ['product', 'money', 'body'] as const
 
 type OnboardingApi = { replay: () => void }
 
@@ -65,9 +74,13 @@ function Onboarding({
   onFinish: () => void
 }) {
   const { t } = useTranslation()
+  const { character } = useAleph()
+  const [name, setName] = useState(character.name)
+  const [resultName, setResultName] = useState('')
+  const [taskTitle, setTaskTitle] = useState('')
+
   const last = step === STEPS.length - 1
   const key = STEPS[step]
-  const isAleph = key === 'aleph'
 
   useEffect(() => {
     if (!open) return
@@ -79,17 +92,38 @@ function Onboarding({
 
   if (!open) return null
 
-  const advance = () => {
-    if (last) onFinish()
-    else onStep(step + 1)
+  const advanceName = () => {
+    renameCharacter(name)
+    onStep(step + 1)
   }
+
+  const advanceResult = () => {
+    const trimmed = resultName.trim()
+    if (trimmed) createResult({ name: trimmed })
+    onStep(step + 1)
+  }
+
+  const finishTask = () => {
+    const trimmed = taskTitle.trim()
+    if (trimmed) captureLooseTask(trimmed, { dueAt: toDayKey(new Date()) })
+    onFinish()
+  }
+
+  const advance = () => {
+    if (key === 'name') advanceName()
+    else if (key === 'result') advanceResult()
+    else finishTask()
+  }
+
+  const canAdvance =
+    key === 'name' ? name.trim().length > 0 : key === 'result' ? true : taskTitle.trim().length > 0
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-950">
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={t(`onboarding.screens.${key}.title`)}
+        aria-label={t(`onboarding.act${key.charAt(0).toUpperCase()}${key.slice(1)}.title`)}
         className="flex h-dvh w-full max-w-lg flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top,0px))]"
       >
         <div className="flex justify-end">
@@ -103,37 +137,91 @@ function Onboarding({
         </div>
 
         <div className="flex flex-1 flex-col justify-center py-8">
-          {isAleph ? null : (
-            <p className="text-[13px] font-semibold tracking-[0.14em] text-ink-400">
-              {t(`onboarding.screens.${key}.label`)}
-            </p>
-          )}
-          <h1
-            className={cx(
-              'font-semibold tracking-tight text-white',
-              isAleph ? 'text-5xl' : 'mt-3 text-4xl',
-            )}
-          >
-            {t(`onboarding.screens.${key}.title`)}
+          <h1 className="text-4xl font-semibold tracking-tight text-white">
+            {t(`onboarding.act${key.charAt(0).toUpperCase()}${key.slice(1)}.title`)}
           </h1>
-          {isAleph ? (
-            <p className="mt-5 text-[15px] font-medium tracking-[0.08em] text-ink-400">
-              {t('onboarding.screens.aleph.line')}
-            </p>
+          <p className="mt-4 text-[16px] leading-relaxed text-ink-200">
+            {t(`onboarding.act${key.charAt(0).toUpperCase()}${key.slice(1)}.body`)}
+          </p>
+
+          {key === 'name' ? (
+            <div className="mt-8 flex flex-col items-center gap-6">
+              <Avatar avatar={character.avatar} size={128} />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('character.name')} />
+              <div className="w-full">
+                <p className="mb-2 text-[13px] text-ink-400">{t('character.tabs.color')}</p>
+                <div className="flex gap-2">
+                  {SKIN_OPTIONS.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => equipCosmetic('skin', id)}
+                      className={cx(
+                        'h-10 flex-1 rounded-2xl border',
+                        character.avatar.skinId === id ? 'border-accent' : 'border-white/10',
+                      )}
+                      style={{
+                        background:
+                          id === 'skin_sand'
+                            ? '#f2c9a0'
+                            : '#c98c5c',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="w-full">
+                <p className="mb-2 text-[13px] text-ink-400">{t('character.tabs.hair')}</p>
+                <div className="flex gap-2">
+                  {HAIR_OPTIONS.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => equipCosmetic('hair', id)}
+                      className={cx(
+                        'h-10 flex-1 rounded-2xl border',
+                        character.avatar.hairId === id ? 'border-accent' : 'border-white/10',
+                      )}
+                      style={{
+                        background: id === 'hair_short' ? '#2f2a26' : '#5b3a29',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           ) : null}
-          <div className="mt-8 flex flex-col gap-4">
-            {isAleph ? (
-              <p className="text-[16px] leading-relaxed text-ink-200">
-                {t('onboarding.screens.aleph.body')}
-              </p>
-            ) : (
-              [1, 2, 3].map((n) => (
-                <p key={n} className="text-[16px] leading-relaxed text-ink-200">
-                  {t(`onboarding.screens.${key}.body${n}`)}
-                </p>
-              ))
-            )}
-          </div>
+
+          {key === 'result' ? (
+            <div className="mt-8 flex flex-col gap-4">
+              <div className="flex flex-wrap gap-2">
+                {RESULT_CHIPS.map((chip) => (
+                  <Chip
+                    key={chip}
+                    onClick={() => setResultName(t(`planning.results.chips.${chip}`))}
+                    active={resultName === t(`planning.results.chips.${chip}`)}
+                  >
+                    {t(`planning.results.chips.${chip}`)}
+                  </Chip>
+                ))}
+              </div>
+              <Input
+                value={resultName}
+                onChange={(e) => setResultName(e.target.value)}
+                placeholder={t('planning.results.namePlaceholder')}
+              />
+            </div>
+          ) : null}
+
+          {key === 'task' ? (
+            <div className="mt-8">
+              <Input
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                placeholder={t('planning.tasks.titlePlaceholder')}
+              />
+            </div>
+          ) : null}
         </div>
 
         <footer className="safe-bottom pb-4">
@@ -148,8 +236,12 @@ function Onboarding({
               />
             ))}
           </div>
-          <Button className="w-full" onClick={advance}>
-            {last ? t('onboarding.start') : t('onboarding.next')}
+          <Button className="w-full" onClick={advance} disabled={!canAdvance}>
+            {last
+              ? t('onboarding.actTask.cta')
+              : key === 'name'
+                ? t('onboarding.actName.cta')
+                : t('onboarding.next')}
           </Button>
         </footer>
       </div>

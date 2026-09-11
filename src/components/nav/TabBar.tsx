@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { cx } from '@/components/ui/primitives'
+import { agendaTasks } from '@/data/selectors'
+import { useAleph } from '@/data/store'
 
 function PlanningIcon() {
   return (
@@ -32,11 +34,13 @@ function TrackingIcon() {
 
 export function TabBar() {
   const { t } = useTranslation()
+  const state = useAleph()
+  const hasOverdue = agendaTasks(state, 'overdue').length > 0
 
   const tabs = [
-    { to: '/planning', label: t('nav.planning'), icon: <PlanningIcon />, primary: false },
-    { to: '/', label: t('nav.home'), icon: <HomeIcon />, primary: true },
-    { to: '/tracking', label: t('nav.tracking'), icon: <TrackingIcon />, primary: false },
+    { to: '/planning', label: t('nav.planning'), icon: <PlanningIcon />, primary: false, overdue: hasOverdue },
+    { to: '/', label: t('nav.home'), icon: <HomeIcon />, primary: true, overdue: false },
+    { to: '/tracking', label: t('nav.tracking'), icon: <TrackingIcon />, primary: false, overdue: false },
   ]
 
   return (
@@ -51,7 +55,7 @@ export function TabBar() {
                 cx(
                   'flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1 transition-colors',
                   tab.primary && 'font-semibold',
-                  isActive ? 'text-accent' : 'text-ink-400 hover:text-ink-200',
+                  isActive ? 'text-accent' : 'text-text-3 hover:text-text-2',
                 )
               }
             >
@@ -59,12 +63,15 @@ export function TabBar() {
                 <>
                   <span
                     className={cx(
-                      'flex items-center justify-center rounded-2xl transition-colors',
+                      'relative flex items-center justify-center rounded-2xl transition-colors',
                       tab.primary ? 'size-11' : 'size-9',
                       tab.primary && (isActive ? 'bg-accent/15' : 'bg-white/5'),
                     )}
                   >
                     {tab.icon}
+                    {tab.overdue ? (
+                      <span className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-amber" />
+                    ) : null}
                   </span>
                   <span className={cx('text-[11px] leading-none', tab.primary && 'text-[12px]')}>
                     {tab.label}

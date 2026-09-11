@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Input } from '@/components/ui/primitives'
 import { captureLooseTask } from '@/data/actions'
 import { dueAtForFilter, type AgendaFilter } from '@/data/selectors'
 
@@ -15,22 +14,19 @@ export function Composer({ filter, pickDate }: { filter: AgendaFilter; pickDate:
 
   return (
     <form
-      className="flex gap-2"
+      className="surface-row rounded-2xl px-3 py-1.5"
       onSubmit={(e) => {
         e.preventDefault()
         submit()
       }}
     >
-      <Input
+      <input
         id="home-composer"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t('home.proposePlaceholder')}
-        className="flex-1"
+        className="w-full min-h-10 bg-transparent text-[14px] text-text-2 outline-none placeholder:text-text-3/80"
       />
-      <Button type="submit" disabled={!title.trim()}>
-        {t('home.proposeCta')}
-      </Button>
     </form>
   )
 }

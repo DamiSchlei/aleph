@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { EmptyState, SectionTitle } from '@/components/ui/primitives'
+import { SectionTitle } from '@/components/ui/primitives'
 import { SortableList } from '@/components/ui/SortableList'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { AssignSheet } from '@/components/task/AssignSheet'
@@ -17,19 +17,30 @@ import type { Task } from '@/domain/types'
 export function Agenda({
   filter,
   pickDate,
+  maxVisible,
+  excludeTaskId,
 }: {
   filter: AgendaFilter
   pickDate: string
+  maxVisible?: number
+  excludeTaskId?: string
 }) {
   const { t } = useTranslation()
   const state = useAleph()
   const locale = state.character.locale
-  const tasks = agendaTasks(state, filter, pickDate)
+  const [expanded, setExpanded] = useState(false)
+  const allTasks = agendaTasks(state, filter, pickDate).filter(
+    (task) => task.id !== excludeTaskId,
+  )
+  const tasks =
+    maxVisible && !expanded && allTasks.length > maxVisible
+      ? allTasks.slice(0, maxVisible)
+      : allTasks
   const { toggle, dialog: completionDialog, literature } = useTaskCompletion()
   const actions = useTaskActions()
   const [editing, setEditing] = useState<Task | undefined>()
   const [assigning, setAssigning] = useState<Task | undefined>()
-  const done = tasks.filter((task) => isTaskDone(task.status)).length
+  const done = allTasks.filter((task) => isTaskDone(task.status)).length
 
   const title =
     filter === 'undated'
@@ -46,46 +57,8 @@ export function Agenda({
     onReturn: (tk: Task) => actions.back(tk),
   }
 
-  return (
-    <section className="flex flex-col gap-3">
-      <SectionTitle
-        action={
-          tasks.length > 0 ? (
-            <span className="text-[12px] text-ink-400">
-              {t('home.agendaCount', { done, total: tasks.length })}
-            </span>
-          ) : null
-        }
-      >
-        {title}
-      </SectionTitle>
-
-      {tasks.length === 0 ? (
-        <EmptyState>{t('home.agendaEmpty')}</EmptyState>
-      ) : (
-        <SortableList
-          ids={tasks.map((task) => task.id)}
-          onReorder={(ids) => reorderTasks(ids, 'dayOrder')}
-          handleLabel={t('common.reorderHint')}
-        >
-          {(id, handle) => {
-            const task = tasks.find((item) => item.id === id)
-            if (!task) return null
-            return (
-              <TaskRow
-                task={task}
-                density="home"
-                onToggle={() => toggle(task, { askLiterature: true })}
-                onOpen={() => setEditing(task)}
-                onAssign={() => setAssigning(task)}
-                onDelete={() => actions.requestDelete(task)}
-                handle={handle}
-              />
-            )
-          }}
-        </SortableList>
-      )}
-
+  const sheets = (
+    <>
       {completionDialog}
       {actions.dialog}
       {literature}
@@ -101,6 +74,56 @@ export function Agenda({
         task={assigning}
         onClose={() => setAssigning(undefined)}
       />
+    </>
+  )
+
+  if (allTasks.length === 0) return sheets
+
+  return (
+    <section className="flex flex-col gap-2">
+      <SectionTitle
+        action={
+          <span className="text-[12px] text-text-3">
+            {t('home.agendaCount', { done, total: allTasks.length })}
+          </span>
+        }
+      >
+        {title}
+      </SectionTitle>
+
+      <SortableList
+        ids={tasks.map((task) => task.id)}
+        onReorder={(ids) => reorderTasks(ids, 'dayOrder')}
+        handleLabel={t('common.reorderHint')}
+      >
+        {(id, handle) => {
+          const task = tasks.find((item) => item.id === id)
+          if (!task) return null
+          return (
+            <TaskRow
+              task={task}
+              density="home"
+              onToggle={() => toggle(task, { askLiterature: true })}
+              onOpen={() => setEditing(task)}
+              onAssign={() => setAssigning(task)}
+              onDelete={() => actions.requestDelete(task)}
+              handle={handle}
+            />
+          )
+        }}
+      </SortableList>
+
+      {maxVisible && !expanded && allTasks.length > maxVisible ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="min-h-11 w-full text-center text-[13px] text-text-3"
+        >
+          {t('home.seeDay')}
+        </button>
+      ) : null}
+
+      {sheets}
     </section>
   )
 }
