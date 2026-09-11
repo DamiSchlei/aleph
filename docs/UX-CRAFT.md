@@ -207,6 +207,8 @@ No framer-motion. No canvas. No confetti. No new hex. No i18n. No economy.
 | Result detail empty | Existing empty + existing create CTA only |
 | Objective detail empty | Existing empty + existing create CTA only |
 
+Turn 4 (2026-09-11): verified against the running app. All MATCH rows PASS. Forbidden scan clean.
+
 ## Forbidden
 
 - new hex / new font / 4th tab / light mode / Block entity
