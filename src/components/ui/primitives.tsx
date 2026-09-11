@@ -177,10 +177,19 @@ export function Page({ children, className }: { children: ReactNode; className?:
   )
 }
 
-export function EmptyState({ children, action }: { children: ReactNode; action?: ReactNode }) {
+export function EmptyState({
+  children,
+  hint,
+  action,
+}: {
+  children: ReactNode
+  hint?: ReactNode
+  action?: ReactNode
+}) {
   return (
-    <div className="rounded-2xl border border-dashed border-white/10 px-4 py-8 text-center">
-      <p className="text-[15px] leading-relaxed text-text-3">{children}</p>
+    <div className="rounded-2xl px-4 py-8 text-center">
+      <p className="text-[15px] leading-relaxed text-text-2">{children}</p>
+      {hint ? <div className="mt-1 text-[13px] text-text-3">{hint}</div> : null}
       {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
   )

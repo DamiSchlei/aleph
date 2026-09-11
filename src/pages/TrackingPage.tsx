@@ -1,9 +1,10 @@
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SkillIcon } from '@/components/character/SkillIcon'
 import { KpiCards } from '@/components/tracking/KpiCards'
 import { ResultProgress } from '@/components/tracking/ResultProgress'
 import { WeekChart } from '@/components/tracking/WeekChart'
-import { Card, ProgressBar, SectionTitle } from '@/components/ui/primitives'
+import { Button, Card, ProgressBar, SectionTitle } from '@/components/ui/primitives'
 import { skillActivity, trackingStats, weekSeriesPulse } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { startOfWeek } from '@/domain/dates'
@@ -11,6 +12,7 @@ import { skillName } from '@/i18n/labels'
 
 export function TrackingPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const state = useAleph()
   const stats = trackingStats(state)
   const activity = skillActivity(state)
@@ -35,6 +37,11 @@ export function TrackingPage() {
       </header>
 
       <p className="font-display text-[22px] leading-snug text-white">{weekSentence}</p>
+      {stats.completed === 0 ? (
+        <Button variant="secondary" onClick={() => navigate('/')}>
+          {t('tracking.emptyCta')}
+        </Button>
+      ) : null}
 
       {pulses.length > 0 ? (
         <ul className="flex flex-col gap-2">

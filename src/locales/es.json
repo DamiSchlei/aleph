@@ -109,9 +109,16 @@
     "proposePlaceholder": "Anotá un paso…",
     "proposeCta": "Anotar",
     "agendaTitle": "Hoy",
-    "greeting": "Hola",
+    "greeting": {
+      "morning": "Buen día",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches",
+      "night": "Que descanses"
+    },
+    "greetingFallback": "Buen día",
     "stepToday": "El paso de hoy",
-    "stepTodayEmpty": "Hoy no hay un paso.",
+    "stepTodayEmpty": "Hoy no hay nada en cola. Anotá un bloque y arrancá.",
+    "stepTodayCta": "Anotá un bloque",
     "seeDay": "Ver el día",
     "writingTitle": "Escritura",
     "writingHint": "El walker y la literatura quedan plegados hasta que los abras.",
@@ -120,7 +127,8 @@
     "moveCta": "Mové",
     "seriesMissed": "Se cayeron {{count}} bloque(s) esta semana.",
     "seriesHeld": "Esta semana sostuviste los bloques.",
-    "agendaEmpty": "Nada en el día. Anotá un paso.",
+    "agendaEmpty": "El día está abierto.",
+    "agendaEmptyCta": "Sumá al día",
     "agendaCount": "{{done}} de {{total}} listas",
     "undatedTitle": "Sin fecha",
     "filters": {
@@ -161,8 +169,8 @@
     "results": {
       "helper": "Un resultado es lo que querés lograr. Adentro sumás hasta 4 objetivos.",
       "new": "+ Nuevo resultado",
-      "empty": "Aún no hay resultados.",
-      "emptyHint": "Arrancá con uno de estos o escribí el tuyo.",
+      "empty": "Todavía no hay resultados.",
+      "emptyHint": "Un resultado es una empresa que estás armando. Empezá por una.",
       "chips": {
         "product": "Primer producto listo para vender",
         "money": "Mes ordenado en gastos y cobros",
@@ -237,8 +245,9 @@
       "createTitle": "Nueva tarea",
       "editTitle": "Editar tarea",
       "titlePlaceholder": "¿Cuál es el próximo paso concreto?",
-      "empty": "No hay tareas. Crealas desde un resultado o proponé un bloque en la Home.",
-      "emptyFiltered": "Ninguna tarea coincide con estos filtros.",
+      "empty": "Todavía no hay tareas. Anotá el primer bloque desde Home.",
+      "emptyCta": "Ir a Home",
+      "emptyFiltered": "Nada entra en estos filtros.",
       "projected": "Proyectado",
       "filters": "Filtros",
       "clearFilters": "Limpiar filtros",
@@ -293,6 +302,7 @@
     "title": "Seguimiento",
     "subtitle": "Cumplimiento de tus tareas en los tiempos y horas esperados.",
     "emptyLine": "Todavía no hay tareas para medir. Completá la primera y acá aparece tu ritmo.",
+    "emptyCta": "Anotá un bloque",
     "weekLine": "Esta semana hiciste {{hours}} horas y cumpliste {{onTime}} de {{total}} tareas a tiempo.",
     "weekSentenceNone": "Esta semana no hay trabajo cerrado.",
     "weekSentenceMoved": "Esta semana cerraste {{onTime}} de {{total}} a tiempo · {{hours}} h.",
@@ -313,7 +323,8 @@
     },
     "results": {
       "title": "Avance por resultado",
-      "empty": "Creá un resultado en Planificación para ver el avance.",
+      "empty": "No hay resultados para seguir.",
+      "emptyCta": "Abrir Planning",
       "noTasks": "Todavía sin tareas",
       "expand": "Ver objetivos",
       "collapse": "Ocultar objetivos"
@@ -328,7 +339,7 @@
     "add": "Agregar comentario",
     "placeholder": "¿Qué pasó?",
     "workingPlaceholder": "¿Qué pasó? ¿Qué te detiene?",
-    "empty": "Esta bitácora empieza cuando escribas el primer comentario.",
+    "empty": "Todavía no escribiste nada.",
     "origin": {
       "result": "Resultado",
       "objective": "Objetivo",

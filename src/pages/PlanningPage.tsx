@@ -117,58 +117,63 @@ function ResultsTab() {
       <p className="text-[14px] leading-relaxed text-text-3">{t('planning.results.helper')}</p>
       {results.length === 0 ? (
         <EmptyState
+          hint={t('planning.results.emptyHint')}
           action={
-            <div className="flex max-w-sm flex-wrap justify-center gap-2">
-              {CHIP_KEYS.map((key) => (
-                <Chip key={key} onClick={() => requestCreate(t(`planning.results.chips.${key}`))}>
-                  {t(`planning.results.chips.${key}`)}
-                </Chip>
-              ))}
+            <div className="flex flex-col items-center gap-3">
+              <Button onClick={() => requestCreate()}>{t('planning.results.new')}</Button>
+              <div className="flex max-w-sm flex-wrap justify-center gap-2">
+                {CHIP_KEYS.map((key) => (
+                  <Chip key={key} onClick={() => requestCreate(t(`planning.results.chips.${key}`))}>
+                    {t(`planning.results.chips.${key}`)}
+                  </Chip>
+                ))}
+              </div>
             </div>
           }
         >
           {t('planning.results.empty')}
         </EmptyState>
       ) : (
-        <SortableList
-          ids={results.map((r) => r.id)}
-          onReorder={reorderResults}
-          handleLabel={t('common.reorderHint')}
-        >
-          {(id, handle) => {
-            const result = results.find((r) => r.id === id)
-            if (!result) return null
-            const progress = resultProgress(state, result.id)
-            const health = resultHealth(state, result.id)
-            const objectives = objectivesOfResult(state, result.id).slice(0, 4)
-            return (
-              <Card className="flex items-start gap-1 p-2">
-                <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 p-2">
-                  <p className="font-display text-[20px] leading-tight text-white">{result.name}</p>
-                  {result.why ? (
-                    <p className="mt-1 truncate text-[13px] text-text-3">{result.why}</p>
-                  ) : null}
-                  <StagePath current={stageFocusOfResult(state, result.id)} />
-                  {objectives.length > 0 ? (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {objectives.map((objective) => (
-                        <Badge key={objective.id}>{objective.name}</Badge>
-                      ))}
-                    </div>
-                  ) : null}
-                  {progress.tasksTotal > 0 ? <ProgressBar className="mt-3" ratio={progress.ratio} /> : null}
-                  <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-text-3">
-                    {t(health.key, health.params)}
-                  </p>
-                </Link>
-                {handle}
-              </Card>
-            )
-          }}
-        </SortableList>
+        <>
+          <SortableList
+            ids={results.map((r) => r.id)}
+            onReorder={reorderResults}
+            handleLabel={t('common.reorderHint')}
+          >
+            {(id, handle) => {
+              const result = results.find((r) => r.id === id)
+              if (!result) return null
+              const progress = resultProgress(state, result.id)
+              const health = resultHealth(state, result.id)
+              const objectives = objectivesOfResult(state, result.id).slice(0, 4)
+              return (
+                <Card className="flex items-start gap-1 p-2">
+                  <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 p-2">
+                    <p className="font-display text-[20px] leading-tight text-white">{result.name}</p>
+                    {result.why ? (
+                      <p className="mt-1 truncate text-[13px] text-text-3">{result.why}</p>
+                    ) : null}
+                    <StagePath current={stageFocusOfResult(state, result.id)} />
+                    {objectives.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {objectives.map((objective) => (
+                          <Badge key={objective.id}>{objective.name}</Badge>
+                        ))}
+                      </div>
+                    ) : null}
+                    {progress.tasksTotal > 0 ? <ProgressBar className="mt-3" ratio={progress.ratio} /> : null}
+                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-text-3">
+                      {t(health.key, health.params)}
+                    </p>
+                  </Link>
+                  {handle}
+                </Card>
+              )
+            }}
+          </SortableList>
+          <DashedNewResult onClick={() => requestCreate()} />
+        </>
       )}
-
-      <DashedNewResult onClick={() => requestCreate()} />
 
       {archived.length > 0 ? (
         <div>
@@ -218,6 +223,7 @@ const isLoose = (task: Task): boolean => !task.objectiveId && !task.resultId
 
 function TasksTab() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const state = useAleph()
   const { toggle, execute, dialog } = useTaskCompletion()
   const actions = useTaskActions()
@@ -266,18 +272,34 @@ function TasksTab() {
 
   return (
     <div className="flex flex-col gap-3">
-      <Button onClick={() => setCreating(true)}>{t('planning.tasks.new')}</Button>
-      <div className="flex items-center justify-between gap-2">
-        <Button variant="secondary" onClick={() => setFiltersOpen(true)}>
-          {t('planning.openFilters')}
-          {filterCount > 0 ? ` · ${filterCount}` : ''}
-        </Button>
-        <p className="text-[13px] text-text-3">{t('planning.tasks.count', { count: filtered.length })}</p>
-      </div>
+      {state.tasks.length > 0 ? (
+        <>
+          <Button onClick={() => setCreating(true)}>{t('planning.tasks.new')}</Button>
+          <div className="flex items-center justify-between gap-2">
+            <Button variant="secondary" onClick={() => setFiltersOpen(true)}>
+              {t('planning.openFilters')}
+              {filterCount > 0 ? ` · ${filterCount}` : ''}
+            </Button>
+            <p className="text-[13px] text-text-3">{t('planning.tasks.count', { count: filtered.length })}</p>
+          </div>
+        </>
+      ) : null}
       {state.tasks.length === 0 ? (
-        <EmptyState>{t('planning.tasks.empty')}</EmptyState>
+        <EmptyState
+          action={
+            <Button onClick={() => navigate('/')}>{t('planning.tasks.emptyCta')}</Button>
+          }
+        >
+          {t('planning.tasks.empty')}
+        </EmptyState>
       ) : filtered.length === 0 ? (
-        <EmptyState>{t('planning.tasks.emptyFiltered')}</EmptyState>
+        <EmptyState
+          action={
+            <Button onClick={clear}>{t('planning.tasks.clearFilters')}</Button>
+          }
+        >
+          {t('planning.tasks.emptyFiltered')}
+        </EmptyState>
       ) : (
         <ul className="flex flex-col gap-2">
           {filtered.map((task) => (

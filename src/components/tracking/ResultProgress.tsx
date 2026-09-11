@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Card, EmptyState, ProgressBar, SectionTitle } from '@/components/ui/primitives'
+import { Button, Card, EmptyState, ProgressBar, SectionTitle } from '@/components/ui/primitives'
 import { activeResults, objectiveProgress, objectivesOfResult, resultProgress } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { skillName, stageShort } from '@/i18n/labels'
@@ -9,6 +9,7 @@ import { skillById } from '@/data/selectors'
 
 export function ResultProgress() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const state = useAleph()
   const results = activeResults(state)
   const [openId, setOpenId] = useState<string | null>(null)
@@ -17,7 +18,13 @@ export function ResultProgress() {
     <section>
       <SectionTitle>{t('tracking.results.title')}</SectionTitle>
       {results.length === 0 ? (
-        <EmptyState>{t('tracking.results.empty')}</EmptyState>
+        <EmptyState
+          action={
+            <Button onClick={() => navigate('/planning')}>{t('tracking.results.emptyCta')}</Button>
+          }
+        >
+          {t('tracking.results.empty')}
+        </EmptyState>
       ) : (
         <ul className="flex flex-col gap-2">
           {results.map((result) => {

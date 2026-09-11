@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/character/Avatar'
 import { CustomizeSheet } from '@/components/character/CustomizeSheet'
@@ -9,11 +9,12 @@ import { DayBar } from '@/components/home/DayBar'
 import { SkillsSheet } from '@/components/home/SkillsSheet'
 import { TodayStep } from '@/components/home/TodayStep'
 import { WritingFold } from '@/components/home/WritingFold'
-import { ProgressBar } from '@/components/ui/primitives'
+import { cx, ProgressBar } from '@/components/ui/primitives'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { useAleph } from '@/data/store'
 import { agendaCalendarDay, attendingResults, weekSeriesPulse, type AgendaFilter } from '@/data/selectors'
 import { startOfWeek } from '@/domain/dates'
+import { dayMoment } from '@/i18n/dayMoment'
 import { formatMoney } from '@/i18n/format'
 
 const HERO_CLASS = 'flex items-start gap-4'
@@ -27,6 +28,23 @@ export function HomePage() {
   const [skills, setSkills] = useState(false)
   const [filter, setFilter] = useState<AgendaFilter>('today')
   const [pickDate, setPickDate] = useState('')
+  const [glowing, setGlowing] = useState(false)
+  const [xpFlashing, setXpFlashing] = useState(false)
+
+  useEffect(() => {
+    if (pulseKey === undefined || pulseKey === 0) return
+    setGlowing(true)
+    const timer = window.setTimeout(() => setGlowing(false), 700)
+    return () => window.clearTimeout(timer)
+  }, [pulseKey])
+
+  useEffect(() => {
+    if (pulseKey === undefined || pulseKey === 0) return
+    setXpFlashing(true)
+    const timer = window.setTimeout(() => setXpFlashing(false), 500)
+    return () => window.clearTimeout(timer)
+  }, [pulseKey])
+
   const xpRatio = character.xpToNext > 0 ? character.xp / character.xpToNext : null
   const dayKey = agendaCalendarDay(filter, pickDate)
   const enterprises = attendingResults(state)
@@ -39,7 +57,7 @@ export function HomePage() {
     <div className="flex flex-col pt-4 pb-10">
       <header className={HERO_CLASS}>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="text-[13px] text-text-3">{t('home.greeting')}</p>
+          <p className="text-[13px] text-text-3">{t(`home.greeting.${dayMoment()}`)}</p>
           <h1 className="font-display text-[38px] leading-none text-white">{character.name}</h1>
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex h-7 items-center rounded-full bg-ink-800 px-2.5 text-[12px] text-white">
@@ -49,7 +67,9 @@ export function HomePage() {
               {t('common.money')} {formatMoney(character.money, character.locale)}
             </span>
           </div>
-          <ProgressBar className="h-2" ratio={xpRatio} />
+          <div className={cx(xpFlashing && 'animate-xp')}>
+            <ProgressBar className="h-2" ratio={xpRatio} />
+          </div>
           {enterpriseLine ? (
             <p className="truncate text-[13px] text-text-3">{enterpriseLine}</p>
           ) : null}
@@ -64,7 +84,10 @@ export function HomePage() {
         <button
           type="button"
           onClick={() => setCustomize(true)}
-          className="shrink-0 rounded-full ring-1 ring-accent/40 shadow-[0_0_44px_rgba(46,200,255,0.28)]"
+          className={cx(
+            'shrink-0 rounded-full ring-1 ring-accent/40 shadow-[0_0_44px_rgba(46,200,255,0.28)]',
+            glowing && 'animate-glow',
+          )}
         >
           <span className="block size-[136px] overflow-hidden rounded-full">
             <Avatar avatar={character.avatar} size={136} pulseKey={pulseKey} className="rounded-full" />

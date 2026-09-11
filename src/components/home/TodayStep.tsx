@@ -43,7 +43,18 @@ export function TodayStep() {
           </div>
         </>
       ) : (
-        <p className="mt-2 text-[15px] leading-relaxed text-text-2">{t('home.stepTodayEmpty')}</p>
+        <>
+          <p className="mt-2 text-[15px] leading-relaxed text-text-2">{t('home.stepTodayEmpty')}</p>
+          <Button
+            className="mt-4"
+            onClick={() => {
+              document.getElementById('home-composer-input')?.focus()
+              document.getElementById('home-composer-input')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+            }}
+          >
+            {t('home.stepTodayCta')}
+          </Button>
+        </>
       )}
       {completionDialog}
       <TaskFormSheet
