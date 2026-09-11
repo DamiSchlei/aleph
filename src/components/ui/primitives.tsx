@@ -155,7 +155,7 @@ export function ProgressBar({
 }) {
   const width = ratio === null ? 0 : Math.min(100, Math.max(0, ratio * 100))
   return (
-    <div className={cx('h-1.5 w-full overflow-hidden rounded-full bg-ink-700', className)}>
+    <div className={cx('h-1.5 w-full overflow-hidden rounded-full bg-white/15', className)}>
       <div
         className="h-full rounded-full transition-[width] duration-500"
         style={{ width: `${width}%`, background: color ?? 'var(--color-accent-strong)' }}

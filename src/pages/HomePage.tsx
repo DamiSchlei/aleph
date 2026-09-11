@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/character/Avatar'
 import { CustomizeSheet } from '@/components/character/CustomizeSheet'
@@ -6,7 +7,6 @@ import { Agenda } from '@/components/home/Agenda'
 import { Composer } from '@/components/home/Composer'
 import { DateChips } from '@/components/home/DateChips'
 import { DayBar } from '@/components/home/DayBar'
-import { PlanTotal } from '@/components/home/PlanTotal'
 import { SkillsSheet } from '@/components/home/SkillsSheet'
 import { TodayStep } from '@/components/home/TodayStep'
 import { WritingFold } from '@/components/home/WritingFold'
@@ -32,7 +32,6 @@ export function HomePage() {
   const { pulseKey } = useFeedback()
   const [customize, setCustomize] = useState(false)
   const [skills, setSkills] = useState(false)
-  const [planOpen, setPlanOpen] = useState(false)
   const [filter, setFilter] = useState<AgendaFilter>('today')
   const [pickDate, setPickDate] = useState('')
   const [assigning, setAssigning] = useState<Task | undefined>()
@@ -122,15 +121,12 @@ export function HomePage() {
         >
           {t('home.skillsTitle')}
         </button>
-        <button
-          type="button"
-          onClick={() => setPlanOpen((value) => !value)}
-          className="flex min-h-11 w-full items-center justify-between text-left text-[12px] font-medium tracking-[0.16em] text-text-3 uppercase"
+        <Link
+          to="/planning"
+          className="flex min-h-11 w-full items-center text-left text-[12px] font-medium tracking-[0.16em] text-text-3 uppercase"
         >
           {t('home.planTotal')}
-          <span className={planOpen ? 'rotate-180 text-text-3' : 'text-text-3'}>▾</span>
-        </button>
-        {planOpen ? <PlanTotal /> : null}
+        </Link>
         <WritingFold openSignal={writingOpenSignal}>
           {dayKey ? <DayBar dayKey={dayKey} /> : null}
         </WritingFold>
