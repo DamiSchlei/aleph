@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { ResultCard } from '@/components/planning/ResultCard'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
+import { TaskFiltersSheet, type TaskFilters } from '@/components/planning/TaskFiltersSheet'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { AssignSheet } from '@/components/task/AssignSheet'
 import { TaskRow } from '@/components/task/TaskRow'
@@ -9,14 +11,10 @@ import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { useTaskActions } from '@/components/task/useTaskActions'
 import { SortableList } from '@/components/ui/SortableList'
 import {
-  Badge,
   Button,
-  Card,
   Chip,
   EmptyState,
   Page,
-  ProgressBar,
-  Select,
 } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { reorderResults, restoreResult } from '@/data/actions'
@@ -24,22 +22,24 @@ import {
   activeResults,
   attendingResults,
   leastActiveAttending,
-  pickerObjectives,
-  pickerResults,
-  resultHealth,
-  resultProgress,
   taskResultStatus,
 } from '@/data/selectors'
 import { useAleph } from '@/data/store'
-import { MAX_OBJECTIVES_PER_RESULT, shouldSoftWarnActiveResults } from '@/domain/limits'
-import { STAGE_ORDER } from '@/domain/stage'
-import { formatDate, formatHours } from '@/i18n/format'
-import { skillName, stageShort } from '@/i18n/labels'
-import type { StageId, Task, TaskStatus } from '@/domain/types'
+import { shouldSoftWarnActiveResults } from '@/domain/limits'
+import type { Task } from '@/domain/types'
 
 type PlanningTab = 'results' | 'tasks'
 
 const CHIP_KEYS = ['product', 'money', 'body'] as const
+
+const EMPTY_FILTERS: TaskFilters = {
+  resultId: '',
+  objectiveId: '',
+  stage: '',
+  status: '',
+  skillId: '',
+  before: '',
+}
 
 export function PlanningPage() {
   const { t } = useTranslation()
@@ -99,7 +99,6 @@ function ResultsTab() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-[14px] leading-relaxed text-ink-400">{t('planning.results.helper')}</p>
-      <Button onClick={() => requestCreate()}>{t('planning.results.new')}</Button>
       {results.length === 0 ? (
         <EmptyState
           action={
@@ -123,50 +122,19 @@ function ResultsTab() {
           {(id, handle) => {
             const result = results.find((r) => r.id === id)
             if (!result) return null
-            const progress = resultProgress(state, result.id)
-            const health = resultHealth(state, result.id)
-            return (
-              <Card className="flex items-start gap-1 p-2">
-                <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 p-2">
-                  <p className="text-[16px] font-semibold text-white">{result.name}</p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {result.targetDate ? <Badge tone="amber">{formatDate(result.targetDate, state.character.locale)}</Badge> : null}
-                    <Badge tone="accent">
-                      {t('planning.results.objectivesCount', {
-                        count: progress.objectiveCount,
-                        max: MAX_OBJECTIVES_PER_RESULT,
-                      })}
-                    </Badge>
-                  </div>
-                  <ProgressBar className="mt-3" ratio={progress.ratio} />
-                  <p className="mt-2 text-[12px] text-ink-400">
-                    {progress.tasksTotal === 0
-                      ? t('planning.results.noTasks')
-                      : t('planning.results.progress', {
-                          done: progress.tasksDone,
-                          total: progress.tasksTotal,
-                        })}
-                    {' · '}
-                    {t('planning.results.hours', {
-                      done: formatHours(progress.hoursDone, state.character.locale),
-                      total: formatHours(progress.hoursEstimated, state.character.locale),
-                    })}
-                  </p>
-                  <p className="mt-1 text-[12px] text-ink-400">
-                    {STAGE_ORDER.map(
-                      (stage) => `${stageShort(t, stage)} ${progress.objectivesByStage[stage]}`,
-                    ).join(' · ')}
-                  </p>
-                  <p className="mt-2 text-[13px] leading-relaxed text-ink-200">
-                    {t(health.key, health.params)}
-                  </p>
-                </Link>
-                {handle}
-              </Card>
-            )
+            return <ResultCard result={result} handle={handle} />
           }}
         </SortableList>
       )}
+
+      <button
+        type="button"
+        onClick={() => requestCreate()}
+        className="flex min-h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 bg-transparent px-4 py-6 text-[15px] text-ink-400 transition-colors hover:border-accent/40 hover:text-ink-200"
+      >
+        <span className="text-2xl leading-none text-accent">+</span>
+        {t('planning.results.new')}
+      </button>
 
       {archived.length > 0 ? (
         <div>
@@ -222,139 +190,92 @@ function TasksTab() {
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<Task | undefined>()
   const [assigning, setAssigning] = useState<Task | undefined>()
-  const [resultId, setResultId] = useState('')
-  const [objectiveId, setObjectiveId] = useState('')
-  const [stage, setStage] = useState<StageId | ''>('')
-  const [status, setStatus] = useState<TaskStatus | ''>('')
-  const [skillId, setSkillId] = useState('')
-  const [before, setBefore] = useState('')
-  const [moreFilters, setMoreFilters] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [filters, setFilters] = useState<TaskFilters>(EMPTY_FILTERS)
 
-  const objectives = resultId ? pickerObjectives(state, resultId) : []
+  const activeFilterCount = Object.values(filters).filter(Boolean).length
 
   const filtered = useMemo(() => {
     return state.tasks
       .filter((task) => {
-        // Tasks of archived results are hidden until the result is restored.
         if (taskResultStatus(state, task) === 'archived') return false
-        if (resultId && task.resultId !== resultId) return false
-        if (objectiveId && task.objectiveId !== objectiveId) return false
-        if (stage && task.stage !== stage) return false
-        if (status && task.status !== status) return false
-        if (skillId && task.skillId !== skillId) return false
-        if (before && (!task.dueAt || task.dueAt.slice(0, 10) > before)) return false
+        if (filters.resultId && task.resultId !== filters.resultId) return false
+        if (filters.objectiveId && task.objectiveId !== filters.objectiveId) return false
+        if (filters.stage && task.stage !== filters.stage) return false
+        if (filters.status && task.status !== filters.status) return false
+        if (filters.skillId && task.skillId !== filters.skillId) return false
+        if (filters.before && (!task.dueAt || task.dueAt.slice(0, 10) > filters.before)) return false
         return true
       })
       .sort((a, b) => {
-        // Loose steps float to the top so they are easy to assign.
         const al = isLoose(a) ? 0 : 1
         const bl = isLoose(b) ? 0 : 1
         if (al !== bl) return al - bl
         return a.importance - b.importance
       })
-  }, [state, resultId, objectiveId, stage, status, skillId, before])
+  }, [state, filters])
 
-  const clear = () => {
-    setResultId('')
-    setObjectiveId('')
-    setStage('')
-    setStatus('')
-    setSkillId('')
-    setBefore('')
+  const looseTasks = filtered.filter(isLoose)
+  const assignedTasks = filtered.filter((task) => !isLoose(task))
+
+  const patchFilters = (patch: Partial<TaskFilters>) => {
+    setFilters((current) => ({ ...current, ...patch }))
   }
 
   return (
     <div className="flex flex-col gap-3">
       <Button onClick={() => setCreating(true)}>{t('planning.tasks.new')}</Button>
-      <div className="grid grid-cols-2 gap-2">
-        <Select
-          value={resultId}
-          onChange={(e) => {
-            setResultId(e.target.value)
-            setObjectiveId('')
-          }}
-        >
-          <option value="">{t('planning.tasks.filterResult')}</option>
-          {pickerResults(state).map((result) => (
-            <option key={result.id} value={result.id}>
-              {result.name}
-            </option>
-          ))}
-        </Select>
-        <Select value={objectiveId} onChange={(e) => setObjectiveId(e.target.value)}>
-          <option value="">{t('planning.tasks.filterObjective')}</option>
-          {objectives.map((objective) => (
-            <option key={objective.id} value={objective.id}>
-              {objective.name}
-            </option>
-          ))}
-        </Select>
-        <Select value={stage} onChange={(e) => setStage(e.target.value as StageId | '')}>
-          <option value="">{t('planning.tasks.filterStage')}</option>
-          {STAGE_ORDER.map((id) => (
-            <option key={id} value={id}>
-              {t(`stages.${id}.short`)}
-            </option>
-          ))}
-        </Select>
-        <Select value={status} onChange={(e) => setStatus(e.target.value as TaskStatus | '')}>
-          <option value="">{t('planning.tasks.filterStatus')}</option>
-          {(['pending', 'in_progress', 'done_on_time', 'done_late', 'cancelled'] as TaskStatus[]).map(
-            (id) => (
-              <option key={id} value={id}>
-                {t(`taskStatus.${id}`)}
-              </option>
-            ),
-          )}
-        </Select>
-        <input
-          type="date"
-          value={before}
-          onChange={(e) => setBefore(e.target.value)}
-          aria-label={t('planning.tasks.filterDate')}
-          className="min-h-11 w-full rounded-2xl border border-white/8 bg-ink-800/80 px-3.5 text-[15px]"
-        />
-      </div>
-      {moreFilters ? (
-        <Select value={skillId} onChange={(e) => setSkillId(e.target.value)}>
-          <option value="">{t('planning.tasks.filterSkill')}</option>
-          {state.skills.map((skill) => (
-            <option key={skill.id} value={skill.id}>
-              {skillName(t, skill)}
-            </option>
-          ))}
-        </Select>
-      ) : null}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" className="px-2" onClick={() => setMoreFilters((v) => !v)}>
-          {t('planning.tasks.moreFilters')}
-        </Button>
-        <div className="flex items-center gap-2">
-          <p className="text-[13px] text-ink-400">{t('planning.tasks.count', { count: filtered.length })}</p>
-          <Button variant="ghost" onClick={clear}>
-            {t('planning.tasks.clearFilters')}
-          </Button>
-        </div>
+      <div className="flex items-center justify-between gap-2">
+        <Chip active={activeFilterCount > 0} onClick={() => setFiltersOpen(true)}>
+          {t('planning.openFilters')}
+          {activeFilterCount > 0 ? ` · ${activeFilterCount}` : ''}
+        </Chip>
+        <p className="text-[13px] text-ink-400">{t('planning.tasks.count', { count: filtered.length })}</p>
       </div>
       {state.tasks.length === 0 ? (
         <EmptyState>{t('planning.tasks.empty')}</EmptyState>
       ) : filtered.length === 0 ? (
         <EmptyState>{t('planning.tasks.emptyFiltered')}</EmptyState>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {filtered.map((task) => (
-            <li key={task.id}>
-              <TaskRow
-                task={task}
-                onToggle={() => toggle(task)}
-                onOpen={() => setEditing(task)}
-                onAssign={() => setAssigning(task)}
-                onDelete={() => actions.requestDelete(task)}
-                showProjection
-              />
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col gap-4">
+          {looseTasks.length > 0 ? (
+            <section className="border-t-2 border-amber/40 pt-3">
+              <p className="mb-2 text-[12px] font-semibold tracking-[0.12em] text-amber uppercase">
+                {t('planning.tasks.loose')}
+              </p>
+              <ul className="flex flex-col gap-2">
+                {looseTasks.map((task) => (
+                  <li key={task.id}>
+                    <TaskRow
+                      task={task}
+                      onToggle={() => toggle(task)}
+                      onOpen={() => setEditing(task)}
+                      onAssign={() => setAssigning(task)}
+                      onDelete={() => actions.requestDelete(task)}
+                      showProjection
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+          {assignedTasks.length > 0 ? (
+            <ul className="flex flex-col gap-2">
+              {assignedTasks.map((task) => (
+                <li key={task.id}>
+                  <TaskRow
+                    task={task}
+                    onToggle={() => toggle(task)}
+                    onOpen={() => setEditing(task)}
+                    onAssign={() => setAssigning(task)}
+                    onDelete={() => actions.requestDelete(task)}
+                    showProjection
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       )}
       {dialog}
       {actions.dialog}
@@ -373,6 +294,13 @@ function TasksTab() {
         open={Boolean(assigning)}
         task={assigning}
         onClose={() => setAssigning(undefined)}
+      />
+      <TaskFiltersSheet
+        open={filtersOpen}
+        filters={filters}
+        onChange={patchFilters}
+        onClose={() => setFiltersOpen(false)}
+        onClear={() => setFilters(EMPTY_FILTERS)}
       />
     </div>
   )

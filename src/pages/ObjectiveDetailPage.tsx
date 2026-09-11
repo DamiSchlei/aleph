@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
+import { StagePath } from '@/components/planning/StagePath'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
@@ -111,6 +112,8 @@ export function ObjectiveDetailPage() {
         ) : null}
         <p className="mt-2 text-[14px] leading-relaxed text-ink-200">{t(health.key, health.params)}</p>
       </header>
+
+      <StagePath currentStage={objective.currentStage} />
 
       <div className="flex gap-2">
         <Button variant="secondary" className="flex-1" onClick={() => setEdit(true)}>
