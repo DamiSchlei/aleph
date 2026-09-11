@@ -170,7 +170,7 @@
       "helper": "A result is what you want to achieve. Inside it you add up to 4 objectives.",
       "new": "+ New result",
       "empty": "No results yet.",
-      "emptyHint": "Start with one of these, or write your own.",
+      "emptyHint": "A result is a company you are building. Start with one.",
       "chips": {
         "product": "First product ready to sell",
         "money": "A month with spending and income under control",
@@ -245,8 +245,9 @@
       "createTitle": "New task",
       "editTitle": "Edit task",
       "titlePlaceholder": "What is the next concrete step?",
-      "empty": "No tasks. Create them from a result or propose a block on Home.",
-      "emptyFiltered": "No tasks match these filters.",
+      "empty": "No tasks yet. Note the first block from Home.",
+      "emptyCta": "Go to Home",
+      "emptyFiltered": "Nothing matches these filters.",
       "projected": "Projected",
       "filters": "Filters",
       "clearFilters": "Clear filters",
@@ -301,6 +302,7 @@
     "title": "Tracking",
     "subtitle": "Whether your tasks landed in the time and hours you expected.",
     "emptyLine": "Nothing to measure yet. Complete the first task and your pace shows up here.",
+    "emptyCta": "Note a block",
     "weekLine": "This week you logged {{hours}} hours and finished {{onTime}} of {{total}} tasks on time.",
     "weekSentenceNone": "No completed work this week.",
     "weekSentenceMoved": "This week you closed {{onTime}} of {{total}} on time · {{hours}} h.",
@@ -321,7 +323,8 @@
     },
     "results": {
       "title": "Result progress",
-      "empty": "Create a result in Planning to see progress.",
+      "empty": "No results to track.",
+      "emptyCta": "Open Planning",
       "noTasks": "No tasks yet",
       "expand": "Show objectives",
       "collapse": "Hide objectives"
@@ -336,7 +339,7 @@
     "add": "Add comment",
     "placeholder": "What happened?",
     "workingPlaceholder": "What happened? What is holding you back?",
-    "empty": "This journal starts when you write the first comment.",
+    "empty": "Nothing written yet.",
     "origin": {
       "result": "Result",
       "objective": "Objective",
