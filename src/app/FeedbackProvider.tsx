@@ -4,7 +4,7 @@ import { LevelUpOverlay, type LevelUpPayload } from '@/components/character/Leve
 import { RewardToast, type ToastMessage } from '@/components/character/RewardToast'
 import { useAleph } from '@/data/store'
 import { skillName } from '@/i18n/labels'
-import { formatHours } from '@/i18n/format'
+import { formatMoney } from '@/i18n/format'
 import type { CompletionOutcome } from '@/data/actions'
 
 interface FeedbackApi {
@@ -40,20 +40,16 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
     (outcome: CompletionOutcome) => {
       const locale = state.character.locale
       const skill = state.skills.find((s) => s.id === outcome.skillId)
-      const hours = formatHours(outcome.reward.hours, locale)
+      const money = formatMoney(outcome.reward.money, locale)
       pushToast({
-        text: skill
-          ? t('toast.rewardWithSkill', {
-              xp: outcome.reward.xp,
-              money: outcome.reward.money,
-              hours,
-              skill: skillName(t, skill),
-            })
-          : t('toast.reward', { xp: outcome.reward.xp, money: outcome.reward.money, hours }),
+        text: t('toast.gotReward', { xp: outcome.reward.xp, money }),
         detail:
           skill && outcome.skillLevelsGained > 0
             ? t('toast.skillLevelUp', { skill: skillName(t, skill), level: skill.level })
-            : undefined,
+            : skill
+              ? skillName(t, skill)
+              : undefined,
+        tone: 'reward',
       })
       setPulseKey((k) => k + 1)
 
