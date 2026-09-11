@@ -55,7 +55,7 @@ export function TabBar() {
                 cx(
                   'flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1 transition-colors',
                   tab.primary && 'font-semibold',
-                  isActive ? 'text-accent' : 'text-ink-400 hover:text-ink-200',
+                  isActive ? 'text-accent' : 'text-text-3 hover:text-text-2',
                 )
               }
             >

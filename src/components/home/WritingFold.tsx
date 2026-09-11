@@ -1,10 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LiteratureLine } from '@/components/home/LiteratureLine'
 import { WalkerJournal } from '@/components/home/WalkerJournal'
 import { cx } from '@/components/ui/primitives'
 
-export function WritingFold({ openSignal }: { openSignal?: number }) {
+export function WritingFold({
+  openSignal,
+  children,
+}: {
+  openSignal?: number
+  children?: ReactNode
+}) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
@@ -17,18 +23,16 @@ export function WritingFold({ openSignal }: { openSignal?: number }) {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="surface-raised flex min-h-11 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
+        className="flex min-h-11 w-full items-center justify-between gap-3 text-left"
       >
-        <div>
-          <p className="text-[13px] font-semibold tracking-[0.14em] text-ink-400 uppercase">
-            {t('home.writingTitle')}
-          </p>
-          <p className="mt-0.5 text-[13px] text-ink-400">{t('home.writingHint')}</p>
-        </div>
-        <span className={cx('text-ink-400 transition-transform', open && 'rotate-180')}>▾</span>
+        <p className="text-[12px] font-medium tracking-[0.16em] text-text-3 uppercase">
+          {t('home.writingTitle')}
+        </p>
+        <span className={cx('text-text-3 transition-transform', open && 'rotate-180')}>▾</span>
       </button>
       {open ? (
-        <div className="mt-3 flex flex-col gap-4">
+        <div className="mt-2 flex flex-col gap-4">
+          {children}
           <WalkerJournal />
           <LiteratureLine />
         </div>

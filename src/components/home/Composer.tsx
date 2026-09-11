@@ -14,7 +14,7 @@ export function Composer({ filter, pickDate }: { filter: AgendaFilter; pickDate:
 
   return (
     <form
-      className="surface-raised rounded-2xl px-3 py-2"
+      className="surface-row rounded-2xl px-3 py-1.5"
       onSubmit={(e) => {
         e.preventDefault()
         submit()
@@ -25,7 +25,7 @@ export function Composer({ filter, pickDate }: { filter: AgendaFilter; pickDate:
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t('home.proposePlaceholder')}
-        className="w-full min-h-10 bg-transparent text-[15px] text-ink-200 outline-none placeholder:text-ink-400/70"
+        className="w-full min-h-10 bg-transparent text-[14px] text-text-2 outline-none placeholder:text-text-3/80"
       />
     </form>
   )

@@ -8,8 +8,14 @@
   --color-ink-800: #121a30;
   --color-ink-700: #1b2540;
   --color-ink-600: #263252;
-  --color-ink-400: #6b7a9e;
-  --color-ink-200: #b9c4dc;
+  --color-ink-400: #9aa8c7;
+  --color-ink-200: #e4eaf6;
+  --color-text: #ffffff;
+  --color-text-2: #e4eaf6;
+  --color-text-3: #9aa8c7;
+  --color-surface: #121a2c;
+  --color-surface-2: #182238;
+  --color-row: #0e1526;
   --color-accent: #7dd3fc;
   --color-accent-strong: #38bdf8;
   --color-violet: #a78bfa;
@@ -34,9 +40,9 @@ body,
 body {
   margin: 0;
   background:
-    radial-gradient(120% 60% at 50% 0%, #16204080 0%, transparent 60%),
+    radial-gradient(90% 48% at 50% -8%, rgb(224 242 254 / 0.32) 0%, rgb(56 189 248 / 0.18) 22%, rgb(14 23 42 / 0) 68%),
     var(--color-ink-950);
-  color: var(--color-ink-200);
+  color: var(--color-text-2);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
@@ -73,9 +79,17 @@ select option {
 }
 
 @utility surface-raised {
-  border: 1px solid rgb(255 255 255 / 0.1);
-  background: rgb(18 26 48 / 0.8);
-  box-shadow: 0 0 0 1px rgb(125 211 252 / 0.08);
+  border: 1px solid rgb(125 211 252 / 0.18);
+  background: var(--color-surface-2);
+}
+
+@utility surface-row {
+  background: var(--color-row);
+}
+
+@utility pill {
+  background: var(--color-ink-700);
+  color: var(--color-text);
 }
 
 @utility no-scrollbar {
