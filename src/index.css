@@ -114,6 +114,17 @@ select option {
   }
 }
 
+@keyframes aleph-glow {
+  0%, 100% { box-shadow: 0 0 44px rgba(46, 200, 255, 0.28); }
+  50% { box-shadow: 0 0 68px rgba(46, 200, 255, 0.55); }
+}
+@keyframes aleph-xp-flash {
+  0%, 100% { filter: brightness(1); }
+  40% { filter: brightness(1.35); }
+}
+.animate-glow { animation: aleph-glow 700ms ease-out; }
+.animate-xp { animation: aleph-xp-flash 500ms ease-out; }
+
 @keyframes aleph-rise {
   from {
     opacity: 0;
@@ -149,7 +160,9 @@ select option {
 @media (prefers-reduced-motion: reduce) {
   .animate-pop,
   .animate-rise,
-  .animate-fade {
+  .animate-fade,
+  .animate-glow,
+  .animate-xp {
     animation: none;
   }
 }
