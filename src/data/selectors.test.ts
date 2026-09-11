@@ -4,6 +4,7 @@ import {
   agendaCalendarDay,
   agendaTasks,
   attendingResults,
+  featuredAgendaTask,
   dayLoad,
   dueAtForFilter,
   latestCommentOnDay,
@@ -74,6 +75,70 @@ describe('dueAtForFilter', () => {
     expect(agendaCalendarDay('tomorrow', '', NOW)).toBeUndefined()
     expect(agendaCalendarDay('week', '', NOW)).toBeUndefined()
     expect(agendaCalendarDay('undated', '', NOW)).toBeUndefined()
+  })
+})
+
+describe('featuredAgendaTask', () => {
+  it('prefers in_progress, excludes done, respects day order', () => {
+    const s = state({
+      tasks: [
+        task({
+          id: 'pending-first',
+          title: 'Pending first',
+          dueAt: '2026-09-07',
+          scheduledFor: '2026-09-07',
+          dayOrder: 0,
+        }),
+        task({
+          id: 'in-progress',
+          title: 'In progress',
+          dueAt: '2026-09-07',
+          scheduledFor: '2026-09-07',
+          dayOrder: 1,
+          status: 'in_progress',
+        }),
+        task({
+          id: 'done',
+          title: 'Done',
+          dueAt: '2026-09-07',
+          scheduledFor: '2026-09-07',
+          status: 'done_on_time',
+          completedAt: '2026-09-07T10:00:00.000Z',
+        }),
+        task({
+          id: 'cancelled',
+          title: 'Cancelled',
+          dueAt: '2026-09-07',
+          scheduledFor: '2026-09-07',
+          status: 'cancelled',
+        }),
+      ],
+    })
+    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).toBe('in-progress')
+    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).not.toBe('done')
+    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).not.toBe('cancelled')
+  })
+
+  it('returns first open task in agenda order when none are in progress', () => {
+    const s = state({
+      tasks: [
+        task({
+          id: 'second',
+          title: 'Second',
+          dueAt: '2026-09-07',
+          scheduledFor: '2026-09-07',
+          dayOrder: 1,
+        }),
+        task({
+          id: 'first',
+          title: 'First',
+          dueAt: '2026-09-07',
+          scheduledFor: '2026-09-07',
+          dayOrder: 0,
+        }),
+      ],
+    })
+    expect(featuredAgendaTask(s, 'today', undefined, NOW)?.id).toBe('first')
   })
 })
 

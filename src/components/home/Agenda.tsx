@@ -17,19 +17,30 @@ import type { Task } from '@/domain/types'
 export function Agenda({
   filter,
   pickDate,
+  maxVisible,
+  excludeTaskId,
 }: {
   filter: AgendaFilter
   pickDate: string
+  maxVisible?: number
+  excludeTaskId?: string
 }) {
   const { t } = useTranslation()
   const state = useAleph()
   const locale = state.character.locale
-  const tasks = agendaTasks(state, filter, pickDate)
+  const [expanded, setExpanded] = useState(false)
+  const allTasks = agendaTasks(state, filter, pickDate).filter(
+    (task) => task.id !== excludeTaskId,
+  )
+  const tasks =
+    maxVisible && !expanded && allTasks.length > maxVisible
+      ? allTasks.slice(0, maxVisible)
+      : allTasks
   const { toggle, dialog: completionDialog, literature } = useTaskCompletion()
   const actions = useTaskActions()
   const [editing, setEditing] = useState<Task | undefined>()
   const [assigning, setAssigning] = useState<Task | undefined>()
-  const done = tasks.filter((task) => isTaskDone(task.status)).length
+  const done = allTasks.filter((task) => isTaskDone(task.status)).length
 
   const title =
     filter === 'undated'
@@ -50,9 +61,9 @@ export function Agenda({
     <section className="flex flex-col gap-3">
       <SectionTitle
         action={
-          tasks.length > 0 ? (
+          allTasks.length > 0 ? (
             <span className="text-[12px] text-ink-400">
-              {t('home.agendaCount', { done, total: tasks.length })}
+              {t('home.agendaCount', { done, total: allTasks.length })}
             </span>
           ) : null
         }
@@ -85,6 +96,16 @@ export function Agenda({
           }}
         </SortableList>
       )}
+
+      {maxVisible && !expanded && allTasks.length > maxVisible ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="min-h-11 w-full text-center text-[14px] text-ink-400 hover:text-ink-200"
+        >
+          {t('home.seeDay')}
+        </button>
+      ) : null}
 
       {completionDialog}
       {actions.dialog}
