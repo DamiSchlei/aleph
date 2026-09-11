@@ -109,9 +109,16 @@
     "proposePlaceholder": "Anotá un paso…",
     "proposeCta": "Anotar",
     "agendaTitle": "Hoy",
-    "greeting": "Hola",
+    "greeting": {
+      "morning": "Buen día",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches",
+      "night": "Que descanses"
+    },
+    "greetingFallback": "Buen día",
     "stepToday": "El paso de hoy",
-    "stepTodayEmpty": "Hoy no hay un paso.",
+    "stepTodayEmpty": "Hoy no hay nada en cola. Anotá un bloque y arrancá.",
+    "stepTodayCta": "Anotá un bloque",
     "seeDay": "Ver el día",
     "writingTitle": "Escritura",
     "writingHint": "El walker y la literatura quedan plegados hasta que los abras.",
@@ -120,7 +127,8 @@
     "moveCta": "Mové",
     "seriesMissed": "Se cayeron {{count}} bloque(s) esta semana.",
     "seriesHeld": "Esta semana sostuviste los bloques.",
-    "agendaEmpty": "Nada en el día. Anotá un paso.",
+    "agendaEmpty": "El día está abierto.",
+    "agendaEmptyCta": "Sumá al día",
     "agendaCount": "{{done}} de {{total}} listas",
     "undatedTitle": "Sin fecha",
     "filters": {

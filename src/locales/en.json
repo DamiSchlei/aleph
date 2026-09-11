@@ -109,9 +109,16 @@
     "proposePlaceholder": "Jot down a step…",
     "proposeCta": "Add",
     "agendaTitle": "Today",
-    "greeting": "Hello",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "night": "Good night"
+    },
+    "greetingFallback": "Good morning",
     "stepToday": "Today's step",
-    "stepTodayEmpty": "No step for today.",
+    "stepTodayEmpty": "Nothing queued for today. Name one block and start.",
+    "stepTodayCta": "Note a block",
     "seeDay": "See the day",
     "writingTitle": "Writing",
     "writingHint": "Walker and literature stay folded until you open them.",
@@ -120,7 +127,8 @@
     "moveCta": "Move",
     "seriesMissed": "{{count}} block(s) dropped this week.",
     "seriesHeld": "You held the blocks this week.",
-    "agendaEmpty": "Nothing in the day. Jot a step.",
+    "agendaEmpty": "The day is open.",
+    "agendaEmptyCta": "Add to the day",
     "agendaCount": "{{done}} of {{total}} done",
     "undatedTitle": "No date",
     "filters": {

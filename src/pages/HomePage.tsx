@@ -14,6 +14,7 @@ import { useFeedback } from '@/app/FeedbackProvider'
 import { useAleph } from '@/data/store'
 import { agendaCalendarDay, attendingResults, weekSeriesPulse, type AgendaFilter } from '@/data/selectors'
 import { startOfWeek } from '@/domain/dates'
+import { dayMoment } from '@/i18n/dayMoment'
 import { formatMoney } from '@/i18n/format'
 
 const HERO_CLASS = 'flex items-start gap-4'
@@ -39,7 +40,7 @@ export function HomePage() {
     <div className="flex flex-col pt-4 pb-10">
       <header className={HERO_CLASS}>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="text-[13px] text-text-3">{t('home.greeting')}</p>
+          <p className="text-[13px] text-text-3">{t(`home.greeting.${dayMoment()}`)}</p>
           <h1 className="font-display text-[38px] leading-none text-white">{character.name}</h1>
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex h-7 items-center rounded-full bg-ink-800 px-2.5 text-[12px] text-white">
