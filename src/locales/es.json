@@ -51,7 +51,8 @@
     "more": "Más",
     "show": "Ver",
     "hide": "Ocultar",
-    "dash": "—"
+    "dash": "—",
+    "percent": "{{value}}%"
   },
   "difficulty": {
     "low": "Baja",
@@ -108,7 +109,7 @@
     "hint": "Completá tareas para ganar XP y dinero.",
     "proposePlaceholder": "Anotá un paso…",
     "proposeCta": "Anotar",
-    "agendaTitle": "Hoy",
+    "agendaTitle": "Agenda",
     "greeting": {
       "morning": "Buen día",
       "afternoon": "Buenas tardes",
@@ -118,7 +119,7 @@
     "greetingFallback": "Buen día",
     "stepToday": "El paso de hoy",
     "stepTodayEmpty": "Hoy no hay nada en cola. Anotá un bloque y arrancá.",
-    "stepTodayCta": "Anotá un bloque",
+    "stepTodayCta": "+ Anotar paso",
     "seeDay": "Ver el día",
     "writingTitle": "Escritura",
     "writingHint": "El walker y la literatura quedan plegados hasta que los abras.",
@@ -156,11 +157,20 @@
     "newSkillName": "Nombre de la habilidad",
     "newSkillIcon": "Ícono",
     "openTaskDetail": "Abrir tarea",
-    "completeTask": "Completar tarea"
+    "completeTask": "Completar tarea",
+    "customizeLink": "Personalizar",
+    "levelChip": "Nv. {{level}}",
+    "xpLabel": "{{xp}} / {{next}} XP",
+    "stepTodayTitle": "El paso de hoy",
+    "composerPlaceholder": "Anotá un paso…",
+    "filterToday": "Hoy",
+    "filterTomorrow": "Mañana",
+    "filterWeek": "Semana",
+    "filterMore": "···"
   },
   "planning": {
     "title": "Planificación",
-    "subtitle": "Resultados, objetivos y tareas para acercarte a lo que querés.",
+    "subtitle": "Mapeo de resultados estratégicos y etapas de ejecución.",
     "openFilters": "Filtros",
     "tabs": {
       "results": "Resultados",
@@ -296,13 +306,19 @@
       "checklistLimit": "Si necesita más de 7 ítems, es un objetivo.",
       "referenceUrl": "Enlace",
       "referenceUrlPlaceholder": "https://"
-    }
+    },
+    "activeEnterprises": "Empresas Activas",
+    "progress": "Progreso",
+    "nextTask": "Próximo: {{title}}",
+    "newResult": "+ Nuevo resultado",
+    "resultHint": "Un resultado es una empresa que estás armando.",
+    "openWeek": "Vista semanal"
   },
   "tracking": {
     "title": "Seguimiento",
-    "subtitle": "Cumplimiento de tus tareas en los tiempos y horas esperados.",
+    "subtitle": "La verdad de tus sistemas.",
     "emptyLine": "Todavía no hay tareas para medir. Completá la primera y acá aparece tu ritmo.",
-    "emptyCta": "Anotá un bloque",
+    "emptyCta": "Ir a Inicio",
     "weekLine": "Esta semana hiciste {{hours}} horas y cumpliste {{onTime}} de {{total}} tareas a tiempo.",
     "weekSentenceNone": "Esta semana no hay trabajo cerrado.",
     "weekSentenceMoved": "Esta semana cerraste {{onTime}} de {{total}} a tiempo · {{hours}} h.",
@@ -332,7 +348,19 @@
     "skills": {
       "title": "Habilidades",
       "line": "Más activa: {{most}} · Más quieta: {{quietest}}"
-    }
+    },
+    "weekSentence": "Esta semana cerraste {{done}} de {{total}} a tiempo · {{hours}} h.",
+    "weekSkillLine": "Tu ritmo es constante. La habilidad de «{{skill}}» es la que más traccionó el progreso.",
+    "kpiDone": "Completadas",
+    "kpiOnTime": "A tiempo",
+    "kpiHours": "Horas",
+    "activityTitle": "Ritmo de actividad",
+    "resultsTitle": "Avance por resultado",
+    "skillsTitle": "Habilidades",
+    "seeRoster": "Ver Roster",
+    "skillMostActive": "Más activa",
+    "skillStable": "Estable",
+    "skillStreak": "En racha"
   },
   "journal": {
     "title": "Bitácora",
@@ -376,7 +404,7 @@
     "free": "Gratis",
     "lockedLevel": "Nivel {{level}}",
     "notEnoughMoney": "No te alcanza la plata",
-    "settings": "Ajustes",
+    "settings": "Ajustes del personaje",
     "tabs": {
       "skin": "Piel",
       "color": "Color",
@@ -453,5 +481,94 @@
     "fri": "Vie",
     "sat": "Sáb",
     "sun": "Dom"
+  },
+  "onboarding": {
+    "character": {
+      "vol": "VOL. I — ORIGEN",
+      "title": "Personalización de Sujeto",
+      "subtitle": "Definición de parámetros de identidad y sistema de comunicación para el nuevo ciclo de Aleph.",
+      "figCaption": "Fig 1. Visualización preliminar del personaje",
+      "identitySection": "1.1 Identidad nominal",
+      "nameLabel": "Nombre del personaje",
+      "namePlaceholder": "Ej: Alex, Aris, Nova…",
+      "localeSection": "1.2 Protocolo de lenguaje",
+      "localeEs": "Español rioplatense",
+      "localeEn": "English (US)",
+      "localeHint": "El sistema va a usar «vos» y terminología local.",
+      "cta": "→ Confirmar Identidad",
+      "footer": "SISTEMA ALEPH v1.0.4 — ESTADO: PENDIENTE"
+    },
+    "result": {
+      "phase": "FASE 02 / CONFIGURACIÓN",
+      "title": "Definí tu primer Resultado",
+      "subtitle": "Un resultado es el qué final: la empresa o logro que estás armando.",
+      "hint": "Elegí una semilla o escribí la tuya. Se crea en Planificación.",
+      "seedsTitle": "Semillas",
+      "seeds": [
+        "Primer producto listo para vender",
+        "Mes ordenado en gastos y cobros",
+        "Cuerpo con rutina sostenida 8 semanas",
+        "Lanzamiento de portfolio",
+        "Hábito de lectura técnica"
+      ],
+      "customTitle": "O escribí tu propio Resultado",
+      "customLabel": "Nombre del Resultado",
+      "customPlaceholder": "Ej: Cerrar la versión 1 del producto",
+      "stagesHint": "Etapas fijas: Investigación → Ejecución → Revisión",
+      "back": "Atrás",
+      "cta": "Confirmar Resultado →"
+    },
+    "block": {
+      "step": "PASO 03",
+      "title": "Anotá el primer bloque",
+      "subtitle": "Para cerrar el círculo, definí qué vas a hacer hoy. Un bloque es una unidad de trabajo enfocada. No es una lista de deseos, es un compromiso con tu tiempo.",
+      "taskLabel": "Tarea",
+      "taskPlaceholder": "Ej: Diseñar sistema de tokens",
+      "durationLabel": "Duración estimada",
+      "cta": "Anotar y empezar",
+      "hint": "Inicio = hoy. Planificación = el mapa. Seguimiento = la verdad."
+    }
+  },
+  "week": {
+    "eyebrow": "Fase 04 / Ejecución",
+    "title": "Organizá tu semana en Bloques de Tareas",
+    "subtitle": "Las tareas son las acciones cotidianas. Agrupándolas en bloques semanales optimizás tu energía y foco.",
+    "boardTitle": "Vista Semanal",
+    "unassigned": "Tareas por asignar",
+    "addToBlock": "+ Sumar tarea al bloque",
+    "back": "Volver a Planificación"
+  },
+  "inventory": {
+    "title": "Inventario / Planilla",
+    "add": "+ Sumar",
+    "costs": "Costos",
+    "contacts": "Contactos",
+    "docs": "Docs",
+    "links": "Links",
+    "contactsUnit": "{{count}} leads",
+    "docsUnit": "{{count}} archivos",
+    "linksUnit": "{{count}} recursos"
+  },
+  "taskEdit": {
+    "title": "Editar paso",
+    "hours": "Horas estimadas",
+    "difficulty": "Dificultad",
+    "moreOptions": "Más opciones",
+    "date": "Fecha",
+    "result": "Resultado",
+    "objective": "Objetivo",
+    "skill": "Habilidad",
+    "checklist": "Checklist",
+    "blockedPrompt": "¿Qué te detuvo?",
+    "blockedPlaceholder": "Anotá el obstáculo…",
+    "delete": "Eliminar",
+    "save": "Guardar cambios"
+  },
+  "objectiveDetail": {
+    "stageLabel": "Etapa: {{stage}}",
+    "progress": "Progreso del Objetivo",
+    "checklistTitle": "Checklist de pasos",
+    "tasksTitle": "Tareas Asociadas",
+    "ctaToday": "Anotar paso para hoy"
   }
 }

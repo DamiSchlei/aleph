@@ -51,7 +51,8 @@
     "more": "More",
     "show": "Show",
     "hide": "Hide",
-    "dash": "—"
+    "dash": "—",
+    "percent": "{{value}}%"
   },
   "difficulty": {
     "low": "Low",
@@ -108,7 +109,7 @@
     "hint": "Complete tasks to earn XP and money.",
     "proposePlaceholder": "Jot down a step…",
     "proposeCta": "Add",
-    "agendaTitle": "Today",
+    "agendaTitle": "Agenda",
     "greeting": {
       "morning": "Good morning",
       "afternoon": "Good afternoon",
@@ -117,8 +118,8 @@
     },
     "greetingFallback": "Good morning",
     "stepToday": "Today's step",
-    "stepTodayEmpty": "Nothing queued for today. Name one block and start.",
-    "stepTodayCta": "Note a block",
+    "stepTodayEmpty": "Nothing queued for today. Note a block and start.",
+    "stepTodayCta": "+ Note a step",
     "seeDay": "See the day",
     "writingTitle": "Writing",
     "writingHint": "Walker and literature stay folded until you open them.",
@@ -156,11 +157,20 @@
     "newSkillName": "Skill name",
     "newSkillIcon": "Icon",
     "openTaskDetail": "Open task",
-    "completeTask": "Complete task"
+    "completeTask": "Complete task",
+    "customizeLink": "Customize",
+    "levelChip": "Lv. {{level}}",
+    "xpLabel": "{{xp}} / {{next}} XP",
+    "stepTodayTitle": "Today's step",
+    "composerPlaceholder": "Note a step…",
+    "filterToday": "Today",
+    "filterTomorrow": "Tomorrow",
+    "filterWeek": "Week",
+    "filterMore": "···"
   },
   "planning": {
     "title": "Planning",
-    "subtitle": "Results, objectives and tasks that move you toward what you want.",
+    "subtitle": "Mapping strategic results and execution stages.",
     "openFilters": "Filters",
     "tabs": {
       "results": "Results",
@@ -296,13 +306,19 @@
       "checklistLimit": "If it needs more than 7 items, it is an objective.",
       "referenceUrl": "Link",
       "referenceUrlPlaceholder": "https://"
-    }
+    },
+    "activeEnterprises": "Active Enterprises",
+    "progress": "Progress",
+    "nextTask": "Next: {{title}}",
+    "newResult": "+ New result",
+    "resultHint": "A result is an enterprise you are building.",
+    "openWeek": "Weekly view"
   },
   "tracking": {
     "title": "Tracking",
-    "subtitle": "Whether your tasks landed in the time and hours you expected.",
+    "subtitle": "The truth of your systems.",
     "emptyLine": "Nothing to measure yet. Complete the first task and your pace shows up here.",
-    "emptyCta": "Note a block",
+    "emptyCta": "Go to Home",
     "weekLine": "This week you logged {{hours}} hours and finished {{onTime}} of {{total}} tasks on time.",
     "weekSentenceNone": "No completed work this week.",
     "weekSentenceMoved": "This week you closed {{onTime}} of {{total}} on time · {{hours}} h.",
@@ -332,7 +348,19 @@
     "skills": {
       "title": "Skills",
       "line": "Most active: {{most}} · Quietest: {{quietest}}"
-    }
+    },
+    "weekSentence": "This week you closed {{done}} of {{total}} on time · {{hours}} h.",
+    "weekSkillLine": "Your pace is steady. The «{{skill}}» skill pulled progress the most.",
+    "kpiDone": "Completed",
+    "kpiOnTime": "On time",
+    "kpiHours": "Hours",
+    "activityTitle": "Activity rhythm",
+    "resultsTitle": "Progress by result",
+    "skillsTitle": "Skills",
+    "seeRoster": "See Roster",
+    "skillMostActive": "Most active",
+    "skillStable": "Stable",
+    "skillStreak": "On a streak"
   },
   "journal": {
     "title": "Journal",
@@ -376,7 +404,7 @@
     "free": "Free",
     "lockedLevel": "Level {{level}}",
     "notEnoughMoney": "Not enough money",
-    "settings": "Settings",
+    "settings": "Character settings",
     "tabs": {
       "skin": "Skin",
       "color": "Color",
@@ -453,5 +481,94 @@
     "fri": "Fri",
     "sat": "Sat",
     "sun": "Sun"
+  },
+  "onboarding": {
+    "character": {
+      "vol": "VOL. I — ORIGIN",
+      "title": "Subject Customization",
+      "subtitle": "Identity parameters and communication system for the new Aleph cycle.",
+      "figCaption": "Fig 1. Preliminary character visualization",
+      "identitySection": "1.1 Nominal identity",
+      "nameLabel": "Character name",
+      "namePlaceholder": "Eg: Alex, Aris, Nova…",
+      "localeSection": "1.2 Language protocol",
+      "localeEs": "Rioplatense Spanish",
+      "localeEn": "English (US)",
+      "localeHint": "The system will use local second-person forms.",
+      "cta": "→ Confirm Identity",
+      "footer": "ALEPH SYSTEM v1.0.4 — STATUS: PENDING"
+    },
+    "result": {
+      "phase": "PHASE 02 / SETUP",
+      "title": "Define your first Result",
+      "subtitle": "A result is the final what: the venture or outcome you are building.",
+      "hint": "Pick a seed or write your own. It is created in Planning.",
+      "seedsTitle": "Seeds",
+      "seeds": [
+        "First product ready to sell",
+        "Month ordered in expenses and collections",
+        "Body with an 8-week sustained routine",
+        "Portfolio launch",
+        "Technical reading habit"
+      ],
+      "customTitle": "Or write your own Result",
+      "customLabel": "Result name",
+      "customPlaceholder": "Eg: Ship product version 1",
+      "stagesHint": "Fixed stages: Research → Execution → Review",
+      "back": "Back",
+      "cta": "Confirm Result →"
+    },
+    "block": {
+      "step": "STEP 03",
+      "title": "Note the first block",
+      "subtitle": "To close the loop, define what you will do today. A block is a focused work unit. Not a wish list — a commitment to your time.",
+      "taskLabel": "Task",
+      "taskPlaceholder": "Eg: Design the token system",
+      "durationLabel": "Estimated duration",
+      "cta": "Note and start",
+      "hint": "Home = today. Planning = the map. Tracking = the truth."
+    }
+  },
+  "week": {
+    "eyebrow": "Phase 04 / Execution",
+    "title": "Organize your week into Task Blocks",
+    "subtitle": "Tasks are everyday actions. Grouping them into weekly blocks optimizes energy and focus.",
+    "boardTitle": "Weekly View",
+    "unassigned": "Tasks to assign",
+    "addToBlock": "+ Add task to block",
+    "back": "Back to Planning"
+  },
+  "inventory": {
+    "title": "Inventory / Sheet",
+    "add": "+ Add",
+    "costs": "Costs",
+    "contacts": "Contacts",
+    "docs": "Docs",
+    "links": "Links",
+    "contactsUnit": "{{count}} leads",
+    "docsUnit": "{{count}} files",
+    "linksUnit": "{{count}} resources"
+  },
+  "taskEdit": {
+    "title": "Edit step",
+    "hours": "Estimated hours",
+    "difficulty": "Difficulty",
+    "moreOptions": "More options",
+    "date": "Date",
+    "result": "Result",
+    "objective": "Objective",
+    "skill": "Skill",
+    "checklist": "Checklist",
+    "blockedPrompt": "What stopped you?",
+    "blockedPlaceholder": "Note the obstacle…",
+    "delete": "Delete",
+    "save": "Save changes"
+  },
+  "objectiveDetail": {
+    "stageLabel": "Stage: {{stage}}",
+    "progress": "Objective progress",
+    "checklistTitle": "Step checklist",
+    "tasksTitle": "Associated tasks",
+    "ctaToday": "Note a step for today"
   }
 }

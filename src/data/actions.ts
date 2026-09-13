@@ -4,11 +4,13 @@ import { MAX_OBJECTIVES_PER_RESULT, MAX_SERIES_BLOCKS, activeObjectivesOfResult,
 import { seriesDayKeys } from '@/domain/dates'
 import { taskDayKey } from '@/data/selectors'
 import type {
+  Character,
   Comment,
   Cosmetic,
   CosmeticCategory,
   Difficulty,
   Objective,
+  ObjectiveInventory,
   ParentType,
   Result,
   ResultStatus,
@@ -26,6 +28,15 @@ export function renameCharacter(name: string): void {
   if (!trimmed) return
   setState((s) => ({ ...s, character: { ...s.character, name: trimmed } }))
 }
+
+export function setCharacterLocale(locale: Character['locale']): void {
+  setState((s) => ({ ...s, character: { ...s.character, locale } }))
+}
+
+export function markOnboarded(): void {
+  setState((s) => ({ ...s, character: { ...s.character, onboarded: true } }))
+}
+
 
 /**
  * Basic avatar layers (skin, hair, eyes, outfit, accessory, background) are all
@@ -167,6 +178,27 @@ export function updateObjective(id: string, patch: Partial<Omit<Objective, 'id' 
   }))
 }
 
+export function updateObjectiveInventory(
+  id: string,
+  patch: Partial<ObjectiveInventory>,
+): void {
+  setState((s) => ({
+    ...s,
+    objectives: s.objectives.map((o) => {
+      if (o.id !== id) return o
+      const inventory = {
+        costs: o.inventory?.costs ?? 0,
+        contacts: o.inventory?.contacts ?? 0,
+        docs: o.inventory?.docs ?? 0,
+        links: o.inventory?.links ?? 0,
+        ...patch,
+      }
+      return { ...o, inventory }
+    }),
+  }))
+}
+
+
 export function archiveObjective(id: string): void {
   const timestamp = now()
   setState((s) => ({
@@ -203,6 +235,8 @@ export interface TaskInput {
   difficulty?: Difficulty
   dueAt?: string
   scheduledFor?: string
+  scheduledStart?: string
+  scheduledEnd?: string
   doneCheck?: string
   checklist?: TaskCheckItem[]
   referenceUrl?: string
@@ -236,6 +270,8 @@ export function createTask(input: TaskInput): Task {
     importance: siblings.length,
     dueAt: input.dueAt || undefined,
     scheduledFor: input.scheduledFor || undefined,
+    scheduledStart: input.scheduledStart || undefined,
+    scheduledEnd: input.scheduledEnd || undefined,
     doneCheck: input.doneCheck?.trim() || undefined,
     checklist: input.checklist,
     referenceUrl: input.referenceUrl?.trim() || undefined,
@@ -493,3 +529,6 @@ export function addComment(parentType: ParentType, parentId: string, body: strin
   return comment
 }
 
+/** Aliases kept for capture-UI call sites. */
+export const markCharacterOnboarded = markOnboarded
+export const setLocale = setCharacterLocale

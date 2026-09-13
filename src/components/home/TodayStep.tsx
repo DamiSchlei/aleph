@@ -28,7 +28,7 @@ export function TodayStep() {
 
   return (
     <section className={TODAY_STEP_CLASS}>
-      <p className="text-[12px] text-accent">{t('home.stepToday')}</p>
+      <p className="text-[12px] text-accent">{t('home.stepTodayTitle')}</p>
       {task ? (
         <>
           <h2 className="mt-2 text-[18px] font-medium leading-snug text-white">{task.title}</h2>
@@ -49,7 +49,6 @@ export function TodayStep() {
             className="mt-4"
             onClick={() => {
               document.getElementById('home-composer-input')?.focus()
-              document.getElementById('home-composer-input')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
             }}
           >
             {t('home.stepTodayCta')}

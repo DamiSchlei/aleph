@@ -19,7 +19,7 @@ export function RowMenu({ items, label }: { items: RowMenuItem[]; label?: string
         type="button"
         aria-label={label ?? t('common.more')}
         onClick={() => setOpen((v) => !v)}
-        className="flex size-9 items-center justify-center rounded-2xl text-ink-400 transition-colors hover:bg-white/5"
+        className="flex size-9 items-center justify-center rounded-2xl text-text-3 transition-colors hover:bg-white/5"
       >
         <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
           <circle cx="12" cy="5" r="1.7" />
@@ -47,7 +47,7 @@ export function RowMenu({ items, label }: { items: RowMenuItem[]; label?: string
                 }}
                 className={cx(
                   'block w-full rounded-xl px-3 py-2 text-left text-[14px] transition-colors hover:bg-white/6',
-                  item.tone === 'danger' ? 'text-rose' : 'text-ink-200',
+                  item.tone === 'danger' ? 'text-rose' : 'text-text-2',
                 )}
               >
                 {item.label}

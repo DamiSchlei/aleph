@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
-import { Button, Chip, Field, Input, Select, Textarea } from '@/components/ui/primitives'
-import { Sheet } from '@/components/ui/Sheet'
-import { addComment, createTask, createTaskSeries, updateTask } from '@/data/actions'
+import { Button, Chip, Field, Input, Select, Textarea, cx } from '@/components/ui/primitives'
+import { ConfirmDialog, Sheet } from '@/components/ui/Sheet'
+import { addComment, createTask, createTaskSeries, deleteTask, updateTask } from '@/data/actions'
 import { pickerObjectives, pickerResults } from '@/data/selectors'
 import { newId, useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { MAX_CHECKLIST_ITEMS, MAX_SERIES_BLOCKS, MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import { addDays, isoWeekday, seriesDayKeys, startOfWeek, toDayKey } from '@/domain/dates'
 import { isTaskDone } from '@/domain/economy'
+import { skillName } from '@/i18n/labels'
 import type { Difficulty, Task, TaskCheckItem } from '@/domain/types'
 
 const ISO_WEEKDAYS = [
@@ -32,6 +33,8 @@ interface TaskPreset {
   resultId?: string
   objectiveId?: string
   dueAt?: string
+  scheduledStart?: string
+  scheduledEnd?: string
 }
 
 export function TaskFormSheet({
@@ -42,25 +45,29 @@ export function TaskFormSheet({
   moments,
   blockedPrompt = false,
   scoped = false,
+  initialTitle,
+  collapsedMore = true,
 }: {
   open: boolean
   onClose: () => void
   task?: Task
   preset?: TaskPreset
   moments?: TaskMoments
-  /** Home: write without completing an overdue step. */
   blockedPrompt?: boolean
-  /** Hide result/objective pickers when creating from an objective. */
   scoped?: boolean
+  /** Prefill for composer create. */
+  initialTitle?: string
+  /** Start with Más opciones collapsed (default true). */
+  collapsedMore?: boolean
 }) {
   const { t } = useTranslation()
-  const key = `${task?.id ?? 'new'}:${preset?.objectiveId ?? ''}:${open ? '1' : '0'}`
+  const key = `${task?.id ?? 'new'}:${preset?.objectiveId ?? ''}:${initialTitle ?? ''}:${open ? '1' : '0'}`
   return (
     <Sheet
       key={key}
       open={open}
       onClose={onClose}
-      title={task ? t('planning.tasks.editTitle') : t('planning.tasks.createTitle')}
+      title={task ? t('taskEdit.title') : t('planning.tasks.createTitle')}
       footer={null}
     >
       <TaskFormBody
@@ -69,6 +76,8 @@ export function TaskFormSheet({
         moments={moments}
         blockedPrompt={blockedPrompt}
         scoped={scoped}
+        initialTitle={initialTitle}
+        collapsedMore={collapsedMore}
         onClose={onClose}
       />
     </Sheet>
@@ -79,7 +88,6 @@ function todayKey(): string {
   return toDayKey(new Date())
 }
 
-/** End of the current week (Sunday), the target for the "this week" quick date. */
 function weekEndKey(): string {
   return toDayKey(addDays(startOfWeek(new Date()), 6))
 }
@@ -90,6 +98,8 @@ function TaskFormBody({
   moments,
   blockedPrompt,
   scoped,
+  initialTitle,
+  collapsedMore,
   onClose,
 }: {
   task?: Task
@@ -97,15 +107,18 @@ function TaskFormBody({
   moments?: TaskMoments
   blockedPrompt?: boolean
   scoped?: boolean
+  initialTitle?: string
+  collapsedMore?: boolean
   onClose: () => void
 }) {
   const { t } = useTranslation()
   const state = useAleph()
   const { notify } = useFeedback()
-  const [title, setTitle] = useState(task?.title ?? '')
+  const [title, setTitle] = useState(task?.title ?? initialTitle ?? '')
   const [notes, setNotes] = useState(task?.notes ?? '')
   const [resultId, setResultId] = useState(task?.resultId ?? preset?.resultId ?? '')
   const [objectiveId, setObjectiveId] = useState(task?.objectiveId ?? preset?.objectiveId ?? '')
+  const [skillId, setSkillId] = useState(task?.skillId ?? '')
   const [hours, setHours] = useState(String(task?.estimatedHours ?? 1))
   const [difficulty, setDifficulty] = useState<Difficulty>(task?.difficulty ?? 'medium')
   const [dueAt, setDueAt] = useState(task?.dueAt?.slice(0, 10) ?? preset?.dueAt ?? '')
@@ -117,6 +130,8 @@ function TaskFormBody({
   const [asSeries, setAsSeries] = useState(false)
   const [weekdays, setWeekdays] = useState<number[]>([])
   const [horizon, setHorizon] = useState<'week' | 'month'>('week')
+  const [moreOpen, setMoreOpen] = useState(!collapsedMore)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const objectives = useMemo(
     () => (resultId ? pickerObjectives(state, resultId) : []),
     [resultId, state],
@@ -130,6 +145,7 @@ function TaskFormBody({
   const seriesWouldOverflow =
     asSeries && !task && seriesDayKeys(weekdays, horizon, new Date(), MAX_SERIES_BLOCKS + 1).length > MAX_SERIES_BLOCKS
   const canSave = Boolean(title.trim()) && (!asSeries || Boolean(task) || seriesDates.length > 0)
+  const checklistDone = checklist.filter((item) => item.done).length
 
   const toggleWeekday = (iso: number) => {
     setWeekdays((current) =>
@@ -146,10 +162,13 @@ function TaskFormBody({
       notes: notes.trim() || undefined,
       resultId: resultId || undefined,
       objectiveId: objectiveId || undefined,
+      skillId: skillId || undefined,
       estimatedHours,
       difficulty,
       dueAt: dueAt || undefined,
       scheduledFor: dueAt || undefined,
+      scheduledStart: preset?.scheduledStart ?? task?.scheduledStart,
+      scheduledEnd: preset?.scheduledEnd ?? task?.scheduledEnd,
       doneCheck: doneCheck.trim() || undefined,
       checklist: checklist.filter((item) => item.text.trim()).map((item) => ({
         ...item,
@@ -183,42 +202,9 @@ function TaskFormBody({
           autoFocus
         />
       </Field>
-      {scoped ? null : (
-        <>
-          <Field label={t('common.result')}>
-            <Select
-              value={resultId}
-              onChange={(e) => {
-                setResultId(e.target.value)
-                setObjectiveId('')
-              }}
-            >
-              <option value="">{t('common.unassigned')}</option>
-              {pickerResults(state).map((result) => (
-                <option key={result.id} value={result.id}>
-                  {result.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label={t('common.objective')}>
-            <Select
-              value={objectiveId}
-              onChange={(e) => setObjectiveId(e.target.value)}
-              disabled={!resultId}
-            >
-              <option value="">{t('common.unassigned')}</option>
-              {objectives.map((objective) => (
-                <option key={objective.id} value={objective.id}>
-                  {objective.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </>
-      )}
+
       <div className="grid grid-cols-2 gap-3">
-        <Field label={t('common.estimatedHours')}>
+        <Field label={t('taskEdit.hours')}>
           <Input
             type="number"
             min={MIN_ESTIMATED_HOURS}
@@ -227,7 +213,7 @@ function TaskFormBody({
             onChange={(e) => setHours(e.target.value)}
           />
         </Field>
-        <Field label={t('common.difficulty')}>
+        <Field label={t('taskEdit.difficulty')}>
           <Select value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty)}>
             <option value="low">{t('difficulty.low')}</option>
             <option value="medium">{t('difficulty.medium')}</option>
@@ -235,173 +221,242 @@ function TaskFormBody({
           </Select>
         </Field>
       </div>
-      {task ? (
-        task.seriesId && task.dueAt ? (
-          <p className="text-[13px] text-text-3">{t('planning.tasks.seriesPart', { date: task.dueAt })}</p>
-        ) : null
-      ) : (
-        <Field label={t('planning.tasks.seriesTitle')} hint={t('planning.tasks.seriesHint')}>
-          <Chip
-            active={asSeries}
-            onClick={() => {
-              if (asSeries) {
-                setAsSeries(false)
-                return
-              }
-              setAsSeries(true)
-              setWeekdays((current) => (current.length > 0 ? current : [isoWeekday(new Date())]))
-            }}
-          >
-            {t('planning.tasks.seriesTitle')}
-          </Chip>
-          {asSeries ? (
-            <>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {ISO_WEEKDAYS.map((day) => (
-                  <Chip
-                    key={day.iso}
-                    active={weekdays.includes(day.iso)}
-                    onClick={() => toggleWeekday(day.iso)}
-                  >
-                    {t(`weekdays.${day.key}`)}
-                  </Chip>
-                ))}
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <Chip active={horizon === 'week'} onClick={() => setHorizon('week')}>
-                  {t('planning.tasks.seriesWeek')}
-                </Chip>
-                <Chip active={horizon === 'month'} onClick={() => setHorizon('month')}>
-                  {t('planning.tasks.seriesMonth')}
-                </Chip>
-              </div>
-              <p className="mt-2 text-[13px] text-text-2">
-                {t('planning.tasks.seriesPreview', {
-                  count: seriesDates.length,
-                  hours: seriesHours,
-                })}
-              </p>
-              {seriesWouldOverflow ? (
-                <p className="mt-1 text-[13px] text-amber">{t('planning.tasks.seriesCapped')}</p>
-              ) : null}
-            </>
+
+      <button
+        type="button"
+        onClick={() => setMoreOpen((v) => !v)}
+        className="flex min-h-11 items-center justify-between rounded-2xl border border-white/10 bg-ink-800 px-3.5 text-[14px] text-text-2"
+      >
+        <span>{t('taskEdit.moreOptions')}</span>
+        <span className="flex items-center gap-2 text-text-3">
+          {checklist.length > 0 ? (
+            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] text-accent">
+              {checklistDone}/{checklist.length}
+            </span>
           ) : null}
-        </Field>
-      )}
-      {asSeries && !task ? null : (
-      <Field label={`${t('common.dueDate')} (${t('common.optional')})`}>
-        <div className="flex flex-wrap gap-2">
-          <Chip
-            active={!pickDate && dueAt === today}
-            onClick={() => {
-              setDueAt(today)
-              setPickDate(false)
-            }}
-          >
-            {t('common.today')}
-          </Chip>
-          <Chip
-            active={!pickDate && dueAt === weekEnd}
-            onClick={() => {
-              setDueAt(weekEnd)
-              setPickDate(false)
-            }}
-          >
-            {t('planning.tasks.thisWeek')}
-          </Chip>
-          <Chip active={pickDate} onClick={() => setPickDate(true)}>
-            {t('planning.tasks.pickDate')}
-          </Chip>
-          <Chip
-            active={!pickDate && dueAt === ''}
-            onClick={() => {
-              setDueAt('')
-              setPickDate(false)
-            }}
-          >
-            {t('planning.tasks.noDate')}
-          </Chip>
+          <span className={cx('transition-transform', moreOpen && 'rotate-180')}>▾</span>
+        </span>
+      </button>
+
+      {moreOpen ? (
+        <div className="flex flex-col gap-4">
+          {scoped ? null : (
+            <>
+              <Field label={t('taskEdit.result')}>
+                <Select
+                  value={resultId}
+                  onChange={(e) => {
+                    setResultId(e.target.value)
+                    setObjectiveId('')
+                  }}
+                >
+                  <option value="">{t('common.unassigned')}</option>
+                  {pickerResults(state).map((result) => (
+                    <option key={result.id} value={result.id}>
+                      {result.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label={t('taskEdit.objective')}>
+                <Select
+                  value={objectiveId}
+                  onChange={(e) => setObjectiveId(e.target.value)}
+                  disabled={!resultId}
+                >
+                  <option value="">{t('common.unassigned')}</option>
+                  {objectives.map((objective) => (
+                    <option key={objective.id} value={objective.id}>
+                      {objective.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </>
+          )}
+
+          <Field label={t('taskEdit.skill')}>
+            <Select value={skillId} onChange={(e) => setSkillId(e.target.value)}>
+              <option value="">{t('common.noSkill')}</option>
+              {state.skills.map((skill) => (
+                <option key={skill.id} value={skill.id}>
+                  {skillName(t, skill)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          {task ? (
+            task.seriesId && task.dueAt ? (
+              <p className="text-[13px] text-text-3">{t('planning.tasks.seriesPart', { date: task.dueAt })}</p>
+            ) : null
+          ) : (
+            <Field label={t('planning.tasks.seriesTitle')} hint={t('planning.tasks.seriesHint')}>
+              <Chip
+                active={asSeries}
+                onClick={() => {
+                  if (asSeries) {
+                    setAsSeries(false)
+                    return
+                  }
+                  setAsSeries(true)
+                  setWeekdays((current) => (current.length > 0 ? current : [isoWeekday(new Date())]))
+                }}
+              >
+                {t('planning.tasks.seriesTitle')}
+              </Chip>
+              {asSeries ? (
+                <>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {ISO_WEEKDAYS.map((day) => (
+                      <Chip
+                        key={day.iso}
+                        active={weekdays.includes(day.iso)}
+                        onClick={() => toggleWeekday(day.iso)}
+                      >
+                        {t(`weekdays.${day.key}`)}
+                      </Chip>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Chip active={horizon === 'week'} onClick={() => setHorizon('week')}>
+                      {t('planning.tasks.seriesWeek')}
+                    </Chip>
+                    <Chip active={horizon === 'month'} onClick={() => setHorizon('month')}>
+                      {t('planning.tasks.seriesMonth')}
+                    </Chip>
+                  </div>
+                  <p className="mt-2 text-[13px] text-text-2">
+                    {t('planning.tasks.seriesPreview', {
+                      count: seriesDates.length,
+                      hours: seriesHours,
+                    })}
+                  </p>
+                  {seriesWouldOverflow ? (
+                    <p className="mt-1 text-[13px] text-amber">{t('planning.tasks.seriesCapped')}</p>
+                  ) : null}
+                </>
+              ) : null}
+            </Field>
+          )}
+
+          {asSeries && !task ? null : (
+            <Field label={t('taskEdit.date')}>
+              <div className="flex flex-wrap gap-2">
+                <Chip
+                  active={!pickDate && dueAt === today}
+                  onClick={() => {
+                    setDueAt(today)
+                    setPickDate(false)
+                  }}
+                >
+                  {t('common.today')}
+                </Chip>
+                <Chip
+                  active={!pickDate && dueAt === weekEnd}
+                  onClick={() => {
+                    setDueAt(weekEnd)
+                    setPickDate(false)
+                  }}
+                >
+                  {t('planning.tasks.thisWeek')}
+                </Chip>
+                <Chip active={pickDate} onClick={() => setPickDate(true)}>
+                  {t('planning.tasks.pickDate')}
+                </Chip>
+                <Chip
+                  active={!pickDate && dueAt === ''}
+                  onClick={() => {
+                    setDueAt('')
+                    setPickDate(false)
+                  }}
+                >
+                  {t('planning.tasks.noDate')}
+                </Chip>
+              </div>
+              {pickDate ? (
+                <Input
+                  type="date"
+                  className="mt-2"
+                  value={dueAt}
+                  onChange={(e) => setDueAt(e.target.value)}
+                />
+              ) : null}
+            </Field>
+          )}
+
+          <Field label={`${t('common.notes')} (${t('common.optional')})`}>
+            <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </Field>
+          <Field label={`${t('planning.tasks.doneCheck')} (${t('common.optional')})`}>
+            <Input
+              value={doneCheck}
+              onChange={(e) => setDoneCheck(e.target.value)}
+              placeholder={t('planning.tasks.doneCheckPlaceholder')}
+            />
+          </Field>
+          <Field label={t('taskEdit.checklist')}>
+            <ul className="flex flex-col gap-2">
+              {checklist.map((item) => (
+                <li key={item.id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={item.done}
+                    onChange={() =>
+                      setChecklist((current) =>
+                        current.map((entry) =>
+                          entry.id === item.id ? { ...entry, done: !entry.done } : entry,
+                        ),
+                      )
+                    }
+                    className="size-5 accent-accent-strong"
+                  />
+                  <Input
+                    value={item.text}
+                    onChange={(e) =>
+                      setChecklist((current) =>
+                        current.map((entry) =>
+                          entry.id === item.id ? { ...entry, text: e.target.value } : entry,
+                        ),
+                      )
+                    }
+                  />
+                </li>
+              ))}
+            </ul>
+            <Button
+              variant="secondary"
+              className="mt-2"
+              onClick={() => {
+                if (checklist.length >= MAX_CHECKLIST_ITEMS) {
+                  notify(t('planning.tasks.checklistLimit'))
+                  return
+                }
+                setChecklist((current) => [...current, { id: newId('check'), text: '', done: false }])
+              }}
+            >
+              {t('planning.tasks.checklistAdd')}
+            </Button>
+          </Field>
+          <Field label={`${t('planning.tasks.referenceUrl')} (${t('common.optional')})`}>
+            <Input
+              type="url"
+              value={referenceUrl}
+              onChange={(e) => setReferenceUrl(e.target.value)}
+              placeholder={t('planning.tasks.referenceUrlPlaceholder')}
+            />
+          </Field>
         </div>
-        {pickDate ? (
-          <Input
-            type="date"
-            className="mt-2"
-            value={dueAt}
-            onChange={(e) => setDueAt(e.target.value)}
-          />
-        ) : null}
-      </Field>
-      )}
-      <Field label={`${t('common.notes')} (${t('common.optional')})`}>
-        <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
-      </Field>
-      <Field label={`${t('planning.tasks.doneCheck')} (${t('common.optional')})`}>
-        <Input
-          value={doneCheck}
-          onChange={(e) => setDoneCheck(e.target.value)}
-          placeholder={t('planning.tasks.doneCheckPlaceholder')}
-        />
-      </Field>
-      <Field label={`${t('planning.tasks.checklist')} (${t('common.optional')})`}>
-        <ul className="flex flex-col gap-2">
-          {checklist.map((item) => (
-            <li key={item.id} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={item.done}
-                onChange={() =>
-                  setChecklist((current) =>
-                    current.map((entry) =>
-                      entry.id === item.id ? { ...entry, done: !entry.done } : entry,
-                    ),
-                  )
-                }
-                className="size-5 accent-accent-strong"
-              />
-              <Input
-                value={item.text}
-                onChange={(e) =>
-                  setChecklist((current) =>
-                    current.map((entry) =>
-                      entry.id === item.id ? { ...entry, text: e.target.value } : entry,
-                    ),
-                  )
-                }
-              />
-            </li>
-          ))}
-        </ul>
-        <Button
-          variant="secondary"
-          className="mt-2"
-          onClick={() => {
-            if (checklist.length >= MAX_CHECKLIST_ITEMS) {
-              notify(t('planning.tasks.checklistLimit'))
-              return
-            }
-            setChecklist((current) => [...current, { id: newId('check'), text: '', done: false }])
-          }}
-        >
-          {t('planning.tasks.checklistAdd')}
-        </Button>
-      </Field>
-      <Field label={`${t('planning.tasks.referenceUrl')} (${t('common.optional')})`}>
-        <Input
-          type="url"
-          value={referenceUrl}
-          onChange={(e) => setReferenceUrl(e.target.value)}
-          placeholder={t('planning.tasks.referenceUrlPlaceholder')}
-        />
-      </Field>
+      ) : null}
 
       {blockedPrompt && task ? (
-        <Field label={t('home.literatureBlocked')}>
+        <Field label={t('taskEdit.blockedPrompt')}>
           <div className="flex gap-2">
             <Textarea
               rows={2}
               value={blockedNote}
               onChange={(e) => setBlockedNote(e.target.value)}
-              placeholder={t('home.literatureBlocked')}
+              placeholder={t('taskEdit.blockedPlaceholder')}
               className="flex-1"
             />
             <Button
@@ -419,11 +474,17 @@ function TaskFormBody({
       ) : null}
 
       <div className="flex gap-2 pt-2">
-        <Button variant="secondary" className="flex-1" onClick={onClose}>
-          {t('common.cancel')}
-        </Button>
+        {task ? (
+          <Button variant="danger" className="flex-1" onClick={() => setDeleteOpen(true)}>
+            {t('taskEdit.delete')}
+          </Button>
+        ) : (
+          <Button variant="secondary" className="flex-1" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
+        )}
         <Button className="flex-1" disabled={!canSave} onClick={save}>
-          {t('common.save')}
+          {task ? t('taskEdit.save') : t('common.save')}
         </Button>
       </div>
 
@@ -463,6 +524,20 @@ function TaskFormBody({
       ) : null}
 
       {task ? <JournalThread parentType="task" parentId={task.id} /> : null}
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title={t('common.delete')}
+        tone="danger"
+        message={t('planning.tasks.deleteConfirm')}
+        confirmLabel={t('common.delete')}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={() => {
+          if (task) deleteTask(task.id)
+          setDeleteOpen(false)
+          onClose()
+        }}
+      />
     </div>
   )
 }

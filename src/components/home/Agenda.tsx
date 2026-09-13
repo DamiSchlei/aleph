@@ -39,7 +39,7 @@ export function Agenda({
         ? pickDate
           ? formatLongDate(pickDate, locale)
           : t('home.filters.pick')
-        : t(`home.filters.${filter}`)
+        : t('home.agendaTitle')
 
   return (
     <section className="flex flex-col gap-2">
