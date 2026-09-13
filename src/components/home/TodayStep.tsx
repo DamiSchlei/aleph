@@ -22,7 +22,9 @@ export function TodayStep() {
   const objective = task?.objectiveId ? objectiveById(state, task.objectiveId) : undefined
   const result = task ? resultById(state, task.resultId) ?? resultById(state, objective?.resultId) : undefined
   const hours = task
-    ? t('common.hours', { count: Number(formatHours(task.actualHours ?? task.estimatedHours, locale)) })
+    ? t('common.hours', {
+        count: formatHours(task.actualHours ?? task.estimatedHours ?? 0, locale),
+      })
     : null
   const meta = task ? [hours, result?.name].filter(Boolean).join(' · ') : null
 

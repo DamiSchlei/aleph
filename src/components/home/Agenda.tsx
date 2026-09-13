@@ -65,7 +65,7 @@ export function Agenda({
             const done = isTaskDone(task.status)
             const overdue = isTaskOverdue(task)
             const hours = t('common.hours', {
-              count: Number(formatHours(task.actualHours ?? task.estimatedHours, locale)),
+              count: formatHours(task.actualHours ?? task.estimatedHours ?? 0, locale),
             })
             return (
               <li key={task.id}>
