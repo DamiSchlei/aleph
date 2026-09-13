@@ -7,7 +7,7 @@ import { agendaTasks, isTaskOverdue, type AgendaFilter } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { formatHours, formatLongDate } from '@/i18n/format'
 import { isTaskDone } from '@/domain/economy'
-import { Button, cx } from '@/components/ui/primitives'
+import { cx } from '@/components/ui/primitives'
 import type { Task } from '@/domain/types'
 
 const AGENDA_MAX = 4
@@ -46,19 +46,9 @@ export function Agenda({
       <p className="text-[11px] font-medium tracking-[0.16em] text-text-3 uppercase">{title}</p>
 
       {tasks.length === 0 ? (
-        <>
-          <p className="text-[14px] leading-relaxed text-text-3">{t('home.agendaEmpty')}</p>
-          <Button
-            variant="ghost"
-            className="self-start"
-            onClick={() => {
-              document.getElementById('home-composer-input')?.focus()
-              document.getElementById('home-composer-input')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-            }}
-          >
-            {t('home.agendaEmptyCta')}
-          </Button>
-        </>
+        <div className="flex min-h-28 items-center justify-center rounded-[20px] border border-dashed border-white/18 px-4 py-6">
+          <p className="text-center text-[14px] italic text-text-3">{t('home.agendaEmpty')}</p>
+        </div>
       ) : (
         <ul className="flex flex-col gap-2">
           {visible.map((task) => {

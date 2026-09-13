@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Chip, Input } from '@/components/ui/primitives'
+import { cx } from '@/components/ui/primitives'
 import type { AgendaFilter } from '@/data/selectors'
 
 const PRIMARY: Array<{ filter: AgendaFilter; labelKey: string }> = [
@@ -29,54 +29,86 @@ export function DateChips({
   return (
     <div className="flex flex-col gap-2">
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
-        {PRIMARY.map(({ filter: key, labelKey }) => (
-          <Chip
-            key={key}
-            active={filter === key}
-            onClick={() => {
-              setMoreOpen(false)
-              onFilterChange(key)
-            }}
-            className="h-8 min-h-8 shrink-0 py-0 text-[12px]"
-          >
-            {t(labelKey)}
-          </Chip>
-        ))}
-        <Chip
-          active={moreActive}
+        {PRIMARY.map(({ filter: key, labelKey }) => {
+          const active = filter === key
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                setMoreOpen(false)
+                onFilterChange(key)
+              }}
+              className={cx(
+                'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors',
+                active
+                  ? 'bg-accent text-ink-950'
+                  : 'border border-white/12 bg-transparent text-text-3',
+              )}
+            >
+              {active ? <CheckIcon /> : null}
+              {t(labelKey)}
+            </button>
+          )
+        })}
+        <button
+          type="button"
           onClick={() => {
             setMoreOpen((open) => !open)
             if (!moreActive) onFilterChange('pick')
           }}
-          className="h-8 min-h-8 shrink-0 py-0 text-[12px]"
+          className={cx(
+            'inline-flex size-9 shrink-0 items-center justify-center rounded-full text-[16px] transition-colors',
+            moreActive
+              ? 'bg-accent text-ink-950'
+              : 'border border-white/12 bg-transparent text-text-3',
+          )}
+          aria-label={t('home.filterMore')}
         >
-          {t('home.filterMore')}
-        </Chip>
+          ···
+        </button>
       </div>
 
       {moreOpen || moreActive ? (
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
-          {MORE.map((key) => (
-            <Chip
-              key={key}
-              active={filter === key}
-              onClick={() => onFilterChange(key)}
-              className="h-8 min-h-8 shrink-0 py-0 text-[12px]"
-            >
-              {t(`home.filters.${key}`)}
-            </Chip>
-          ))}
+          {MORE.map((key) => {
+            const active = filter === key
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onFilterChange(key)}
+                className={cx(
+                  'inline-flex h-9 shrink-0 items-center rounded-full px-3.5 text-[13px] font-medium transition-colors',
+                  active
+                    ? 'bg-accent text-ink-950'
+                    : 'border border-white/12 bg-transparent text-text-3',
+                )}
+              >
+                {t(`home.filters.${key}`)}
+              </button>
+            )
+          })}
         </div>
       ) : null}
 
       {filter === 'pick' ? (
-        <Input
+        <input
           type="date"
           value={pickDate}
           onChange={(e) => onPickDateChange(e.target.value)}
           aria-label={t('home.filters.pick')}
+          className="min-h-11 w-full rounded-2xl border border-white/10 bg-ink-800 px-3.5 text-[15px] text-white outline-none"
         />
       ) : null}
     </div>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3.5 8.5 6.5 11.5 12.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

@@ -8,7 +8,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-accent-strong text-ink-950 font-semibold hover:bg-accent active:bg-accent disabled:bg-ink-700 disabled:text-text-3',
+    'bg-accent text-ink-950 font-semibold hover:bg-accent-strong active:bg-accent-strong disabled:bg-ink-700 disabled:text-text-3',
   secondary:
     'bg-ink-800 text-text-2 border border-white/10 hover:bg-ink-700 disabled:text-text-3',
   ghost: 'text-text-2 hover:bg-white/5 disabled:text-text-3',
@@ -213,7 +213,7 @@ export function Chip({
       className={cx(
         'min-h-11 rounded-full border px-3 py-1.5 text-[13px] transition-colors',
         active
-          ? 'border-accent/50 bg-accent/15 text-accent'
+          ? 'border-accent bg-accent text-ink-950'
           : 'border-white/10 bg-ink-800 text-text-2 hover:bg-ink-700',
         className,
       )}

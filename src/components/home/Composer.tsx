@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Input } from '@/components/ui/primitives'
+import { Input, cx } from '@/components/ui/primitives'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { dueAtForFilter, type AgendaFilter } from '@/data/selectors'
 
@@ -25,23 +25,33 @@ export function Composer({ filter, pickDate }: { filter: AgendaFilter; pickDate:
   return (
     <>
       <form
-        className="safe-bottom fixed inset-x-0 bottom-[var(--tab-bar-height)] z-30 border-t border-white/8 bg-ink-950/95 px-4 py-2 backdrop-blur-xl"
+        className="safe-bottom fixed inset-x-0 bottom-[var(--tab-bar-height)] z-30 border-t border-white/8 bg-ink-950/95 px-4 py-2.5 backdrop-blur-xl"
         onSubmit={(e) => {
           e.preventDefault()
           submit()
         }}
       >
-        <div className="mx-auto flex max-w-lg gap-2">
+        <div className="mx-auto flex max-w-lg items-center gap-2">
           <Input
             id="home-composer-input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t('home.composerPlaceholder')}
-            className="flex-1"
+            className="flex-1 rounded-2xl"
           />
-          <Button type="submit" disabled={!title.trim()}>
-            {t('home.proposeCta')}
-          </Button>
+          <button
+            type="submit"
+            disabled={!title.trim()}
+            aria-label={t('home.proposeCta')}
+            className={cx(
+              'flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors',
+              title.trim()
+                ? 'bg-accent text-ink-950'
+                : 'bg-ink-800 text-text-3',
+            )}
+          >
+            <SendIcon />
+          </button>
         </div>
       </form>
 
@@ -58,5 +68,13 @@ export function Composer({ filter, pickDate }: { filter: AgendaFilter; pickDate:
         collapsedMore
       />
     </>
+  )
+}
+
+function SendIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

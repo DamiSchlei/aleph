@@ -53,16 +53,16 @@ export function PlanningPage() {
   return (
     <Page className="flex flex-col gap-4 pt-4">
       <header>
-        <h1 className="text-[30px] font-semibold tracking-wide text-white uppercase">
+        <h1 className="font-display text-[30px] leading-none tracking-wide text-white uppercase">
           {t('planning.title')}
         </h1>
-        <p className="mt-1 text-[15px] leading-relaxed text-text-3">{t('planning.subtitle')}</p>
+        <p className="mt-2 text-[15px] leading-relaxed text-text-3">{t('planning.subtitle')}</p>
       </header>
-      <div className="flex gap-2">
-        <Chip active={tab === 'results'} onClick={() => setTab('results')}>
+      <div className="flex justify-center gap-2">
+        <Chip active={tab === 'results'} onClick={() => setTab('results')} className="min-w-28 justify-center">
           {t('planning.tabs.results')}
         </Chip>
-        <Chip active={tab === 'tasks'} onClick={() => setTab('tasks')}>
+        <Chip active={tab === 'tasks'} onClick={() => setTab('tasks')} className="min-w-28 justify-center">
           {t('planning.tabs.tasks')}
         </Chip>
       </div>

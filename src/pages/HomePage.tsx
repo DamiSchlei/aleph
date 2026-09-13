@@ -6,7 +6,6 @@ import { Agenda } from '@/components/home/Agenda'
 import { Composer } from '@/components/home/Composer'
 import { DateChips } from '@/components/home/DateChips'
 import { TodayStep } from '@/components/home/TodayStep'
-import { WritingFold } from '@/components/home/WritingFold'
 import { cx, ProgressBar } from '@/components/ui/primitives'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { useAleph } from '@/data/store'
@@ -47,50 +46,59 @@ export function HomePage() {
         <div className="relative shrink-0">
           <div
             className={cx(
-              'overflow-hidden rounded-[16px] ring-1 ring-accent/30',
+              'aspect-[5/6] w-[72px] overflow-hidden rounded-[16px] ring-1 ring-accent/30',
               glowing && 'animate-glow',
             )}
           >
-            <Avatar avatar={character.avatar} size={72} pulseKey={pulseKey} className="rounded-[16px]" />
+            <Avatar
+              avatar={character.avatar}
+              size={72}
+              pulseKey={pulseKey}
+              className="h-full w-full rounded-[16px] object-cover"
+            />
           </div>
           <button
             type="button"
             aria-label={t('character.settings')}
             onClick={() => setCustomize(true)}
-            className="absolute -right-1 -bottom-1 flex size-8 items-center justify-center rounded-full border border-white/14 bg-surface text-text-2 shadow-lg"
+            className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border border-white/14 bg-ink-900 text-text-2 shadow-lg"
           >
             <GearIcon />
           </button>
         </div>
 
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-[28px] leading-none text-white">{character.name}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="inline-flex h-7 items-center rounded-full bg-ink-800 px-2.5 text-[12px] text-white">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-[28px] leading-none text-white">{character.name}</h1>
+            <span className="inline-flex h-6 items-center rounded-full bg-ink-800 px-2 text-[11px] text-white">
               {t('home.levelChip', { level: character.level })}
             </span>
-            <span className="text-[14px] font-medium text-mint">
-              {t('common.money')}
-              {formatMoney(character.money, character.locale)}
-            </span>
           </div>
-          <div className={cx('mt-2', xpFlashing && 'animate-xp')}>
-            <ProgressBar className="h-2" ratio={xpRatio} />
+
+          <div className={cx('mt-2.5', xpFlashing && 'animate-xp')}>
+            <div className="flex items-center gap-2">
+              <ProgressBar className="h-1.5 flex-1" ratio={xpRatio} />
+              <button
+                type="button"
+                onClick={() => setCustomize(true)}
+                className="shrink-0 text-[12px] text-accent"
+              >
+                {t('home.customizeLink')}
+              </button>
+            </div>
             <p className="mt-1 text-[12px] text-text-3">
               {t('home.xpLabel', { xp: character.xp, next: character.xpToNext })}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setCustomize(true)}
-            className="mt-1 min-h-9 self-start text-[13px] text-accent"
-          >
-            {t('home.customizeLink')}
-          </button>
+
+          <p className="mt-2 text-[14px] font-medium text-mint">
+            {t('common.money')}
+            {formatMoney(character.money, character.locale)}
+          </p>
         </div>
       </header>
 
-      <div className="mt-6">
+      <div className="mt-5">
         <TodayStep />
       </div>
 
@@ -108,10 +116,6 @@ export function HomePage() {
       </div>
 
       <SeriesPulseLine />
-
-      <div className="mt-8">
-        <WritingFold />
-      </div>
 
       <Composer filter={filter} pickDate={pickDate} />
 
@@ -140,7 +144,7 @@ function SeriesPulseLine() {
 
 function GearIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="1.8">
       <circle cx="12" cy="12" r="3" />
       <path
         d="M12 3.5v2.2M12 18.3v2.2M4.9 6.5l1.6 1.6M17.5 15.9l1.6 1.6M3.5 12h2.2M18.3 12h2.2M4.9 17.5l1.6-1.6M17.5 8.1l1.6-1.6"
