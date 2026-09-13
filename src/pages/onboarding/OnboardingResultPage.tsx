@@ -31,7 +31,7 @@ export function OnboardingResultPage() {
         <p className="text-[12px] font-semibold tracking-[0.14em] text-text-3 uppercase">
           {t('onboarding.result.phase')}
         </p>
-        <h1 className="font-display text-[32px] leading-tight text-white">
+        <h1 className="font-display text-[32px] leading-tight text-ink">
           {t('onboarding.result.title')}
         </h1>
         <p className="text-[15px] leading-relaxed text-text-3">{t('onboarding.result.subtitle')}</p>
@@ -63,7 +63,7 @@ export function OnboardingResultPage() {
                   'flex min-h-12 items-center justify-between rounded-full border px-4 text-left text-[14px] transition-colors',
                   active
                     ? 'border-accent bg-accent/10 text-accent'
-                    : 'border-white/10 bg-ink-900 text-text-2',
+                    : 'border-line-strong bg-surface text-text-2',
                 )}
               >
                 <span>{seed}</span>
@@ -74,14 +74,14 @@ export function OnboardingResultPage() {
         </div>
       </section>
 
-      <div className="h-px bg-white/10" />
+      <div className="h-px bg-line" />
 
       <section className="space-y-2">
         <p className="text-[11px] font-semibold tracking-[0.16em] text-text-3 uppercase">
           {t('onboarding.result.customTitle')}
         </p>
         <label className="block space-y-1.5">
-          <span className="text-[13px] text-white">{t('onboarding.result.customLabel')}</span>
+          <span className="text-[13px] text-ink">{t('onboarding.result.customLabel')}</span>
           <Input
             value={custom}
             onChange={(e) => {
@@ -95,7 +95,7 @@ export function OnboardingResultPage() {
 
       <p className="text-[13px] italic text-text-3">{t('onboarding.result.stagesHint')}</p>
 
-      <div className="sticky bottom-0 mt-auto flex gap-3 bg-ink-950/95 py-3 backdrop-blur">
+      <div className="sticky bottom-0 mt-auto flex gap-3 bg-bg/95 py-3 backdrop-blur">
         <Button variant="ghost" className="min-w-20" onClick={() => navigate('/onboarding')}>
           {t('onboarding.result.back')}
         </Button>

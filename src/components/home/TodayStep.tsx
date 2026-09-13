@@ -35,13 +35,13 @@ export function TodayStep() {
   }
 
   return (
-    <section className="rounded-[20px] border border-white/12 bg-surface px-5 py-6">
+    <section className="rounded-[20px] border border-line-strong bg-surface px-5 py-6">
       {task ? (
         <>
           <p className="text-center text-[13px] font-medium text-accent">
             {t('home.stepTodayTitle')}
           </p>
-          <h2 className="mt-3 text-center text-[20px] font-semibold leading-snug text-white">
+          <h2 className="mt-3 text-center text-[20px] font-semibold leading-snug text-ink">
             {task.title}
           </h2>
           {meta ? (
@@ -62,11 +62,11 @@ export function TodayStep() {
         </>
       ) : (
         <div className="flex flex-col items-center text-center">
-          <span className="flex size-14 items-center justify-center rounded-full bg-ink-800 text-accent">
+          <span className="flex size-14 items-center justify-center rounded-full bg-subtle text-accent">
             <BulbIcon />
           </span>
           <p className="mt-4 text-[15px] font-semibold text-accent">{t('home.stepTodayTitle')}</p>
-          <p className="mt-2 max-w-[16rem] text-[15px] leading-relaxed text-white">
+          <p className="mt-2 max-w-[16rem] text-[15px] leading-relaxed text-ink">
             {t('home.stepTodayEmpty')}
           </p>
           <Button className="mt-5 w-full rounded-full" onClick={focusComposer}>

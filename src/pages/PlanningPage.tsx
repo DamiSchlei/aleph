@@ -53,7 +53,7 @@ export function PlanningPage() {
   return (
     <Page className="flex flex-col gap-4 pt-4">
       <header>
-        <h1 className="font-display text-[30px] leading-none tracking-wide text-white uppercase">
+        <h1 className="font-display text-[30px] leading-none tracking-wide text-ink uppercase">
           {t('planning.title')}
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-text-3">{t('planning.subtitle')}</p>
@@ -76,7 +76,7 @@ function DashedNewResult({ onClick, label }: { onClick: () => void; label: strin
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-11 w-full items-center justify-center rounded-[20px] border border-dashed border-white/14 px-4 py-3 text-[14px] text-text-3"
+      className="flex min-h-11 w-full items-center justify-center rounded-[20px] border border-dashed border-line px-4 py-3 text-[14px] text-text-3"
     >
       {label}
     </button>
@@ -127,7 +127,7 @@ function ResultsTab() {
           type="button"
           aria-label={t('planning.results.new')}
           onClick={() => requestCreate()}
-          className="flex size-9 items-center justify-center rounded-full border border-white/14 text-accent"
+          className="flex size-9 items-center justify-center rounded-full border border-line text-accent"
         >
           +
         </button>
@@ -173,7 +173,7 @@ function ResultsTab() {
                 <Card className="flex items-start gap-1 rounded-[20px] p-2">
                   <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 p-2">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-display text-[20px] leading-tight text-white">{result.name}</p>
+                      <p className="font-display text-[20px] leading-tight text-ink">{result.name}</p>
                       {percent ? (
                         <span className="shrink-0 text-[13px] font-medium text-accent">{percent}</span>
                       ) : null}
@@ -232,10 +232,10 @@ function ResultsTab() {
               {archived.map((result) => (
                 <li
                   key={result.id}
-                  className="flex items-center justify-between gap-2 rounded-2xl border border-white/14 bg-surface px-3 py-2"
+                  className="flex items-center justify-between gap-2 rounded-2xl border border-line bg-surface px-3 py-2"
                 >
                   <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1">
-                    <p className="truncate text-[15px] text-white">{result.name}</p>
+                    <p className="truncate text-[15px] text-ink">{result.name}</p>
                     <p className="text-[12px] text-text-3">{t('resultStatus.archived')}</p>
                   </Link>
                   <Button variant="secondary" onClick={() => restoreResult(result.id)}>

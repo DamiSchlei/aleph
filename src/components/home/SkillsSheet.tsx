@@ -37,7 +37,7 @@ export function SkillsSheet({ open, onClose }: { open: boolean; onClose: () => v
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-[15px] font-medium text-white">{skillName(t, skill)}</p>
+                  <p className="truncate text-[15px] font-medium text-ink">{skillName(t, skill)}</p>
                   <p className="text-[12px] text-ink-400">{t('common.levelShort', { level: skill.level })}</p>
                 </div>
                 <ProgressBar className="mt-1.5" ratio={skill.xp / 100} color={skill.color} />

@@ -225,12 +225,12 @@ function TaskFormBody({
       <button
         type="button"
         onClick={() => setMoreOpen((v) => !v)}
-        className="flex min-h-11 items-center justify-between rounded-2xl border border-white/10 bg-ink-800 px-3.5 text-[14px] text-text-2"
+        className="flex min-h-11 items-center justify-between rounded-2xl border border-line-strong bg-subtle px-3.5 text-[14px] text-text-2"
       >
         <span>{t('taskEdit.moreOptions')}</span>
         <span className="flex items-center gap-2 text-text-3">
           {checklist.length > 0 ? (
-            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] text-accent">
+            <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11px] text-accent">
               {checklistDone}/{checklist.length}
             </span>
           ) : null}
@@ -409,7 +409,7 @@ function TaskFormBody({
                         ),
                       )
                     }
-                    className="size-5 accent-accent-strong"
+                    className="size-5 accent-mint"
                   />
                   <Input
                     value={item.text}
@@ -489,7 +489,7 @@ function TaskFormBody({
       </div>
 
       {showMoments && task ? (
-        <div className="flex flex-col gap-2 border-t border-white/6 pt-4">
+        <div className="flex flex-col gap-2 border-t border-line pt-4">
           {task.stage === 'research' ? (
             <Button
               onClick={() => {

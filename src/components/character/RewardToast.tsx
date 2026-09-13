@@ -17,13 +17,13 @@ export function RewardToast({ toasts }: { toasts: ToastMessage[] }) {
           className={cx(
             'animate-rise max-w-sm rounded-2xl border px-4 py-2.5 text-center text-[15px] font-semibold shadow-lg backdrop-blur',
             toast.tone === 'info'
-              ? 'border-white/10 bg-ink-800/95 text-ink-200'
-              : 'border-mint/30 bg-mint/15 text-mint',
+              ? 'border-line-strong bg-subtle text-ink-2'
+              : 'border-transparent bg-ink text-white',
           )}
         >
           {toast.text}
           {toast.detail ? (
-            <span className="mt-0.5 block text-[13px] font-normal text-ink-200/80">{toast.detail}</span>
+            <span className="mt-0.5 block text-[13px] font-normal text-mint">{toast.detail}</span>
           ) : null}
         </div>
       ))}

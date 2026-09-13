@@ -46,16 +46,16 @@ export function OnboardingBlockPage() {
         <p className="text-[12px] font-semibold tracking-[0.14em] text-text-3 uppercase">
           {t('onboarding.block.step')}
         </p>
-        <h1 className="font-display text-[32px] leading-tight text-white">
+        <h1 className="font-display text-[32px] leading-tight text-ink">
           {t('onboarding.block.title')}
         </h1>
-        <div className="h-px bg-white/10" />
+        <div className="h-px bg-line" />
         <p className="text-[15px] leading-relaxed text-text-3">{t('onboarding.block.subtitle')}</p>
       </header>
 
       <Card className="space-y-4 rounded-[20px]">
         <label className="block space-y-1.5">
-          <span className="text-[13px] text-white">{t('onboarding.block.taskLabel')}</span>
+          <span className="text-[13px] text-ink">{t('onboarding.block.taskLabel')}</span>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -63,13 +63,13 @@ export function OnboardingBlockPage() {
             autoFocus
           />
         </label>
-        <div className="h-px bg-white/10" />
+        <div className="h-px bg-line" />
         <div className="flex items-center justify-between gap-3">
           <span className="text-[13px] text-text-3">{t('onboarding.block.durationLabel')}</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="flex size-9 items-center justify-center rounded-full border border-white/10 text-text-2"
+              className="flex size-9 items-center justify-center rounded-full border border-line-strong text-text-2"
               onClick={() => bump(-0.25)}
               aria-label="-0.25h"
             >
@@ -78,7 +78,7 @@ export function OnboardingBlockPage() {
             <span className="min-w-14 text-center text-[15px] text-text-2">{hours} h</span>
             <button
               type="button"
-              className="flex size-9 items-center justify-center rounded-full border border-white/10 text-text-2"
+              className="flex size-9 items-center justify-center rounded-full border border-line-strong text-text-2"
               onClick={() => bump(0.25)}
               aria-label="+0.25h"
             >
@@ -92,7 +92,7 @@ export function OnboardingBlockPage() {
         {t('onboarding.block.cta')}
       </Button>
 
-      <Card className="flex items-start gap-3 rounded-[20px] border-white/10 bg-transparent">
+      <Card className="flex items-start gap-3 rounded-[20px] border-line-strong bg-transparent">
         <span className="text-text-3" aria-hidden>
           ⓘ
         </span>

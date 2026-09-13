@@ -65,13 +65,13 @@ export function WeekPlanningPage() {
         <p className="text-[12px] font-semibold tracking-[0.14em] text-text-3 uppercase">
           {t('week.eyebrow')}
         </p>
-        <h1 className="font-display text-[30px] leading-tight text-white">{t('week.title')}</h1>
+        <h1 className="font-display text-[30px] leading-tight text-ink">{t('week.title')}</h1>
         <p className="text-[15px] leading-relaxed text-text-3">{t('week.subtitle')}</p>
       </header>
 
       <Card className="space-y-4 rounded-[20px]">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[16px] font-semibold text-white">{t('week.boardTitle')}</h2>
+          <h2 className="text-[16px] font-semibold text-ink">{t('week.boardTitle')}</h2>
           <p className="text-[12px] text-text-3">{rangeLabel}</p>
         </div>
 
@@ -85,7 +85,7 @@ export function WeekPlanningPage() {
                 onClick={() => setActiveDay(day)}
                 className={cx(
                   'flex h-10 flex-1 items-center justify-center rounded-xl text-[13px] font-medium transition-colors',
-                  active ? 'bg-ink-800 text-white' : 'text-text-3',
+                  active ? 'bg-subtle text-ink' : 'text-text-3',
                 )}
               >
                 {DAY_LABELS[index]}
@@ -96,11 +96,11 @@ export function WeekPlanningPage() {
 
         <ul className="space-y-2">
           {dayTasks.length === 0 ? (
-            <li className="rounded-2xl border border-dashed border-white/10 px-3 py-4 text-center text-[13px] text-text-3">
+            <li className="rounded-2xl border border-dashed border-line-strong px-3 py-4 text-center text-[13px] text-text-3">
               {t('week.unassigned')}
             </li>
           ) : (
-            dayTasks.map((task, index) => {
+            dayTasks.map((task) => {
               const fallback = blockWindow(task.estimatedHours)
               const start = task.scheduledStart ?? fallback.start
               const end = task.scheduledEnd ?? fallback.end
@@ -108,11 +108,11 @@ export function WeekPlanningPage() {
                 <li
                   key={task.id}
                   className={cx(
-                    'rounded-2xl border bg-ink-900/80 px-3 py-3',
-                    index % 2 === 0 ? 'border-accent' : 'border-violet',
+                    'rounded-2xl border bg-subtle px-3 py-3',
+                    'border-line',
                   )}
                 >
-                  <p className="text-[15px] font-medium text-white">{task.title}</p>
+                  <p className="text-[15px] font-medium text-ink">{task.title}</p>
                   <p className="mt-1 text-[12px] text-text-3">
                     {start} – {end} · {formatHours(task.estimatedHours, locale)}h
                   </p>
@@ -124,7 +124,7 @@ export function WeekPlanningPage() {
       </Card>
 
       <section className="space-y-3">
-        <h2 className="text-[16px] font-semibold text-white">{t('week.unassigned')}</h2>
+        <h2 className="text-[16px] font-semibold text-ink">{t('week.unassigned')}</h2>
         <ul className="space-y-2">
           {unassigned.map((task) => (
             <li key={task.id}>
@@ -132,8 +132,8 @@ export function WeekPlanningPage() {
                 <span className="w-10 text-[12px] text-text-3">
                   {formatHours(task.estimatedHours, locale)}h
                 </span>
-                <span className="size-6 rounded-full border border-white/20" aria-hidden />
-                <p className="min-w-0 flex-1 truncate text-[15px] text-white">{task.title}</p>
+                <span className="size-6 rounded-full border border-line-strong" aria-hidden />
+                <p className="min-w-0 flex-1 truncate text-[15px] text-ink">{task.title}</p>
                 <Button
                   variant="secondary"
                   className="min-h-9 rounded-full px-3 text-[12px]"

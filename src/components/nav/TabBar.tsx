@@ -40,7 +40,7 @@ export function TabBar() {
   ]
 
   return (
-    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-white/8 bg-ink-950/90 backdrop-blur-xl">
+    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/90 backdrop-blur-xl">
       <ul className="mx-auto flex max-w-lg items-stretch justify-around px-2 pt-1.5 pb-1.5">
         {tabs.map((tab) => (
           <li key={tab.to} className="flex-1">
@@ -61,7 +61,7 @@ export function TabBar() {
                     className={cx(
                       'flex items-center justify-center rounded-2xl transition-colors',
                       tab.primary ? 'size-11' : 'size-9',
-                      tab.primary && (isActive ? 'bg-accent/15' : 'bg-white/5'),
+                      tab.primary && (isActive ? 'bg-accent-soft' : 'bg-subtle'),
                     )}
                   >
                     {tab.icon}

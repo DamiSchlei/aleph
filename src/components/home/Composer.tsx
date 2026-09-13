@@ -25,7 +25,7 @@ export function Composer({ filter, pickDate }: { filter: AgendaFilter; pickDate:
   return (
     <>
       <form
-        className="safe-bottom fixed inset-x-0 bottom-[var(--tab-bar-height)] z-30 border-t border-white/8 bg-ink-950/95 px-4 py-2.5 backdrop-blur-xl"
+        className="safe-bottom fixed inset-x-0 bottom-[var(--tab-bar-height)] z-30 border-t border-line bg-bg/95 px-4 py-2.5 backdrop-blur-xl"
         onSubmit={(e) => {
           e.preventDefault()
           submit()
@@ -46,8 +46,8 @@ export function Composer({ filter, pickDate }: { filter: AgendaFilter; pickDate:
             className={cx(
               'flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors',
               title.trim()
-                ? 'bg-accent text-ink-950'
-                : 'bg-ink-800 text-text-3',
+                ? 'bg-accent text-white'
+                : 'bg-subtle text-text-3',
             )}
           >
             <SendIcon />

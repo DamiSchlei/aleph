@@ -86,7 +86,7 @@ export function ObjectiveDetailPage() {
       </button>
 
       <header>
-        <h1 className="text-2xl font-semibold text-white">{objective.name}</h1>
+        <h1 className="text-2xl font-semibold text-ink">{objective.name}</h1>
         {objective.why ? <p className="mt-1 text-[15px] text-text-3">{objective.why}</p> : null}
         <p className="mt-2 text-[13px] text-text-3">
           {t('objectiveDetail.stageLabel', { stage: stageShort(t, objective.currentStage) })}
@@ -112,14 +112,14 @@ export function ObjectiveDetailPage() {
           <ul className="flex flex-col gap-2">
             {checklistItems.map((item) => (
               <li key={item.id}>
-                <label className="flex min-h-11 items-center gap-3 rounded-2xl bg-ink-900/80 px-3 py-2">
+                <label className="flex min-h-11 items-center gap-3 rounded-2xl bg-subtle px-3 py-2">
                   <input
                     type="checkbox"
                     checked={item.done}
                     onChange={() => item.onToggle()}
-                    className="size-5 accent-accent-strong"
+                    className="size-5 accent-mint"
                   />
-                  <span className={item.done ? 'text-text-3 line-through' : 'text-white'}>
+                  <span className={item.done ? 'text-text-3 line-through' : 'text-ink'}>
                     {item.text}
                   </span>
                 </label>
@@ -160,7 +160,7 @@ export function ObjectiveDetailPage() {
           ).map((cell) => (
             <Card key={cell.key} className="rounded-[20px] py-3">
               <p className="text-[12px] text-text-3">{cell.label}</p>
-              <p className="mt-1 text-[16px] font-medium text-white">{cell.value}</p>
+              <p className="mt-1 text-[16px] font-medium text-ink">{cell.value}</p>
               <button
                 type="button"
                 onClick={() => bumpInventory(cell.key)}
@@ -216,7 +216,7 @@ export function ObjectiveDetailPage() {
       {completionDialog}
       {actions.dialog}
 
-      <div className="safe-bottom sticky bottom-0 -mx-4 border-t border-white/8 bg-ink-950/95 px-4 py-3 backdrop-blur-xl">
+      <div className="safe-bottom sticky bottom-0 -mx-4 border-t border-line bg-bg/95 px-4 py-3 backdrop-blur-xl">
         <Button className="w-full" onClick={() => setCreating(true)}>
           {t('objectiveDetail.ctaToday')}
         </Button>
