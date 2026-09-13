@@ -8,11 +8,11 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-accent text-ink-950 font-semibold hover:bg-accent-strong active:bg-accent-strong disabled:bg-ink-700 disabled:text-text-3',
+    'bg-accent text-white font-semibold hover:bg-accent-hover active:bg-accent-pressed disabled:bg-subtle disabled:text-ink-4',
   secondary:
-    'bg-ink-800 text-text-2 border border-white/10 hover:bg-ink-700 disabled:text-text-3',
-  ghost: 'text-text-2 hover:bg-white/5 disabled:text-text-3',
-  danger: 'bg-rose/15 text-rose border border-rose/30 hover:bg-rose/25',
+    'bg-bg text-ink border border-line-strong hover:bg-subtle disabled:text-ink-4',
+  ghost: 'text-ink-2 hover:bg-subtle disabled:text-ink-4',
+  danger: 'bg-rose text-white hover:bg-rose/90',
 }
 
 export function Button({
@@ -62,7 +62,7 @@ export function Card({
     <div
       {...rest}
       className={cx(
-        'rounded-2xl border border-white/14 bg-surface p-4',
+        'rounded-2xl border border-line bg-surface p-4 shadow-[var(--shadow-paper)]',
         className,
       )}
     >
@@ -99,7 +99,7 @@ export function Field({
 }
 
 const CONTROL =
-  'w-full min-h-11 rounded-2xl border border-white/10 bg-ink-800 px-3.5 text-[15px] text-white placeholder:text-3 outline-none transition-colors focus:border-accent/60'
+  'w-full min-h-12 rounded-2xl border border-line-strong bg-bg px-3.5 text-[15px] text-ink placeholder:text-ink-4 outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/30'
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cx(CONTROL, className)} />
@@ -155,10 +155,10 @@ export function ProgressBar({
 }) {
   const width = ratio === null ? 0 : Math.min(100, Math.max(0, ratio * 100))
   return (
-    <div className={cx('h-1.5 w-full overflow-hidden rounded-full bg-white/10', className)}>
+    <div className={cx('h-1.5 w-full overflow-hidden rounded-full bg-subtle', className)}>
       <div
         className="h-full rounded-full transition-[width] duration-500"
-        style={{ width: `${width}%`, background: color ?? 'var(--color-accent-strong)' }}
+        style={{ width: `${width}%`, background: color ?? 'var(--color-accent)' }}
       />
     </div>
   )
@@ -168,7 +168,7 @@ export function Page({ children, className }: { children: ReactNode; className?:
   return (
     <div
       className={cx(
-        '-mx-4 min-h-[calc(100dvh-var(--tab-bar-height))] bg-ink-950 px-4',
+        '-mx-4 min-h-[calc(100dvh-var(--tab-bar-height))] bg-bg px-4',
         className,
       )}
     >
@@ -213,8 +213,8 @@ export function Chip({
       className={cx(
         'min-h-11 rounded-full border px-3 py-1.5 text-[13px] transition-colors',
         active
-          ? 'border-accent bg-accent text-ink-950'
-          : 'border-white/10 bg-ink-800 text-text-2 hover:bg-ink-700',
+          ? 'border-accent bg-accent-soft text-accent'
+          : 'border-line-strong bg-bg text-ink hover:bg-subtle',
         className,
       )}
     >

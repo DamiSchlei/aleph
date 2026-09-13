@@ -1,41 +1,66 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-ink-950: #050814;
-  --color-ink-900: #0A1022;
-  --color-ink-800: #121A32;
-  --color-ink-700: #1A2544;
+  /* Aleph Paper — surfaces */
+  --color-bg: #ffffff;
+  --color-subtle: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-surface-2: #f6f7f9;
+  --color-raised: #ffffff;
 
-  --color-text: #FFFFFF;
-  --color-text-2: #E8EEFB;
-  --color-text-3: #A8B4D4;
+  /* Legacy surface ladder remapped to paper (bg-ink-* call sites) */
+  --color-ink-950: #ffffff;
+  --color-ink-900: #ffffff;
+  --color-ink-800: #f6f7f9;
+  --color-ink-700: #e6e8ee;
+  --color-ink-600: #d0d4dc;
 
-  --color-accent: #2EC8FF;
-  --color-accent-strong: #5CE1FF;
-  --color-violet: #C084FC;
-  --color-mint: #34F1B4;
-  --color-amber: #FFB020;
-  --color-rose: #FF6B8A;
+  /* Ink */
+  --color-ink: #111113;
+  --color-ink-2: #3c3f46;
+  --color-ink-3: #6b7080;
+  --color-ink-4: #9aa0ae;
 
-  --color-surface: #10182E;
-  --color-surface-2: #162240;
-  --color-line: rgb(255 255 255 / 0.14);
+  /* Legacy text tokens → ink scale */
+  --color-text: #111113;
+  --color-text-2: #3c3f46;
+  --color-text-3: #6b7080;
 
-  --font-sans: 'Inter var', ui-sans-serif, system-ui, sans-serif;
+  /* Legacy ink-200 / ink-400 aliases */
+  --color-ink-200: #3c3f46;
+  --color-ink-400: #6b7080;
+
+  /* Line */
+  --color-line: #e6e8ee;
+  --color-line-strong: #d0d4dc;
+
+  /* Brand — one accent */
+  --color-accent: #2f6bff;
+  --color-accent-hover: #1f56e0;
+  --color-accent-pressed: #1646c4;
+  --color-accent-soft: #e8eeff;
+  --color-accent-strong: #1f56e0;
+
+  /* Semantics */
+  --color-mint: #0f9f6e;
+  --color-mint-soft: #e6f7f0;
+  --color-amber: #c47a00;
+  --color-amber-soft: #fff4de;
+  --color-rose: #d63b5a;
+  --color-rose-soft: #fde8ed;
+  --color-violet: #7a3fe0;
+  --color-violet-soft: #f1e9ff;
+
+  --color-backdrop: rgb(17 17 19 / 0.36);
+  --shadow-paper: 0 8px 24px rgb(17 17 19 / 0.06);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Fraunces', 'Newsreader', ui-serif, Georgia, serif;
 }
 
-/* Aliases for screens not migrated yet. Slices 2-3 move every ink-200 / ink-400
-   call site onto text-2 / text-3 and then this block is deleted. */
-@theme {
-  --color-ink-600: var(--color-ink-700);
-  --color-ink-400: var(--color-text-3);
-  --color-ink-200: var(--color-text-2);
-}
-
 :root {
-  color-scheme: dark;
-  --tab-bar-height: 4.5rem;
+  color-scheme: light;
+  --tab-bar-height: 0rem;
 }
 
 html,
@@ -46,11 +71,8 @@ body,
 
 body {
   margin: 0;
-  background:
-    radial-gradient(90% 50% at 70% 0%, rgb(46 200 255 / 0.22) 0%, transparent 55%),
-    radial-gradient(70% 40% at 10% 10%, rgb(192 132 252 / 0.10) 0%, transparent 50%),
-    var(--color-ink-950);
-  color: var(--color-text-2);
+  background: var(--color-bg);
+  color: var(--color-ink-2);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
@@ -68,14 +90,11 @@ select {
   color: inherit;
 }
 
-/* Native selects render their popup with the OS palette; keep options readable. */
 select option {
-  color: var(--color-ink-950);
-  background: var(--color-text-2);
+  color: var(--color-ink);
+  background: var(--color-bg);
 }
 
-/* The brief names the secondary and tertiary type colors "text-2" / "text-3",
-   so those spellings resolve as well as the generated text-text-2 / text-text-3. */
 @utility text-2 {
   color: var(--color-text-2);
 }
@@ -115,15 +134,31 @@ select option {
 }
 
 @keyframes aleph-glow {
-  0%, 100% { box-shadow: 0 0 44px rgba(46, 200, 255, 0.28); }
-  50% { box-shadow: 0 0 68px rgba(46, 200, 255, 0.55); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(47 107 255 / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(47 107 255 / 0.16);
+  }
 }
+
 @keyframes aleph-xp-flash {
-  0%, 100% { filter: brightness(1); }
-  40% { filter: brightness(1.35); }
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  40% {
+    filter: brightness(1.08);
+  }
 }
-.animate-glow { animation: aleph-glow 700ms ease-out; }
-.animate-xp { animation: aleph-xp-flash 500ms ease-out; }
+
+.animate-glow {
+  animation: aleph-glow 700ms ease-out;
+}
+.animate-xp {
+  animation: aleph-xp-flash 500ms ease-out;
+}
 
 @keyframes aleph-rise {
   from {

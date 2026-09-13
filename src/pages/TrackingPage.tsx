@@ -1,3 +1,4 @@
+import { AppHeader } from '@/components/nav/AppHeader'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SkillIcon } from '@/components/character/SkillIcon'
@@ -50,14 +51,18 @@ export function TrackingPage() {
   ]
 
   return (
-    <div className="flex flex-col gap-4 pt-4 pb-10">
-      <header>
-        <h1 className="text-[30px] font-semibold text-white">{t('tracking.title')}</h1>
-        <p className="mt-1 text-[15px] leading-relaxed text-text-3">{t('tracking.subtitle')}</p>
-      </header>
+    <div className="flex flex-col gap-4 pt-2 pb-10">
+      <AppHeader
+        title={
+          <div>
+            <h1 className="text-[28px] font-semibold text-ink">{t('tracking.title')}</h1>
+            <p className="mt-1 text-[14px] text-ink-3">{t('tracking.subtitle')}</p>
+          </div>
+        }
+      />
 
       <Card className="rounded-[20px]">
-        <p className="font-display text-[22px] leading-snug text-white">{weekSentence}</p>
+        <p className="font-display text-[22px] leading-snug text-ink">{weekSentence}</p>
         {activity.mostActive ? (
           <p className="mt-2 text-[13px] text-text-3">
             {t('tracking.weekSkillLine', { skill: skillName(t, activity.mostActive) })}
@@ -75,7 +80,7 @@ export function TrackingPage() {
         {kpis.map((kpi) => (
           <Card key={kpi.label} className="rounded-[20px] py-3 text-center">
             <p className="text-[11px] font-medium tracking-wide text-text-3 uppercase">{kpi.label}</p>
-            <p className="mt-1 text-[20px] font-semibold text-white">{kpi.value}</p>
+            <p className="mt-1 text-[20px] font-semibold text-ink">{kpi.value}</p>
           </Card>
         ))}
       </div>
@@ -119,7 +124,7 @@ export function TrackingPage() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between gap-2">
-                    <p className="truncate text-[15px] font-medium text-white">{skillName(t, skill)}</p>
+                    <p className="truncate text-[15px] font-medium text-ink">{skillName(t, skill)}</p>
                     <p className="text-[12px] text-text-3">
                       {index === 0
                         ? t('tracking.skillMostActive')

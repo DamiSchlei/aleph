@@ -1,3 +1,4 @@
+import { AppHeader } from '@/components/nav/AppHeader'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -51,13 +52,15 @@ export function PlanningPage() {
   const [tab, setTab] = useState<PlanningTab>('results')
 
   return (
-    <Page className="flex flex-col gap-4 pt-4">
-      <header>
-        <h1 className="font-display text-[30px] leading-none tracking-wide text-white uppercase">
-          {t('planning.title')}
-        </h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-text-3">{t('planning.subtitle')}</p>
-      </header>
+    <Page className="flex flex-col gap-4 pt-2">
+      <AppHeader
+        title={
+          <div>
+            <h1 className="text-[28px] font-semibold text-ink">{t('planning.title')}</h1>
+            <p className="mt-1 text-[14px] text-ink-3">{t('planning.subtitle')}</p>
+          </div>
+        }
+      />
       <div className="flex justify-center gap-2">
         <Chip active={tab === 'results'} onClick={() => setTab('results')} className="min-w-28 justify-center">
           {t('planning.tabs.results')}
@@ -173,7 +176,7 @@ function ResultsTab() {
                 <Card className="flex items-start gap-1 rounded-[20px] p-2">
                   <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 p-2">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-display text-[20px] leading-tight text-white">{result.name}</p>
+                      <p className="font-display text-[20px] leading-tight text-ink">{result.name}</p>
                       {percent ? (
                         <span className="shrink-0 text-[13px] font-medium text-accent">{percent}</span>
                       ) : null}
@@ -235,7 +238,7 @@ function ResultsTab() {
                   className="flex items-center justify-between gap-2 rounded-2xl border border-white/14 bg-surface px-3 py-2"
                 >
                   <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1">
-                    <p className="truncate text-[15px] text-white">{result.name}</p>
+                    <p className="truncate text-[15px] text-ink">{result.name}</p>
                     <p className="text-[12px] text-text-3">{t('resultStatus.archived')}</p>
                   </Link>
                   <Button variant="secondary" onClick={() => restoreResult(result.id)}>
