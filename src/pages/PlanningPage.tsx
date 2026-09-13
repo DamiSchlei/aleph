@@ -9,6 +9,7 @@ import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { useTaskActions } from '@/components/task/useTaskActions'
 import { SortableList } from '@/components/ui/SortableList'
+import { RowMenu } from '@/components/ui/RowMenu'
 import {
   Badge,
   Button,
@@ -21,15 +22,15 @@ import {
   Select,
 } from '@/components/ui/primitives'
 import { ConfirmDialog, Sheet } from '@/components/ui/Sheet'
-import { reorderResults, restoreResult } from '@/data/actions'
+import { archiveResult, reorderResults, restoreResult } from '@/data/actions'
 import {
   activeResults,
   attendingResults,
   leastActiveAttending,
+  nextTaskOfResult,
   objectivesOfResult,
   pickerObjectives,
   pickerResults,
-  resultHealth,
   resultProgress,
   stageFocusOfResult,
   taskResultStatus,
@@ -37,6 +38,7 @@ import {
 import { useAleph } from '@/data/store'
 import { shouldSoftWarnActiveResults } from '@/domain/limits'
 import { STAGE_ORDER } from '@/domain/stage'
+import { formatPercent } from '@/i18n/format'
 import { skillName } from '@/i18n/labels'
 import type { StageId, Task, TaskStatus } from '@/domain/types'
 
@@ -51,14 +53,16 @@ export function PlanningPage() {
   return (
     <Page className="flex flex-col gap-4 pt-4">
       <header>
-        <h1 className="text-[30px] font-semibold text-white">{t('planning.title')}</h1>
-        <p className="mt-1 text-[15px] leading-relaxed text-text-3">{t('planning.subtitle')}</p>
+        <h1 className="font-display text-[30px] leading-none tracking-wide text-white uppercase">
+          {t('planning.title')}
+        </h1>
+        <p className="mt-2 text-[15px] leading-relaxed text-text-3">{t('planning.subtitle')}</p>
       </header>
-      <div className="flex gap-2">
-        <Chip active={tab === 'results'} onClick={() => setTab('results')}>
+      <div className="flex justify-center gap-2">
+        <Chip active={tab === 'results'} onClick={() => setTab('results')} className="min-w-28 justify-center">
           {t('planning.tabs.results')}
         </Chip>
-        <Chip active={tab === 'tasks'} onClick={() => setTab('tasks')}>
+        <Chip active={tab === 'tasks'} onClick={() => setTab('tasks')} className="min-w-28 justify-center">
           {t('planning.tabs.tasks')}
         </Chip>
       </div>
@@ -67,15 +71,14 @@ export function PlanningPage() {
   )
 }
 
-function DashedNewResult({ onClick }: { onClick: () => void }) {
-  const { t } = useTranslation()
+function DashedNewResult({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-11 w-full items-center justify-center rounded-2xl border border-dashed border-white/14 px-4 py-3 text-[14px] text-text-3"
+      className="flex min-h-11 w-full items-center justify-center rounded-[20px] border border-dashed border-white/14 px-4 py-3 text-[14px] text-text-3"
     >
-      {t('planning.results.new')}
+      {label}
     </button>
   )
 }
@@ -84,6 +87,7 @@ function ResultsTab() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const state = useAleph()
+  const locale = state.character.locale
   const results = activeResults(state)
   const archived = state.results.filter((r) => r.status === 'archived')
   const attendingCount = attendingResults(state).length
@@ -91,6 +95,7 @@ function ResultsTab() {
   const [seed, setSeed] = useState<string | undefined>()
   const [showArchived, setShowArchived] = useState(false)
   const [capOpen, setCapOpen] = useState(false)
+  const [archiveId, setArchiveId] = useState<string | null>(null)
 
   const openCreate = (name?: string) => {
     setSeed(name)
@@ -114,13 +119,30 @@ function ResultsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-[14px] leading-relaxed text-text-3">{t('planning.results.helper')}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
+          {t('planning.activeEnterprises')}
+        </p>
+        <button
+          type="button"
+          aria-label={t('planning.results.new')}
+          onClick={() => requestCreate()}
+          className="flex size-9 items-center justify-center rounded-full border border-white/14 text-accent"
+        >
+          +
+        </button>
+      </div>
+
+      <Link to="/planning/week" className="text-[13px] text-accent">
+        {t('planning.openWeek')}
+      </Link>
+
       {results.length === 0 ? (
         <EmptyState
           hint={t('planning.results.emptyHint')}
           action={
             <div className="flex flex-col items-center gap-3">
-              <Button onClick={() => requestCreate()}>{t('planning.results.new')}</Button>
+              <Button onClick={() => requestCreate()}>{t('planning.newResult')}</Button>
               <div className="flex max-w-sm flex-wrap justify-center gap-2">
                 {CHIP_KEYS.map((key) => (
                   <Chip key={key} onClick={() => requestCreate(t(`planning.results.chips.${key}`))}>
@@ -144,12 +166,18 @@ function ResultsTab() {
               const result = results.find((r) => r.id === id)
               if (!result) return null
               const progress = resultProgress(state, result.id)
-              const health = resultHealth(state, result.id)
               const objectives = objectivesOfResult(state, result.id).slice(0, 4)
+              const next = nextTaskOfResult(state, result.id)
+              const percent = formatPercent(progress.ratio, locale)
               return (
-                <Card className="flex items-start gap-1 p-2">
+                <Card className="flex items-start gap-1 rounded-[20px] p-2">
                   <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 p-2">
-                    <p className="font-display text-[20px] leading-tight text-white">{result.name}</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-display text-[20px] leading-tight text-white">{result.name}</p>
+                      {percent ? (
+                        <span className="shrink-0 text-[13px] font-medium text-accent">{percent}</span>
+                      ) : null}
+                    </div>
                     {result.why ? (
                       <p className="mt-1 truncate text-[13px] text-text-3">{result.why}</p>
                     ) : null}
@@ -162,16 +190,35 @@ function ResultsTab() {
                       </div>
                     ) : null}
                     {progress.tasksTotal > 0 ? <ProgressBar className="mt-3" ratio={progress.ratio} /> : null}
-                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-text-3">
-                      {t(health.key, health.params)}
-                    </p>
+                    {next ? (
+                      <p className="mt-2 truncate text-[13px] text-text-2">
+                        {t('planning.nextTask', { title: next.title })}
+                      </p>
+                    ) : (
+                      <p className="mt-2 text-[13px] text-text-3">{t('planning.results.noTasks')}</p>
+                    )}
                   </Link>
-                  {handle}
+                  <div className="flex flex-col items-center gap-1 pt-1">
+                    <RowMenu
+                      items={[
+                        {
+                          label: t('common.edit'),
+                          onClick: () => navigate(`/planning/results/${result.id}`),
+                        },
+                        {
+                          label: t('common.archive'),
+                          tone: 'danger',
+                          onClick: () => setArchiveId(result.id),
+                        },
+                      ]}
+                    />
+                    {handle}
+                  </div>
                 </Card>
               )
             }}
           </SortableList>
-          <DashedNewResult onClick={() => requestCreate()} />
+          <DashedNewResult onClick={() => requestCreate()} label={t('planning.newResult')} />
         </>
       )}
 
@@ -214,6 +261,17 @@ function ResultsTab() {
           openCreate(seed)
         }}
         onDismiss={() => setCapOpen(false)}
+      />
+      <ConfirmDialog
+        open={Boolean(archiveId)}
+        title={t('common.archive')}
+        tone="danger"
+        message={t('planning.results.archiveConfirm')}
+        onCancel={() => setArchiveId(null)}
+        onConfirm={() => {
+          if (archiveId) archiveResult(archiveId)
+          setArchiveId(null)
+        }}
       />
     </div>
   )
@@ -392,7 +450,7 @@ function TasksTab() {
           />
         </div>
       </Sheet>
-      <TaskFormSheet open={creating} onClose={() => setCreating(false)} />
+      <TaskFormSheet open={creating} collapsedMore onClose={() => setCreating(false)} />
       <TaskFormSheet
         open={Boolean(editing)}
         task={editing}

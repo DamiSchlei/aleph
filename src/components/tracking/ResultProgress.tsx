@@ -1,22 +1,23 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button, Card, EmptyState, ProgressBar, SectionTitle } from '@/components/ui/primitives'
+import { Button, Card, EmptyState, ProgressBar } from '@/components/ui/primitives'
 import { activeResults, objectiveProgress, objectivesOfResult, resultProgress } from '@/data/selectors'
 import { useAleph } from '@/data/store'
+import { formatPercent } from '@/i18n/format'
 import { skillName, stageShort } from '@/i18n/labels'
 import { skillById } from '@/data/selectors'
 
-export function ResultProgress() {
+export function ResultProgress({ showPercent = false }: { showPercent?: boolean }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const state = useAleph()
+  const locale = state.character.locale
   const results = activeResults(state)
   const [openId, setOpenId] = useState<string | null>(null)
 
   return (
-    <section>
-      <SectionTitle>{t('tracking.results.title')}</SectionTitle>
+    <div>
       {results.length === 0 ? (
         <EmptyState
           action={
@@ -32,9 +33,10 @@ export function ResultProgress() {
             const skill = skillById(state, result.skillId)
             const expanded = openId === result.id
             const objectives = objectivesOfResult(state, result.id)
+            const percent = formatPercent(progress.ratio, locale)
             return (
               <li key={result.id}>
-                <Card>
+                <Card className="rounded-[20px]">
                   <button
                     type="button"
                     className="flex w-full flex-col gap-2 text-left"
@@ -48,13 +50,15 @@ export function ResultProgress() {
                       >
                         {result.name}
                       </Link>
-                      <span className="text-[12px] text-text-3">
-                        {progress.ratio === null
-                          ? t('tracking.results.noTasks')
-                          : t('planning.results.progress', {
-                              done: progress.tasksDone,
-                              total: progress.tasksTotal,
-                            })}
+                      <span className="text-[12px] text-accent">
+                        {showPercent && percent
+                          ? percent
+                          : progress.ratio === null
+                            ? t('tracking.results.noTasks')
+                            : t('planning.results.progress', {
+                                done: progress.tasksDone,
+                                total: progress.tasksTotal,
+                              })}
                       </span>
                     </div>
                     {skill ? <p className="text-[12px] text-text-3">{skillName(t, skill)}</p> : null}
@@ -70,6 +74,7 @@ export function ResultProgress() {
                       ) : (
                         objectives.map((objective) => {
                           const obj = objectiveProgress(state, objective.id)
+                          const objPercent = formatPercent(obj.ratio, locale)
                           return (
                             <li key={objective.id}>
                               <div className="flex items-center justify-between gap-2">
@@ -79,7 +84,9 @@ export function ResultProgress() {
                                 >
                                   {objective.name}
                                 </Link>
-                                <span className="text-[12px] text-text-3">{stageShort(t, objective.currentStage)}</span>
+                                <span className="text-[12px] text-text-3">
+                                  {objPercent ?? stageShort(t, objective.currentStage)}
+                                </span>
                               </div>
                               {obj.tasksTotal > 0 ? <ProgressBar className="mt-1.5" ratio={obj.ratio} /> : null}
                             </li>
@@ -94,6 +101,6 @@ export function ResultProgress() {
           })}
         </ul>
       )}
-    </section>
+    </div>
   )
 }

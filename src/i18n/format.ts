@@ -53,3 +53,12 @@ function parseForDisplay(value: string): Date {
   }
   return new Date(value)
 }
+
+/** Formats a 0–1 ratio as an integer percent. Returns null when sample is empty. */
+export function formatPercent(ratio: number | null | undefined, locale: Locale): string | null {
+  if (ratio === null || ratio === undefined || Number.isNaN(ratio)) return null
+  const pct = Math.round(Math.min(1, Math.max(0, ratio)) * 100)
+  return `${new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 0 }).format(pct)}%`
+}
+
+export const formatPercentage = formatPercent

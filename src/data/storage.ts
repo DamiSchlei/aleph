@@ -92,13 +92,20 @@ export function normalize(input: unknown): AlephState {
   character.xp = Math.max(0, character.xp || 0)
   character.xpToNext = character.xpToNext > 0 ? character.xpToNext : xpToNextForLevel(character.level)
   character.money = Math.max(0, character.money || 0)
-  character.locale = 'es'
+  character.locale = character.locale === 'en' ? 'en' : 'es'
   // Merge avatar with defaults so older snapshots gain new layers (e.g. eyes).
   character.avatar = { ...newCharacter(base.character.locale).avatar, ...(character.avatar ?? {}) }
   character.ownedCosmeticIds = Array.from(
     new Set([...base.character.ownedCosmeticIds, ...(character.ownedCosmeticIds ?? [])]),
   )
   character.seenNewCosmeticIds = character.seenNewCosmeticIds ?? []
+  {
+    const hasHistory =
+      (raw.results?.length ?? 0) > 0 ||
+      (raw.objectives?.length ?? 0) > 0 ||
+      (raw.tasks?.length ?? 0) > 0
+    character.onboarded = character.onboarded ?? hasHistory
+  }
 
   const storedSkills = raw.skills ?? []
   const skills = [...DEFAULT_SKILLS.map((s) => ({ ...s }))]

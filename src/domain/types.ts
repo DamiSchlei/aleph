@@ -36,6 +36,8 @@ export interface Character {
   ownedCosmeticIds: string[]
   seenNewCosmeticIds?: string[]
   locale: Locale
+  /** True after the first-run onboarding finishes. */
+  onboarded?: boolean
 }
 
 export interface Skill {
@@ -61,6 +63,13 @@ export interface Result {
   status: ResultStatus
 }
 
+
+export interface ObjectiveInventory {
+  costs: number
+  contacts: number
+  docs: number
+  links: number
+}
 export interface Objective {
   id: string
   resultId: string
@@ -79,6 +88,8 @@ export interface Objective {
   currentStage: StageId
   status: ObjectiveStatus
   archivedAt?: string
+  /** Lightweight counts for the objective inventory grid. */
+  inventory?: ObjectiveInventory
 }
 
 export interface TaskCheckItem {
@@ -102,6 +113,10 @@ export interface Task {
   importance: number
   dueAt?: string
   scheduledFor?: string
+  /** Optional HH:mm start for the weekly board. */
+  scheduledStart?: string
+  /** Optional HH:mm end for the weekly board. */
+  scheduledEnd?: string
   /** Order inside a day's agenda on Home. */
   dayOrder?: number
   /** One-line definition of done for this step. */
