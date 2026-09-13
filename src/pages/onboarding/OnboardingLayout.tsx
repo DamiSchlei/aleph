@@ -7,7 +7,7 @@ export function OnboardingLayout() {
   if (character.onboarded) return <Navigate to="/" replace />
 
   return (
-    <div className="min-h-dvh bg-ink-950">
+    <div className="min-h-dvh bg-bg">
       <main className="safe-top mx-auto w-full max-w-lg px-4 pb-10 pt-6">
         <Outlet />
       </main>

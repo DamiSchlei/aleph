@@ -61,7 +61,7 @@ export function HomePage() {
             type="button"
             aria-label={t('character.settings')}
             onClick={() => setCustomize(true)}
-            className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border border-white/14 bg-ink-900 text-text-2 shadow-lg"
+            className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border border-line bg-surface text-text-2 shadow-lg"
           >
             <GearIcon />
           </button>
@@ -69,8 +69,8 @@ export function HomePage() {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-display text-[28px] leading-none text-white">{character.name}</h1>
-            <span className="inline-flex h-6 items-center rounded-full bg-ink-800 px-2 text-[11px] text-white">
+            <h1 className="font-display text-[28px] leading-none text-ink">{character.name}</h1>
+            <span className="inline-flex h-6 items-center rounded-full bg-subtle px-2 text-[11px] text-ink">
               {t('home.levelChip', { level: character.level })}
             </span>
           </div>

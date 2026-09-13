@@ -61,7 +61,7 @@ export function ResultDetailPage() {
         ← {t('planning.title')}
       </button>
       <header>
-        <h1 className="text-2xl font-semibold text-white">{result.name}</h1>
+        <h1 className="text-2xl font-semibold text-ink">{result.name}</h1>
         {result.why ? <p className="mt-1 text-[15px] text-text-3">{result.why}</p> : null}
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-text-3">
           {result.targetDate ? <span>{formatDate(result.targetDate, state.character.locale)}</span> : null}
@@ -124,7 +124,7 @@ export function ResultDetailPage() {
               return (
                 <Card className="flex items-start gap-1 p-2">
                   <Link to={`/planning/objectives/${objective.id}`} className="min-w-0 flex-1 p-2">
-                    <p className="font-medium text-white">{objective.name}</p>
+                    <p className="font-medium text-ink">{objective.name}</p>
                     <p className="mt-1 text-[12px] text-text-3">
                       {stageShort(t, deriveObjectiveStage(state, objective.id))}
                       {' · '}

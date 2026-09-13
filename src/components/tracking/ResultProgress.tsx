@@ -46,7 +46,7 @@ export function ResultProgress({ showPercent = false }: { showPercent?: boolean 
                       <Link
                         to={`/planning/results/${result.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="truncate text-[15px] font-semibold text-white"
+                        className="truncate text-[15px] font-semibold text-ink"
                       >
                         {result.name}
                       </Link>
@@ -68,7 +68,7 @@ export function ResultProgress({ showPercent = false }: { showPercent?: boolean 
                     </p>
                   </button>
                   {expanded ? (
-                    <ul className="mt-3 flex flex-col gap-2 border-t border-white/6 pt-3">
+                    <ul className="mt-3 flex flex-col gap-2 border-t border-line pt-3">
                       {objectives.length === 0 ? (
                         <li className="text-[13px] text-text-3">{t('planning.results.noObjectives')}</li>
                       ) : (
@@ -80,7 +80,7 @@ export function ResultProgress({ showPercent = false }: { showPercent?: boolean 
                               <div className="flex items-center justify-between gap-2">
                                 <Link
                                   to={`/planning/objectives/${objective.id}`}
-                                  className="truncate text-[14px] text-white"
+                                  className="truncate text-[14px] text-ink"
                                 >
                                   {objective.name}
                                 </Link>
