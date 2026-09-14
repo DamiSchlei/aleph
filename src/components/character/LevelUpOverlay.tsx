@@ -15,12 +15,12 @@ export function LevelUpOverlay({ payload }: { payload: LevelUpPayload | null }) 
   if (!payload) return null
 
   return (
-    <div className="animate-fade fixed inset-0 z-80 flex flex-col items-center justify-center gap-5 bg-ink-950/90 px-6 text-center backdrop-blur">
+    <div className="animate-fade fixed inset-0 z-80 flex flex-col items-center justify-center gap-5 bg-bg/90 px-6 text-center backdrop-blur">
       <p className="text-[13px] font-semibold tracking-[0.18em] text-accent uppercase">
         {t('character.levelUp')}
       </p>
       <Avatar avatar={payload.avatar} size={150} pulseKey={payload.level} />
-      <h2 className="text-4xl font-bold text-white">
+      <h2 className="text-4xl font-bold text-ink">
         {t('character.levelUpTitle', { level: payload.level })}
       </h2>
       {payload.unlocked.length > 0 ? (

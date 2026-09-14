@@ -28,7 +28,7 @@ export function WritingFold() {
           <p className="text-[13px] leading-relaxed text-text-3">{t('home.writingHint')}</p>
           {walker ? (
             <div>
-              <p className="text-[14px] text-white">{walker.name}</p>
+              <p className="text-[14px] text-ink">{walker.name}</p>
               <p className="mt-1 text-[13px] text-text-3">
                 {walkerNext ? walkerNext.title : t('home.noStepToday')}
               </p>

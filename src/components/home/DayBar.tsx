@@ -23,9 +23,9 @@ export function DayBar({ dayKey }: { dayKey: string }) {
       <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
         {t('home.dayBarTitle')}
       </p>
-      <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-ink-800">
-        <div className="absolute inset-y-0 left-1/3 w-px bg-white/25" />
-        <div className="absolute inset-y-0 left-2/3 w-px bg-white/25" />
+      <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-subtle">
+        <div className="absolute inset-y-0 left-1/3 w-px bg-line-strong" />
+        <div className="absolute inset-y-0 left-2/3 w-px bg-line-strong" />
         <div className="relative flex h-full w-full">
           {load.segments.map((segment) => (
             <div

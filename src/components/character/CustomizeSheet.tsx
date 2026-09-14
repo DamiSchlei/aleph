@@ -68,15 +68,15 @@ export function CustomizeSheet({
               <button
                 type="button"
                 onClick={() => equipCosmetic(cosmetic.category, cosmetic.id)}
-                className="flex min-h-24 w-full flex-col items-start gap-2 rounded-3xl border border-white/8 bg-ink-800/70 p-3 text-left transition-colors hover:bg-ink-700/70"
+                className="flex min-h-24 w-full flex-col items-start gap-2 rounded-3xl border border-line bg-subtle p-3 text-left transition-colors hover:bg-line"
               >
                 <span className="flex w-full items-center justify-between gap-2">
                   <span
-                    className="size-8 rounded-2xl border border-white/10"
+                    className="size-8 rounded-2xl border border-line-strong"
                     style={{
                       background:
                         cosmetic.preview === 'transparent'
-                          ? 'repeating-conic-gradient(#334 0% 25%, #1e293b 0% 50%) 50% / 8px 8px'
+                          ? 'repeating-conic-gradient(#d0d4dc 0% 25%, #f6f7f9 0% 50%) 50% / 8px 8px'
                           : cosmetic.preview,
                     }}
                   />
@@ -84,7 +84,7 @@ export function CustomizeSheet({
                     {equipped ? t('character.equipped') : t('character.owned')}
                   </Badge>
                 </span>
-                <span className="text-[14px] font-medium text-white">{cosmeticName(t, cosmetic)}</span>
+                <span className="text-[14px] font-medium text-ink">{cosmeticName(t, cosmetic)}</span>
               </button>
             </li>
           )

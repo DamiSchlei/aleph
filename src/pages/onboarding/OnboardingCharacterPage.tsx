@@ -31,24 +31,24 @@ export function OnboardingCharacterPage() {
         <p className="text-[12px] font-semibold tracking-[0.14em] text-accent uppercase">
           {t('onboarding.character.vol')}
         </p>
-        <h1 className="font-display text-[34px] leading-tight text-white">
+        <h1 className="font-display text-[34px] leading-tight text-ink">
           {t('onboarding.character.title')}
         </h1>
         <p className="text-[15px] leading-relaxed text-text-3">
           {t('onboarding.character.subtitle')}
         </p>
-        <div className="h-px bg-white/10" />
+        <div className="h-px bg-line" />
       </header>
 
       <div className="flex flex-col items-center gap-2">
-        <div className="flex aspect-[5/6] w-[220px] items-center justify-center overflow-hidden rounded-[20px] border border-white/10 bg-surface">
+        <div className="flex aspect-[5/6] w-[220px] items-center justify-center overflow-hidden rounded-[20px] border border-line-strong bg-surface">
           <Avatar avatar={character.avatar} size={200} className="rounded-[20px]" />
         </div>
         <p className="text-[12px] italic text-text-3">{t('onboarding.character.figCaption')}</p>
       </div>
 
       <section className="space-y-3">
-        <p className="text-[11px] font-semibold tracking-[0.16em] text-white uppercase">
+        <p className="text-[11px] font-semibold tracking-[0.16em] text-ink uppercase">
           {t('onboarding.character.identitySection')}
         </p>
         <label className="block space-y-1.5">
@@ -63,7 +63,7 @@ export function OnboardingCharacterPage() {
       </section>
 
       <section className="space-y-3">
-        <p className="text-[11px] font-semibold tracking-[0.16em] text-white uppercase">
+        <p className="text-[11px] font-semibold tracking-[0.16em] text-ink uppercase">
           {t('onboarding.character.localeSection')}
         </p>
         <div className="flex flex-col gap-2">
@@ -86,7 +86,7 @@ export function OnboardingCharacterPage() {
                   'flex min-h-12 items-center justify-between rounded-full border px-4 text-left text-[15px] transition-colors',
                   active
                     ? 'border-accent bg-accent/10 text-accent'
-                    : 'border-white/10 bg-surface text-text-2',
+                    : 'border-line-strong bg-surface text-text-2',
                 )}
               >
                 <span>{option.label}</span>

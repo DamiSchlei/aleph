@@ -18,9 +18,9 @@ export function StagePath({ current }: { current?: StageId }) {
             <span
               className={cx(
                 'inline-flex h-7 items-center rounded-full px-2.5 text-[11px] font-semibold tracking-wide',
-                active && 'bg-accent text-ink-950',
-                past && 'bg-mint/15 text-mint',
-                !active && !past && 'bg-ink-800 text-text-3',
+                active && 'bg-accent text-white',
+                past && 'bg-mint-soft text-mint',
+                !active && !past && 'bg-subtle text-text-3',
               )}
             >
               {t(`stages.${stage}.short`)}

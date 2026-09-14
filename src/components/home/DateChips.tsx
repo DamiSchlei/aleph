@@ -42,8 +42,8 @@ export function DateChips({
               className={cx(
                 'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors',
                 active
-                  ? 'bg-accent text-ink-950'
-                  : 'border border-white/12 bg-transparent text-text-3',
+                  ? 'border border-accent bg-accent-soft text-accent'
+                  : 'border border-line-strong bg-bg text-ink',
               )}
             >
               {active ? <CheckIcon /> : null}
@@ -60,8 +60,8 @@ export function DateChips({
           className={cx(
             'inline-flex size-9 shrink-0 items-center justify-center rounded-full text-[16px] transition-colors',
             moreActive
-              ? 'bg-accent text-ink-950'
-              : 'border border-white/12 bg-transparent text-text-3',
+              ? 'border border-accent bg-accent-soft text-accent'
+              : 'border border-line-strong bg-bg text-ink',
           )}
           aria-label={t('home.filterMore')}
         >
@@ -81,8 +81,8 @@ export function DateChips({
                 className={cx(
                   'inline-flex h-9 shrink-0 items-center rounded-full px-3.5 text-[13px] font-medium transition-colors',
                   active
-                    ? 'bg-accent text-ink-950'
-                    : 'border border-white/12 bg-transparent text-text-3',
+                    ? 'border border-accent bg-accent-soft text-accent'
+                    : 'border border-line-strong bg-bg text-ink',
                 )}
               >
                 {t(`home.filters.${key}`)}
@@ -98,7 +98,7 @@ export function DateChips({
           value={pickDate}
           onChange={(e) => onPickDateChange(e.target.value)}
           aria-label={t('home.filters.pick')}
-          className="min-h-11 w-full rounded-2xl border border-white/10 bg-ink-800 px-3.5 text-[15px] text-white outline-none"
+          className="min-h-11 w-full rounded-2xl border border-line-strong bg-subtle px-3.5 text-[15px] text-ink outline-none"
         />
       ) : null}
     </div>

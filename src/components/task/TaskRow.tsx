@@ -25,12 +25,12 @@ export function TaskCheckbox({
       aria-checked={done}
       aria-label={label}
       onClick={onToggle}
-      className="flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors hover:bg-white/5"
+      className="flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors hover:bg-subtle"
     >
       <span
         className={cx(
           'flex size-6 items-center justify-center rounded-xl border-2 transition-colors',
-          done ? 'border-mint bg-mint text-ink-950' : 'border-ink-600',
+          done ? 'border-mint bg-mint text-white' : 'border-ink-600',
         )}
       >
         {done ? (
@@ -48,7 +48,7 @@ function RowAction({ onClick, children }: { onClick: () => void; children: React
     <button
       type="button"
       onClick={onClick}
-      className="self-center min-h-11 rounded-2xl border border-white/10 bg-white/4 px-3 text-[13px] whitespace-nowrap text-ink-200 transition-colors hover:bg-white/8"
+      className="self-center min-h-11 rounded-2xl border border-line-strong bg-subtle px-3 text-[13px] whitespace-nowrap text-ink-2 transition-colors hover:bg-subtle"
     >
       {children}
     </button>
@@ -120,19 +120,19 @@ export function TaskRow({
         className={cx(
           'min-w-0 flex-1 py-1.5 pr-1 text-left',
           hideCheckbox && 'pl-2',
-          onOpen && 'cursor-pointer rounded-xl transition-colors hover:bg-white/4',
+          onOpen && 'cursor-pointer rounded-xl transition-colors hover:bg-subtle',
         )}
       >
         <p
           className={cx(
             'text-[15px] leading-snug font-medium',
-            done ? 'text-ink-400 line-through' : 'text-white',
+            done ? 'text-ink-3 line-through' : 'text-ink',
           )}
         >
           {task.title}
         </p>
         {home ? (
-          <p className="mt-1 text-[13px] text-ink-400">{meta}</p>
+          <p className="mt-1 text-[13px] text-ink-3">{meta}</p>
         ) : (
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           {skill ? (

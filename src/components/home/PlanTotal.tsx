@@ -48,7 +48,7 @@ export function PlanTotal() {
               <li key={result.id}>
                 <Link to={href}>
                   <Card className="p-3.5">
-                    <p className="text-[16px] font-semibold text-white">{result.name}</p>
+                    <p className="text-[16px] font-semibold text-ink">{result.name}</p>
                     <p className="mt-1 text-[13px] text-ink-400">
                       {next ? next.title : t('home.noStepToday')}
                     </p>
