@@ -1,3 +1,4 @@
+import { AppHeader } from '@/components/nav/AppHeader'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SkillIcon } from '@/components/character/SkillIcon'
@@ -50,11 +51,15 @@ export function TrackingPage() {
   ]
 
   return (
-    <div className="flex flex-col gap-4 pt-4 pb-10">
-      <header>
-        <h1 className="text-[30px] font-semibold text-ink">{t('tracking.title')}</h1>
-        <p className="mt-1 text-[15px] leading-relaxed text-text-3">{t('tracking.subtitle')}</p>
-      </header>
+    <div className="flex flex-col gap-4 pt-2 pb-10">
+      <AppHeader
+        title={
+          <div>
+            <h1 className="text-[28px] font-semibold text-ink">{t('tracking.title')}</h1>
+            <p className="mt-1 text-[14px] text-ink-3">{t('tracking.subtitle')}</p>
+          </div>
+        }
+      />
 
       <Card className="rounded-[20px]">
         <p className="font-display text-[22px] leading-snug text-ink">{weekSentence}</p>

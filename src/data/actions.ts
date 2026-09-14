@@ -1,7 +1,7 @@
 import { getState, newId, setState } from './store'
 import { addCharacterXp, addSkillXp, computeReward, isTaskDone, shouldPayReward, type Reward } from '@/domain/economy'
 import { MAX_OBJECTIVES_PER_RESULT, MAX_SERIES_BLOCKS, activeObjectivesOfResult, MIN_ESTIMATED_HOURS } from '@/domain/limits'
-import { seriesDayKeys } from '@/domain/dates'
+import { seriesDayKeys, toDayKey } from '@/domain/dates'
 import { taskDayKey } from '@/data/selectors'
 import type {
   Character,
@@ -35,6 +35,11 @@ export function setCharacterLocale(locale: Character['locale']): void {
 
 export function markOnboarded(): void {
   setState((s) => ({ ...s, character: { ...s.character, onboarded: true } }))
+}
+
+export function setDailyHourCap(hours: number): void {
+  if (!Number.isFinite(hours) || hours <= 0) return
+  setState((s) => ({ ...s, character: { ...s.character, dailyHourCap: hours } }))
 }
 
 
@@ -242,6 +247,7 @@ export interface TaskInput {
   referenceUrl?: string
   seriesId?: string
   seriesWeekdays?: number[]
+  dayOrder?: number
 }
 
 /**
@@ -277,6 +283,7 @@ export function createTask(input: TaskInput): Task {
     referenceUrl: input.referenceUrl?.trim() || undefined,
     seriesId: input.seriesId,
     seriesWeekdays: input.seriesWeekdays,
+    dayOrder: input.dayOrder,
     status: 'pending',
     rewardApplied: false,
     createdAt: now(),
@@ -366,16 +373,38 @@ export function assignTaskToObjective(id: string, resultId: string, objectiveId:
  * Home composer: capture a loose research task (no result, no objective) with the
  * due date implied by the active agenda filter, so it lands where the user is looking.
  */
-export function captureLooseTask(title: string, options?: { dueAt?: string }): Task | null {
+export function captureLooseTask(
+  title: string,
+  options?: {
+    dueAt?: string
+    scheduledFor?: string
+    estimatedHours?: number
+    difficulty?: Difficulty
+    dayOrder?: number
+  },
+): Task | null {
   const trimmed = title.trim()
   if (!trimmed) return null
-  const day = options?.dueAt || undefined
+  const day = options?.scheduledFor || options?.dueAt || undefined
+  const dayTasks = day
+    ? getState().tasks.filter(
+        (task) =>
+          task.status !== 'cancelled' &&
+          (task.scheduledFor === day || task.dueAt === day),
+      )
+    : []
+  const nextOrder =
+    options?.dayOrder ??
+    (dayTasks.length
+      ? Math.max(...dayTasks.map((task) => task.dayOrder ?? task.importance ?? 0)) + 1
+      : 0)
   return createTask({
     title: trimmed,
-    estimatedHours: 1,
-    difficulty: 'medium',
+    estimatedHours: options?.estimatedHours ?? 1,
+    difficulty: options?.difficulty ?? 'medium',
     dueAt: day,
     scheduledFor: day,
+    dayOrder: nextOrder,
   })
 }
 
@@ -509,6 +538,57 @@ export function closeTask(
 }
 
 /** Reopens a task as research. The reward already paid is kept: no clawback. */
+
+/** Move open past-due scheduled tasks onto today, keeping relative order at the top. */
+export function rollPendingTasksToToday(now: Date = new Date()): void {
+  const today = toDayKey(now)
+  setState((s) => {
+    const pending = s.tasks
+      .filter((task) => {
+        if (isTaskDone(task.status) || task.status === 'cancelled') return false
+        const day = task.scheduledFor || task.dueAt
+        return Boolean(day && day < today)
+      })
+      .sort((a, b) => {
+        const da = a.scheduledFor || a.dueAt || ''
+        const db = b.scheduledFor || b.dueAt || ''
+        if (da !== db) return da.localeCompare(db)
+        return (a.dayOrder ?? a.importance) - (b.dayOrder ?? b.importance)
+      })
+    if (pending.length === 0) return s
+
+    const todayExisting = s.tasks
+      .filter(
+        (task) =>
+          !pending.some((p) => p.id === task.id) &&
+          task.status !== 'cancelled' &&
+          (task.scheduledFor === today || task.dueAt === today),
+      )
+      .sort((a, b) => (a.dayOrder ?? a.importance) - (b.dayOrder ?? b.importance))
+
+    const orderIds = [...pending.map((t) => t.id), ...todayExisting.map((t) => t.id)]
+    const orderIndex = new Map(orderIds.map((id, i) => [id, i]))
+
+    return {
+      ...s,
+      tasks: s.tasks.map((task) => {
+        if (pending.some((p) => p.id === task.id)) {
+          return {
+            ...task,
+            scheduledFor: today,
+            dueAt: today,
+            dayOrder: orderIndex.get(task.id) ?? 0,
+          }
+        }
+        if (orderIndex.has(task.id)) {
+          return { ...task, dayOrder: orderIndex.get(task.id) }
+        }
+        return task
+      }),
+    }
+  })
+}
+
 export function reopenTask(id: string): void {
   updateTask(id, { status: 'pending', stage: 'research', completedAt: undefined })
 }

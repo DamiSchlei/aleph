@@ -1,3 +1,4 @@
+import { AppHeader } from '@/components/nav/AppHeader'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -51,13 +52,15 @@ export function PlanningPage() {
   const [tab, setTab] = useState<PlanningTab>('results')
 
   return (
-    <Page className="flex flex-col gap-4 pt-4">
-      <header>
-        <h1 className="font-display text-[30px] leading-none tracking-wide text-ink uppercase">
-          {t('planning.title')}
-        </h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-text-3">{t('planning.subtitle')}</p>
-      </header>
+    <Page className="flex flex-col gap-4 pt-2">
+      <AppHeader
+        title={
+          <div>
+            <h1 className="text-[28px] font-semibold text-ink">{t('planning.title')}</h1>
+            <p className="mt-1 text-[14px] text-ink-3">{t('planning.subtitle')}</p>
+          </div>
+        }
+      />
       <div className="flex justify-center gap-2">
         <Chip active={tab === 'results'} onClick={() => setTab('results')} className="min-w-28 justify-center">
           {t('planning.tabs.results')}
@@ -76,7 +79,7 @@ function DashedNewResult({ onClick, label }: { onClick: () => void; label: strin
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-11 w-full items-center justify-center rounded-[20px] border border-dashed border-line px-4 py-3 text-[14px] text-text-3"
+      className="flex min-h-11 w-full items-center justify-center rounded-[20px] border border-dashed border-white/14 px-4 py-3 text-[14px] text-text-3"
     >
       {label}
     </button>
@@ -127,7 +130,7 @@ function ResultsTab() {
           type="button"
           aria-label={t('planning.results.new')}
           onClick={() => requestCreate()}
-          className="flex size-9 items-center justify-center rounded-full border border-line text-accent"
+          className="flex size-9 items-center justify-center rounded-full border border-white/14 text-accent"
         >
           +
         </button>
@@ -232,7 +235,7 @@ function ResultsTab() {
               {archived.map((result) => (
                 <li
                   key={result.id}
-                  className="flex items-center justify-between gap-2 rounded-2xl border border-line bg-surface px-3 py-2"
+                  className="flex items-center justify-between gap-2 rounded-2xl border border-white/14 bg-surface px-3 py-2"
                 >
                   <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1">
                     <p className="truncate text-[15px] text-ink">{result.name}</p>

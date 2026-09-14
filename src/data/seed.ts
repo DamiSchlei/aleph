@@ -32,6 +32,7 @@ export function newCharacter(locale: Character['locale'] = 'es'): Character {
     ownedCosmeticIds: freeStarterCosmeticIds(),
     seenNewCosmeticIds: freeStarterCosmeticIds(),
     locale,
+    dailyHourCap: 5,
     onboarded: false,
   }
 }

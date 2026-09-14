@@ -162,11 +162,23 @@
     "levelChip": "Nv. {{level}}",
     "xpLabel": "{{xp}} / {{next}} XP",
     "stepTodayTitle": "El paso de hoy",
-    "composerPlaceholder": "Anotá un paso…",
+    "composerPlaceholder": "Anotá un bloque…",
     "filterToday": "Hoy",
     "filterTomorrow": "Mañana",
     "filterWeek": "Semana",
-    "filterMore": "···"
+    "filterMore": "···",
+    "title": "Inicio",
+    "todayJump": "Hoy",
+    "workload": "{{planned}} / {{cap}} h",
+    "overCap": "Son {{planned}} h para un día de {{cap}}.",
+    "composerCta": "Anotar",
+    "hoursDown": "Bajar horas",
+    "hoursUp": "Subir horas",
+    "dayOpen": "El día está abierto.",
+    "reorder": "Reordenar bloque",
+    "completeBlock": "Completar bloque",
+    "hoursActual": "{{actual}} / {{estimated}} h",
+    "hoursOnly": "{{estimated}} h"
   },
   "planning": {
     "title": "Planificación",
@@ -570,5 +582,13 @@
     "checklistTitle": "Checklist de pasos",
     "tasksTitle": "Tareas Asociadas",
     "ctaToday": "Anotar paso para hoy"
+  },
+  "account": {
+    "menuTitle": "Cuenta",
+    "openMenu": "Abrir menú de cuenta",
+    "level": "Nv. {{level}}",
+    "customize": "Personalizar",
+    "skills": "Habilidades",
+    "locale": "Idioma"
   }
 }

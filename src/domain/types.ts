@@ -36,6 +36,8 @@ export interface Character {
   ownedCosmeticIds: string[]
   seenNewCosmeticIds?: string[]
   locale: Locale
+  /** Soft daily planning cap in hours. Default 5. */
+  dailyHourCap?: number
   /** True after the first-run onboarding finishes. */
   onboarded?: boolean
 }

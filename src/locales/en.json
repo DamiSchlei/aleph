@@ -162,11 +162,23 @@
     "levelChip": "Lv. {{level}}",
     "xpLabel": "{{xp}} / {{next}} XP",
     "stepTodayTitle": "Today's step",
-    "composerPlaceholder": "Note a step…",
+    "composerPlaceholder": "Note a block…",
     "filterToday": "Today",
     "filterTomorrow": "Tomorrow",
     "filterWeek": "Week",
-    "filterMore": "···"
+    "filterMore": "···",
+    "title": "Home",
+    "todayJump": "Today",
+    "workload": "{{planned}} / {{cap}} h",
+    "overCap": "That's {{planned}} h for a {{cap}} h day.",
+    "composerCta": "Add",
+    "hoursDown": "Decrease hours",
+    "hoursUp": "Increase hours",
+    "dayOpen": "The day is open.",
+    "reorder": "Reorder block",
+    "completeBlock": "Complete block",
+    "hoursActual": "{{actual}} / {{estimated}} h",
+    "hoursOnly": "{{estimated}} h"
   },
   "planning": {
     "title": "Planning",
@@ -570,5 +582,13 @@
     "checklistTitle": "Step checklist",
     "tasksTitle": "Associated tasks",
     "ctaToday": "Note a step for today"
+  },
+  "account": {
+    "menuTitle": "Account",
+    "openMenu": "Open account menu",
+    "level": "Lv. {{level}}",
+    "customize": "Customize",
+    "skills": "Skills",
+    "locale": "Language"
   }
 }

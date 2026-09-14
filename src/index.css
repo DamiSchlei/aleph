@@ -3,7 +3,7 @@
 @theme {
   /* Aleph Paper — surfaces */
   --color-bg: #ffffff;
-  --color-subtle: #F6F7F9;
+  --color-subtle: #f6f7f9;
   --color-surface: #ffffff;
   --color-surface-2: #f6f7f9;
   --color-raised: #ffffff;
@@ -17,9 +17,9 @@
 
   /* Ink */
   --color-ink: #111113;
-  --color-ink-2: #3C3F46;
-  --color-ink-3: #6B7080;
-  --color-ink-4: #9AA0AE;
+  --color-ink-2: #3c3f46;
+  --color-ink-3: #6b7080;
+  --color-ink-4: #9aa0ae;
 
   /* Legacy text tokens → ink scale */
   --color-text: #111113;
@@ -31,25 +31,25 @@
   --color-ink-400: #6b7080;
 
   /* Line */
-  --color-line: #E6E8EE;
-  --color-line-strong: #D0D4DC;
+  --color-line: #e6e8ee;
+  --color-line-strong: #d0d4dc;
 
   /* Brand — one accent */
-  --color-accent: #2F6BFF;
-  --color-accent-hover: #1F56E0;
-  --color-accent-pressed: #1646C4;
-  --color-accent-soft: #E8EEFF;
-  --color-accent-strong: #1F56E0;
+  --color-accent: #2f6bff;
+  --color-accent-hover: #1f56e0;
+  --color-accent-pressed: #1646c4;
+  --color-accent-soft: #e8eeff;
+  --color-accent-strong: #1f56e0;
 
   /* Semantics */
-  --color-mint: #0F9F6E;
-  --color-mint-soft: #E6F7F0;
-  --color-amber: #C47A00;
-  --color-amber-soft: #FFF4DE;
-  --color-rose: #D63B5A;
-  --color-rose-soft: #FDE8ED;
-  --color-violet: #7A3FE0;
-  --color-violet-soft: #F1E9FF;
+  --color-mint: #0f9f6e;
+  --color-mint-soft: #e6f7f0;
+  --color-amber: #c47a00;
+  --color-amber-soft: #fff4de;
+  --color-rose: #d63b5a;
+  --color-rose-soft: #fde8ed;
+  --color-violet: #7a3fe0;
+  --color-violet-soft: #f1e9ff;
 
   --color-backdrop: rgb(17 17 19 / 0.36);
   --shadow-paper: 0 8px 24px rgb(17 17 19 / 0.06);
@@ -60,7 +60,7 @@
 
 :root {
   color-scheme: light;
-  --tab-bar-height: 4.5rem;
+  --tab-bar-height: 0rem;
 }
 
 html,
@@ -119,38 +119,78 @@ select option {
 }
 
 @keyframes aleph-pop {
-  0% { transform: scale(1); }
-  35% { transform: scale(1.09) rotate(-2deg); }
-  70% { transform: scale(0.98) rotate(1deg); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.09) rotate(-2deg);
+  }
+  70% {
+    transform: scale(0.98) rotate(1deg);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes aleph-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(47 107 255 / 0); }
-  50% { box-shadow: 0 0 0 6px rgb(47 107 255 / 0.16); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(47 107 255 / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(47 107 255 / 0.16);
+  }
 }
 
 @keyframes aleph-xp-flash {
-  0%, 100% { filter: brightness(1); }
-  40% { filter: brightness(1.08); }
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  40% {
+    filter: brightness(1.08);
+  }
 }
 
-.animate-glow { animation: aleph-glow 700ms ease-out; }
-.animate-xp { animation: aleph-xp-flash 500ms ease-out; }
+.animate-glow {
+  animation: aleph-glow 700ms ease-out;
+}
+.animate-xp {
+  animation: aleph-xp-flash 500ms ease-out;
+}
 
 @keyframes aleph-rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes aleph-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.animate-pop { animation: aleph-pop 600ms ease-out; }
-.animate-rise { animation: aleph-rise 220ms ease-out; }
-.animate-fade { animation: aleph-fade 160ms ease-out; }
+.animate-pop {
+  animation: aleph-pop 600ms ease-out;
+}
+
+.animate-rise {
+  animation: aleph-rise 220ms ease-out;
+}
+
+.animate-fade {
+  animation: aleph-fade 160ms ease-out;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .animate-pop,
