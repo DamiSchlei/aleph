@@ -29,12 +29,12 @@ export function WeekChart({ stats, today = new Date() }: { stats: TrackingStats;
               />
             ) : day.isSunday ? (
               <div
-                className="w-full max-w-8 rounded-t-lg bg-white/10"
+                className="w-full max-w-8 rounded-t-lg bg-subtle"
                 style={{ height: '22%', minHeight: 4 }}
                 aria-hidden
               />
             ) : (
-              <span className="mb-1 h-1.5 w-1.5 rounded-full bg-white/25" aria-hidden="true" />
+              <span className="mb-1 h-1.5 w-1.5 rounded-full bg-line-strong" aria-hidden="true" />
             )}
             <span className="text-[11px] font-medium text-text-3">{t(`weekdays.${day.key}`)}</span>
           </div>

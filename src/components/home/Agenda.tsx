@@ -13,7 +13,7 @@ import type { Task } from '@/domain/types'
 const AGENDA_MAX = 4
 
 export const AGENDA_ROW_CLASS =
-  'rounded-2xl bg-ink-900/80 px-3 py-2.5 min-h-11 flex items-center gap-3'
+  'rounded-2xl bg-subtle px-3 py-2.5 min-h-11 flex items-center gap-3'
 
 export function Agenda({
   filter,
@@ -46,7 +46,7 @@ export function Agenda({
       <p className="text-[11px] font-medium tracking-[0.16em] text-text-3 uppercase">{title}</p>
 
       {tasks.length === 0 ? (
-        <div className="flex min-h-28 items-center justify-center rounded-[20px] border border-dashed border-white/18 px-4 py-6">
+        <div className="flex min-h-28 items-center justify-center rounded-[20px] bg-subtle px-4 py-6">
           <p className="text-center text-[14px] italic text-text-3">{t('home.agendaEmpty')}</p>
         </div>
       ) : (
@@ -73,7 +73,7 @@ export function Agenda({
                     <p
                       className={cx(
                         'truncate text-[14px]',
-                        done ? 'text-text-3 line-through' : 'text-white',
+                        done ? 'text-text-3 line-through' : 'text-ink',
                       )}
                     >
                       {task.title}

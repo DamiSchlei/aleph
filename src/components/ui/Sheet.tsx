@@ -47,7 +47,7 @@ export function Sheet({
         aria-modal="true"
         aria-label={title}
         className={cx(
-          'animate-rise relative flex h-dvh max-h-dvh w-full max-w-lg flex-col bg-raised sm:my-auto sm:h-auto sm:max-h-[90dvh] sm:rounded-3xl sm:border sm:border-line sm:bg-surface',
+          'animate-rise relative flex h-dvh max-h-dvh w-full max-w-lg flex-col bg-bg sm:my-auto sm:h-auto sm:max-h-[90dvh] sm:rounded-3xl sm:border sm:border-line sm:bg-surface',
           className,
         )}
       >
@@ -103,10 +103,10 @@ export function ConfirmDialog({
       <div
         role="alertdialog"
         aria-modal="true"
-        className="animate-rise relative w-full max-w-sm rounded-2xl border border-line bg-surface p-5 shadow-[var(--shadow-paper)]"
+        className="animate-rise relative w-full max-w-sm rounded-2xl border border-line bg-surface p-5"
       >
         <h2 className="text-[17px] font-semibold text-ink">{title}</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink-3">{message}</p>
+        <p className="mt-2 text-[15px] leading-relaxed text-ink-400">{message}</p>
         <div className="mt-5 flex gap-2">
           <Button variant="secondary" className="flex-1" onClick={onCancel}>
             {cancelLabel ?? t('common.cancel')}

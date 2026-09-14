@@ -54,7 +54,7 @@ function AssignBody({ open, task, onClose }: { open: boolean; task: Task; onClos
       }
     >
       <div className="flex flex-col gap-4">
-        <p className="text-[15px] font-medium text-white">{task.title}</p>
+        <p className="text-[15px] font-medium text-ink">{task.title}</p>
         <Field label={t('common.result')}>
           <Select
             value={resultId}
