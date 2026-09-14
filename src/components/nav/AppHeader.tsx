@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/character/Avatar'
 import { AccountMenu } from '@/components/nav/AccountMenu'
@@ -6,12 +7,14 @@ import { useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { cx } from '@/components/ui/primitives'
 
-/** Top chrome: avatar opens AccountMenu; optional section title beside it. */
+/** Top chrome: avatar opens AccountMenu; optional Inicio link; optional title. */
 export function AppHeader({
   title,
+  showHome = false,
   className,
 }: {
   title?: ReactNode
+  showHome?: boolean
   className?: string
 }) {
   const { t } = useTranslation()
@@ -37,6 +40,14 @@ export function AppHeader({
             />
           </span>
         </button>
+        {showHome ? (
+          <Link
+            to="/"
+            className="flex min-h-11 items-center px-1 text-[15px] font-medium text-accent"
+          >
+            {t('nav.home')}
+          </Link>
+        ) : null}
         {title ? <div className="min-w-0 flex-1">{title}</div> : <div className="flex-1" />}
       </header>
       <AccountMenu open={menuOpen} onClose={() => setMenuOpen(false)} />

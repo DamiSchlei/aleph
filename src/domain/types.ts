@@ -85,12 +85,14 @@ export interface Objective {
   reviewEvery?: 'weekly' | 'every_n_tasks'
   reviewEveryN?: number
   skillId?: string
+  /** Optional target date (YYYY-MM-DD). */
+  targetDate?: string
   /** 1-4, drag order inside the result. */
   importance: number
   currentStage: StageId
   status: ObjectiveStatus
   archivedAt?: string
-  /** Lightweight counts for the objective inventory grid. */
+  /** Lightweight counts for the objective inventory grid (legacy; UI no longer edits). */
   inventory?: ObjectiveInventory
 }
 

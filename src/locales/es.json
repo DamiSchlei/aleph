@@ -60,7 +60,7 @@
     "high": "Alta"
   },
   "moments": {
-    "research": "Análisis e investigación",
+    "research": "Investigación",
     "execution": "En progreso",
     "done": "Hechas"
   },
@@ -74,7 +74,7 @@
   "objectiveStatus": {
     "pending": "Pendiente",
     "in_progress": "En curso",
-    "done": "Listo",
+    "done": "Completado",
     "blocked": "Trabado"
   },
   "resultStatus": {
@@ -93,8 +93,8 @@
       "short": "Ejecución"
     },
     "review": {
-      "name": "Análisis y conclusión",
-      "short": "Análisis"
+      "name": "Conclusión",
+      "short": "Conclusión"
     }
   },
   "skills": {
@@ -178,7 +178,15 @@
     "reorder": "Reordenar bloque",
     "completeBlock": "Completar bloque",
     "hoursActual": "{{actual}} / {{estimated}} h",
-    "hoursOnly": "{{estimated}} h"
+    "hoursOnly": "{{estimated}} h",
+    "granularityDay": "Día",
+    "granularityWeek": "Semana",
+    "freeToday": "{{n}} h libres hoy.",
+    "lostPast": "Quedaron {{n}} h sin cerrar.",
+    "weekUsed": "Usaste {{closed}} de {{cap}} h.",
+    "weekOpenLeft": " · {{n}} h abiertas.",
+    "weekRange": "{{start}}–{{end}} {{month}}",
+    "metaDate": "Meta: {{date}}"
   },
   "planning": {
     "title": "Planificación",
@@ -199,7 +207,7 @@
         "body": "Cuerpo con rutina sostenida 8 semanas"
       },
       "objectivesCount": "{{count}} de {{max}} objetivos",
-      "noObjectives": "Todavía sin objetivos",
+      "noObjectives": "Todavía no hay objetivos. Sumá el primero.",
       "noTasks": "Todavía sin tareas",
       "progress": "{{done}} de {{total}} tareas",
       "hours": "{{done}} h de {{total}} h",
@@ -220,7 +228,7 @@
       "restore": "Restaurar",
       "detailTitle": "Resultado",
       "health": {
-        "noObjectives": "Todavía no hay objetivos. Sumá la primera palanca.",
+        "noObjectives": "Todavía no hay objetivos. Sumá el primero.",
         "unbalanced": "{{emptyObjective}} no tiene pasos. El resultado queda apoyado en una sola palanca.",
         "overdue": "Tenés {{count}} tarea(s) vencida(s).",
         "next": "Próximo paso: {{title}}",
@@ -228,7 +236,7 @@
       }
     },
     "objectives": {
-      "new": "+ Objetivo",
+      "new": "Sumar objetivo",
       "limitReached": "Este resultado ya tiene 4 objetivos. Archivá uno o creá otro resultado.",
       "createTitle": "Nuevo objetivo",
       "editTitle": "Editar objetivo",
@@ -258,7 +266,7 @@
       "detailTitle": "Objetivo",
       "stageOpenTasks": "{{stage}} todavía tiene {{count}} tarea(s) abierta(s). ¿Avanzás igual?",
       "stageAdvance": "Avanzar de etapa",
-      "stageCannotSkip": "Las etapas van en orden. No podés saltar de investigación a análisis.",
+      "stageCannotSkip": "Las etapas van en orden. No podés saltar de investigación a conclusión.",
       "tasksInStage": "Tareas de esta etapa",
       "stageEmpty": "Todavía no hay tareas en esta etapa."
     },
@@ -526,7 +534,7 @@
       "customTitle": "O escribí tu propio Resultado",
       "customLabel": "Nombre del Resultado",
       "customPlaceholder": "Ej: Cerrar la versión 1 del producto",
-      "stagesHint": "Etapas fijas: Investigación → Ejecución → Revisión",
+      "stagesHint": "Etapas fijas: Investigación → Ejecución → Conclusión",
       "back": "Atrás",
       "cta": "Confirmar Resultado →"
     },
@@ -578,10 +586,15 @@
   },
   "objectiveDetail": {
     "stageLabel": "Etapa: {{stage}}",
-    "progress": "Progreso del Objetivo",
-    "checklistTitle": "Checklist de pasos",
-    "tasksTitle": "Tareas Asociadas",
-    "ctaToday": "Anotar paso para hoy"
+    "progress": "Progreso",
+    "checklistTitle": "Tareas completas",
+    "tasksTitle": "Tareas asociadas",
+    "ctaToday": "Crear tarea",
+    "resultLabel": "Resultado: {{name}}",
+    "completedTasksTitle": "Tareas completas",
+    "completedCount": "{{n}} tareas realizadas",
+    "createTask": "Crear tarea",
+    "statusLabel": "Estado"
   },
   "account": {
     "menuTitle": "Cuenta",

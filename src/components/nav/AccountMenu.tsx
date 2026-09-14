@@ -80,6 +80,9 @@ export function AccountMenu({
           </div>
 
           <nav className="no-scrollbar flex-1 overflow-y-auto px-2 pb-4">
+            <MenuLink to="/" onNavigate={onClose}>
+              {t('nav.home')}
+            </MenuLink>
             <MenuButton onClick={() => setCustomize(true)}>{t('account.customize')}</MenuButton>
             <MenuLink to="/planning" onNavigate={onClose}>
               {t('nav.planning')}

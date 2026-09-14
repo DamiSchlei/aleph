@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { AppHeader } from '@/components/nav/AppHeader'
 import { Button, Card, cx } from '@/components/ui/primitives'
 import { updateTask } from '@/data/actions'
 import { useAleph } from '@/data/store'
@@ -60,14 +61,16 @@ export function WeekPlanningPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 pt-4 pb-8">
-      <header className="space-y-2">
-        <p className="text-[12px] font-semibold tracking-[0.14em] text-text-3 uppercase">
-          {t('week.eyebrow')}
-        </p>
-        <h1 className="font-display text-[30px] leading-tight text-ink">{t('week.title')}</h1>
-        <p className="text-[15px] leading-relaxed text-text-3">{t('week.subtitle')}</p>
-      </header>
+    <div className="flex flex-col gap-5 pt-2 pb-8">
+      <AppHeader
+        showHome
+        title={
+          <div>
+            <h1 className="font-display text-[24px] leading-tight text-ink">{t('week.title')}</h1>
+            <p className="mt-1 text-[13px] text-ink-3">{t('week.subtitle')}</p>
+          </div>
+        }
+      />
 
       <Card className="space-y-4 rounded-[20px]">
         <div className="flex items-center justify-between gap-3">

@@ -11,7 +11,6 @@ import { archiveResult, reorderObjectives, restoreResult } from '@/data/actions'
 import { canAddObjective, MAX_OBJECTIVES_PER_RESULT } from '@/domain/limits'
 import {
   deriveObjectiveStage,
-  nextTaskOfObjective,
   objectiveProgress,
   objectivesOfResult,
   resultById,
@@ -120,22 +119,25 @@ export function ResultDetailPage() {
               const objective = objectives.find((o) => o.id === id)
               if (!objective) return null
               const obj = objectiveProgress(state, objective.id)
-              const next = nextTaskOfObjective(state, objective.id)
               return (
-                <Card className="flex items-start gap-1 p-2">
-                  <Link to={`/planning/objectives/${objective.id}`} className="min-w-0 flex-1 p-2">
-                    <p className="font-medium text-ink">{objective.name}</p>
-                    <p className="mt-1 text-[12px] text-text-3">
-                      {stageShort(t, deriveObjectiveStage(state, objective.id))}
-                      {' · '}
-                      {obj.tasksTotal === 0
-                        ? t('planning.results.noTasks')
-                        : t('planning.results.progress', { done: obj.tasksDone, total: obj.tasksTotal })}
-                    </p>
-                    {obj.tasksTotal > 0 ? <ProgressBar className="mt-2" ratio={obj.ratio} /> : null}
-                    <p className="mt-2 text-[12px] text-text-3">
-                      {next ? next.title : t('planning.objectives.noConcreteStep')}
-                    </p>
+                <Card className="flex items-start gap-1 border border-line bg-surface p-2">
+                  <Link
+                    to={`/planning/objectives/${objective.id}`}
+                    className="flex min-h-11 min-w-0 flex-1 items-center gap-2 p-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-ink">{objective.name}</p>
+                      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[12px] text-ink-3">
+                        {objective.targetDate ? (
+                          <span>{t('home.metaDate', { date: formatDate(objective.targetDate, state.character.locale) })}</span>
+                        ) : null}
+                        <span>{stageShort(t, deriveObjectiveStage(state, objective.id))}</span>
+                      </div>
+                      {obj.tasksTotal > 0 ? <ProgressBar className="mt-2" ratio={obj.ratio} /> : null}
+                    </div>
+                    <span aria-hidden className="text-ink-3">
+                      ›
+                    </span>
                   </Link>
                   {handle}
                 </Card>

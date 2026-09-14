@@ -60,7 +60,7 @@
     "high": "High"
   },
   "moments": {
-    "research": "Analysis & research",
+    "research": "Research",
     "execution": "In progress",
     "done": "Done"
   },
@@ -74,7 +74,7 @@
   "objectiveStatus": {
     "pending": "Pending",
     "in_progress": "In progress",
-    "done": "Done",
+    "done": "Completed",
     "blocked": "Blocked"
   },
   "resultStatus": {
@@ -93,8 +93,8 @@
       "short": "Execution"
     },
     "review": {
-      "name": "Analysis & conclusion",
-      "short": "Review"
+      "name": "Conclusion",
+      "short": "Conclusion"
     }
   },
   "skills": {
@@ -178,7 +178,15 @@
     "reorder": "Reorder block",
     "completeBlock": "Complete block",
     "hoursActual": "{{actual}} / {{estimated}} h",
-    "hoursOnly": "{{estimated}} h"
+    "hoursOnly": "{{estimated}} h",
+    "granularityDay": "Day",
+    "granularityWeek": "Week",
+    "freeToday": "{{n}} h free today.",
+    "lostPast": "{{n}} h left unclosed.",
+    "weekUsed": "You used {{closed}} of {{cap}} h.",
+    "weekOpenLeft": " · {{n}} h open.",
+    "weekRange": "{{start}}–{{end}} {{month}}",
+    "metaDate": "Target: {{date}}"
   },
   "planning": {
     "title": "Planning",
@@ -199,7 +207,7 @@
         "body": "A body routine held for 8 weeks"
       },
       "objectivesCount": "{{count}} of {{max}} objectives",
-      "noObjectives": "No objectives yet",
+      "noObjectives": "There are no objectives yet. Add the first one.",
       "noTasks": "No tasks yet",
       "progress": "{{done}} of {{total}} tasks",
       "hours": "{{done}} h of {{total}} h",
@@ -220,7 +228,7 @@
       "restore": "Restore",
       "detailTitle": "Result",
       "health": {
-        "noObjectives": "No objectives yet. Add the first lever.",
+        "noObjectives": "There are no objectives yet. Add the first one.",
         "unbalanced": "{{emptyObjective}} has no steps. The result is leaning on a single lever.",
         "overdue": "You have {{count}} overdue task(s).",
         "next": "Next step: {{title}}",
@@ -228,7 +236,7 @@
       }
     },
     "objectives": {
-      "new": "+ Objective",
+      "new": "Add objective",
       "limitReached": "This result already has 4 objectives. Archive one or create another result.",
       "createTitle": "New objective",
       "editTitle": "Edit objective",
@@ -258,7 +266,7 @@
       "detailTitle": "Objective",
       "stageOpenTasks": "{{stage}} still has {{count}} open task(s). Advance anyway?",
       "stageAdvance": "Advance stage",
-      "stageCannotSkip": "Stages run in order. You cannot skip from research to review.",
+      "stageCannotSkip": "Stages run in order. You cannot skip from research to conclusion.",
       "tasksInStage": "Tasks in this stage",
       "stageEmpty": "No tasks in this stage yet."
     },
@@ -526,7 +534,7 @@
       "customTitle": "Or write your own Result",
       "customLabel": "Result name",
       "customPlaceholder": "Eg: Ship product version 1",
-      "stagesHint": "Fixed stages: Research → Execution → Review",
+      "stagesHint": "Fixed stages: Research → Execution → Conclusion",
       "back": "Back",
       "cta": "Confirm Result →"
     },
@@ -578,10 +586,15 @@
   },
   "objectiveDetail": {
     "stageLabel": "Stage: {{stage}}",
-    "progress": "Objective progress",
+    "progress": "Progress",
     "checklistTitle": "Step checklist",
     "tasksTitle": "Associated tasks",
-    "ctaToday": "Note a step for today"
+    "ctaToday": "Create task",
+    "resultLabel": "Result: {{name}}",
+    "completedTasksTitle": "Completed tasks",
+    "completedCount": "{{n}} tasks done",
+    "createTask": "Create task",
+    "statusLabel": "Status"
   },
   "account": {
     "menuTitle": "Account",
