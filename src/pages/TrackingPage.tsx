@@ -53,6 +53,7 @@ export function TrackingPage() {
   return (
     <div className="flex flex-col gap-4 pt-2 pb-10">
       <AppHeader
+        showHome
         title={
           <div>
             <h1 className="text-[28px] font-semibold text-ink">{t('tracking.title')}</h1>

@@ -144,6 +144,7 @@ export interface ObjectiveInput {
   reviewEvery?: 'weekly' | 'every_n_tasks'
   reviewEveryN?: number
   skillId?: string
+  targetDate?: string
   importance?: number
 }
 
@@ -168,6 +169,7 @@ export function createObjective(input: ObjectiveInput): Objective {
     reviewEvery: input.reviewEvery,
     reviewEveryN: input.reviewEveryN,
     skillId: input.skillId || undefined,
+    targetDate: input.targetDate || undefined,
     importance: input.importance ?? siblings.length + 1,
     currentStage: 'research',
     status: 'pending',
@@ -251,8 +253,8 @@ export interface TaskInput {
 }
 
 /**
- * Every task is born in the `research` moment ("Análisis e investigación"). It only
- * moves to `execution` when the user presses "Ejecutar". `review` is never a column
+ * Every task is born in the `research` moment. It only
+ * moves to `execution` when the user presses "Ejecutar". `review` (Conclusión) is never a column
  * for open tasks — finished tasks live in their done status.
  */
 export function createTask(input: TaskInput): Task {

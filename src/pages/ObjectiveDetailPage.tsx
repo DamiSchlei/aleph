@@ -8,10 +8,11 @@ import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { useTaskActions } from '@/components/task/useTaskActions'
-import { Button, Card, EmptyState, Page, ProgressBar } from '@/components/ui/primitives'
+import { Button, Card, Chip, EmptyState, Page, ProgressBar, cx } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
-import { archiveObjective, updateObjectiveInventory, updateTask } from '@/data/actions'
+import { archiveObjective, updateObjective } from '@/data/actions'
 import {
+  deriveObjectiveStage,
   objectiveById,
   objectiveProgress,
   resultById,
@@ -20,9 +21,10 @@ import {
 import { useAleph } from '@/data/store'
 import { isTaskDone } from '@/domain/economy'
 import { toDayKey } from '@/domain/dates'
-import { formatMoney, formatPercent } from '@/i18n/format'
-import { stageShort } from '@/i18n/labels'
-import type { ObjectiveInventory, Task, TaskCheckItem } from '@/domain/types'
+import { formatDate } from '@/i18n/format'
+import type { ObjectiveStatus, Task } from '@/domain/types'
+
+const STATUS_OPTIONS: ObjectiveStatus[] = ['pending', 'in_progress', 'done', 'blocked']
 
 export function ObjectiveDetailPage() {
   const { objectiveId = '' } = useParams()
@@ -43,11 +45,13 @@ export function ObjectiveDetailPage() {
     () => (objective ? tasksOfObjective(state, objective.id) : []),
     [state, objective],
   )
-  const checklistItems = useMemo(() => buildChecklist(all), [all])
   const progress = objective ? objectiveProgress(state, objective.id) : null
-  const percent = formatPercent(progress?.ratio, locale)
-  const inventory = objective?.inventory ?? { costs: 0, contacts: 0, docs: 0, links: 0 }
   const openTasks = all.filter((tk) => !isTaskDone(tk.status) && tk.status !== 'cancelled')
+  const pending = openTasks.filter((tk) => tk.status === 'pending')
+  const inProgress = openTasks.filter((tk) => tk.status === 'in_progress')
+  const associated = [...pending, ...inProgress]
+  const completed = all.filter((tk) => isTaskDone(tk.status))
+  const stage = objective ? deriveObjectiveStage(state, objective.id) : 'research'
 
   if (!objective || !progress) {
     return (
@@ -71,117 +75,83 @@ export function ObjectiveDetailPage() {
     onReturn: (tk: Task) => actions.back(tk),
   }
 
-  const bumpInventory = (key: keyof ObjectiveInventory) => {
-    updateObjectiveInventory(objective.id, { [key]: (inventory[key] ?? 0) + 1 })
-  }
-
   return (
-    <Page className="flex flex-col gap-5 pt-4 pb-20">
+    <Page className="flex flex-col gap-5 pt-4 pb-24">
       <button
         type="button"
         onClick={() => navigate(`/planning/results/${objective.resultId}`)}
-        className="min-h-11 self-start text-[14px] text-text-3"
+        className="min-h-11 self-start text-[14px] text-ink-3"
       >
         ← {result?.name ?? t('planning.results.detailTitle')}
       </button>
 
-      <header>
+      <header className="space-y-2">
         <h1 className="text-2xl font-semibold text-ink">{objective.name}</h1>
-        {objective.why ? <p className="mt-1 text-[15px] text-text-3">{objective.why}</p> : null}
-        <p className="mt-2 text-[13px] text-text-3">
-          {t('objectiveDetail.stageLabel', { stage: stageShort(t, objective.currentStage) })}
-        </p>
-        <StagePath current={objective.currentStage} />
+        {result ? (
+          <p className="text-[14px] text-ink-3">
+            {t('objectiveDetail.resultLabel', { name: result.name })}
+          </p>
+        ) : null}
+        {objective.targetDate ? (
+          <p className="inline-flex min-h-11 items-center rounded-full border border-line bg-subtle px-3 text-[13px] text-ink-3">
+            {t('home.metaDate', { date: formatDate(objective.targetDate, locale) })}
+          </p>
+        ) : null}
+        {completed.length > 0 ? (
+          <p className="text-[13px] text-ink-3">
+            {t('objectiveDetail.completedCount', { n: completed.length })}
+          </p>
+        ) : null}
+        {objective.why ? <p className="text-[15px] text-ink-3">{objective.why}</p> : null}
       </header>
 
-      <Card className="rounded-[20px]">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[13px] text-text-3">{t('objectiveDetail.progress')}</p>
-          <p className="text-[15px] font-semibold text-accent">{percent ?? t('common.dash')}</p>
-        </div>
-        {progress.tasksTotal > 0 ? <ProgressBar className="mt-2" ratio={progress.ratio} /> : null}
-      </Card>
+      {progress.tasksTotal > 0 ? (
+        <Card className="rounded-[20px]">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[13px] text-ink-3">{t('objectiveDetail.progress')}</p>
+          </div>
+          <ProgressBar className="mt-2" ratio={progress.ratio} />
+        </Card>
+      ) : null}
+
+      <StagePath current={stage} />
 
       <section>
-        <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
-          {t('objectiveDetail.checklistTitle')}
+        <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-ink-3 uppercase">
+          {t('objectiveDetail.statusLabel')}
         </p>
-        {checklistItems.length === 0 ? (
-          <p className="text-[14px] text-text-3">{t('planning.objectives.noConcreteStep')}</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {checklistItems.map((item) => (
-              <li key={item.id}>
-                <label className="flex min-h-11 items-center gap-3 rounded-2xl bg-subtle px-3 py-2">
-                  <input
-                    type="checkbox"
-                    checked={item.done}
-                    onChange={() => item.onToggle()}
-                    className="size-5 accent-mint"
-                  />
-                  <span className={item.done ? 'text-text-3 line-through' : 'text-ink'}>
-                    {item.text}
-                  </span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section>
-        <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
-          {t('inventory.title')}
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {(
-            [
-              {
-                key: 'costs' as const,
-                label: t('inventory.costs'),
-                value: `${t('common.money')}${formatMoney(inventory.costs, locale)}`,
-              },
-              {
-                key: 'contacts' as const,
-                label: t('inventory.contacts'),
-                value: t('inventory.contactsUnit', { count: inventory.contacts }),
-              },
-              {
-                key: 'docs' as const,
-                label: t('inventory.docs'),
-                value: t('inventory.docsUnit', { count: inventory.docs }),
-              },
-              {
-                key: 'links' as const,
-                label: t('inventory.links'),
-                value: t('inventory.linksUnit', { count: inventory.links }),
-              },
-            ] as const
-          ).map((cell) => (
-            <Card key={cell.key} className="rounded-[20px] py-3">
-              <p className="text-[12px] text-text-3">{cell.label}</p>
-              <p className="mt-1 text-[16px] font-medium text-ink">{cell.value}</p>
-              <button
-                type="button"
-                onClick={() => bumpInventory(cell.key)}
-                className="mt-2 text-[13px] text-accent"
-              >
-                {t('inventory.add')}
-              </button>
-            </Card>
+        <div className="flex flex-wrap gap-2">
+          {STATUS_OPTIONS.map((status) => (
+            <Chip
+              key={status}
+              active={objective.status === status}
+              onClick={() => updateObjective(objective.id, { status })}
+              className="min-h-11"
+            >
+              {t(`objectiveStatus.${status}`)}
+            </Chip>
           ))}
         </div>
       </section>
 
+      <div className="flex gap-2">
+        <Button variant="secondary" className="min-h-11 flex-1" onClick={() => setEdit(true)}>
+          {t('common.edit')}
+        </Button>
+        <Button variant="danger" className="min-h-11 flex-1" onClick={() => setArchiveOpen(true)}>
+          {t('common.archive')}
+        </Button>
+      </div>
+
       <section>
-        <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
+        <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-ink-3 uppercase">
           {t('objectiveDetail.tasksTitle')}
         </p>
-        {openTasks.length === 0 ? (
+        {associated.length === 0 ? (
           <EmptyState>{t('planning.objectives.noneInProgress')}</EmptyState>
         ) : (
           <ul className="flex flex-col gap-2">
-            {openTasks.map((task) => (
+            {associated.map((task) => (
               <li key={task.id}>
                 <TaskRow
                   task={task}
@@ -196,16 +166,36 @@ export function ObjectiveDetailPage() {
             ))}
           </ul>
         )}
+        <Button className="mt-3 min-h-11 w-full" onClick={() => setCreating(true)}>
+          {t('objectiveDetail.createTask')}
+        </Button>
       </section>
 
-      <div className="flex gap-2">
-        <Button variant="secondary" className="flex-1" onClick={() => setEdit(true)}>
-          {t('common.edit')}
-        </Button>
-        <Button variant="danger" className="flex-1" onClick={() => setArchiveOpen(true)}>
-          {t('common.archive')}
-        </Button>
-      </div>
+      {completed.length > 0 ? (
+        <section>
+          <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-ink-3 uppercase">
+            {t('objectiveDetail.completedTasksTitle')}
+          </p>
+          <ul className="flex flex-col gap-2">
+            {completed.map((task) => (
+              <li
+                key={task.id}
+                className="flex min-h-11 items-center gap-3 rounded-2xl border border-line bg-subtle px-3 py-2 opacity-80"
+              >
+                <span className="flex size-6 items-center justify-center rounded-md bg-mint text-white">
+                  <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3.5 8.5 6.5 11.5 12.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className={cx('min-w-0 flex-1 truncate text-[15px] text-ink-3 line-through')}>
+                  {task.title}
+                </span>
+                <span className="text-[12px] text-ink-3">{t(`taskStatus.${task.status}`)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <JournalThread
         parentType="objective"
@@ -215,12 +205,6 @@ export function ObjectiveDetailPage() {
       />
       {completionDialog}
       {actions.dialog}
-
-      <div className="safe-bottom sticky bottom-0 -mx-4 border-t border-line bg-bg/95 px-4 py-3 backdrop-blur-xl">
-        <Button className="w-full" onClick={() => setCreating(true)}>
-          {t('objectiveDetail.ctaToday')}
-        </Button>
-      </div>
 
       <ObjectiveFormSheet
         open={edit}
@@ -258,43 +242,4 @@ export function ObjectiveDetailPage() {
       />
     </Page>
   )
-}
-
-interface ChecklistRow {
-  id: string
-  text: string
-  done: boolean
-  onToggle: () => void
-}
-
-function buildChecklist(tasks: Task[]): ChecklistRow[] {
-  const fromChecklists: ChecklistRow[] = []
-  for (const task of tasks) {
-    if (!task.checklist?.length) continue
-    for (const item of task.checklist) {
-      fromChecklists.push({
-        id: `${task.id}:${item.id}`,
-        text: item.text,
-        done: item.done || isTaskDone(task.status),
-        onToggle: () => toggleChecklistItem(task, item),
-      })
-    }
-  }
-  if (fromChecklists.length > 0) return fromChecklists
-
-  return tasks
-    .filter((task) => task.status !== 'cancelled')
-    .map((task) => ({
-      id: task.id,
-      text: task.title,
-      done: isTaskDone(task.status),
-      onToggle: () => undefined,
-    }))
-}
-
-function toggleChecklistItem(task: Task, item: TaskCheckItem) {
-  const next = (task.checklist ?? []).map((entry) =>
-    entry.id === item.id ? { ...entry, done: !entry.done } : entry,
-  )
-  updateTask(task.id, { checklist: next })
 }

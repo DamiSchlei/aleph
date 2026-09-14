@@ -46,6 +46,7 @@ function FormBody({
   const [why, setWhy] = useState(objective?.why ?? '')
   const [doneWhen, setDoneWhen] = useState(objective?.doneWhen ?? '')
   const [nonGoals, setNonGoals] = useState(objective?.nonGoals ?? '')
+  const [targetDate, setTargetDate] = useState(objective?.targetDate ?? '')
   const [reviewEvery, setReviewEvery] = useState<Objective['reviewEvery'] | ''>(
     objective?.reviewEvery ?? '',
   )
@@ -56,6 +57,7 @@ function FormBody({
     if (!trimmed) return
     const review = reviewEvery || undefined
     const n = review === 'every_n_tasks' ? Math.max(1, Number(reviewEveryN) || 3) : undefined
+    const date = targetDate || undefined
     const extra = objective
       ? {
           nonGoals: nonGoals.trim() || undefined,
@@ -68,6 +70,7 @@ function FormBody({
         name: trimmed,
         why: why.trim() || undefined,
         doneWhen: doneWhen.trim() || undefined,
+        targetDate: date,
         ...extra,
       })
     } else {
@@ -76,6 +79,7 @@ function FormBody({
         name: trimmed,
         why: why.trim() || undefined,
         doneWhen: doneWhen.trim() || undefined,
+        targetDate: date,
       })
     }
     onClose()
@@ -93,6 +97,9 @@ function FormBody({
       </Field>
       <Field label={`${t('common.why')} (${t('common.optional')})`}>
         <Textarea rows={3} value={why} onChange={(e) => setWhy(e.target.value)} />
+      </Field>
+      <Field label={`${t('planning.results.targetDate')} (${t('common.optional')})`}>
+        <Input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
       </Field>
       <Field label={`${t('planning.objectives.doneWhen')} (${t('common.optional')})`}>
         <Input

@@ -54,6 +54,7 @@ export function PlanningPage() {
   return (
     <Page className="flex flex-col gap-4 pt-2">
       <AppHeader
+        showHome
         title={
           <div>
             <h1 className="text-[28px] font-semibold text-ink">{t('planning.title')}</h1>
