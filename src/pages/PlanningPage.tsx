@@ -28,10 +28,10 @@ import {
   activeResults,
   attendingResults,
   leastActiveAttending,
-  nextTaskOfResult,
   objectivesOfResult,
   pickerObjectives,
   pickerResults,
+  resultHealth,
   resultProgress,
   stageFocusOfResult,
   taskResultStatus,
@@ -39,6 +39,7 @@ import {
 import { useAleph } from '@/data/store'
 import { shouldSoftWarnActiveResults } from '@/domain/limits'
 import { STAGE_ORDER } from '@/domain/stage'
+import { pillarOfResult, PILLAR_COLOR } from '@/domain/pillars'
 import { formatPercent } from '@/i18n/format'
 import { skillName } from '@/i18n/labels'
 import type { StageId, Task, TaskStatus } from '@/domain/types'
@@ -80,7 +81,7 @@ function DashedNewResult({ onClick, label }: { onClick: () => void; label: strin
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-11 w-full items-center justify-center rounded-[20px] border border-dashed border-white/14 px-4 py-3 text-[14px] text-text-3"
+      className="flex min-h-11 w-full items-center justify-center rounded-[20px] border border-dashed border-line px-4 py-3 text-[14px] text-text-3"
     >
       {label}
     </button>
@@ -131,7 +132,7 @@ function ResultsTab() {
           type="button"
           aria-label={t('planning.results.new')}
           onClick={() => requestCreate()}
-          className="flex size-9 items-center justify-center rounded-full border border-white/14 text-accent"
+          className="flex size-11 items-center justify-center rounded-full border border-line text-accent"
         >
           +
         </button>
@@ -171,36 +172,47 @@ function ResultsTab() {
               if (!result) return null
               const progress = resultProgress(state, result.id)
               const objectives = objectivesOfResult(state, result.id).slice(0, 4)
-              const next = nextTaskOfResult(state, result.id)
               const percent = formatPercent(progress.ratio, locale)
               return (
                 <Card className="flex items-start gap-1 rounded-[20px] p-2">
-                  <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 p-2">
+                  <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 overflow-hidden p-2">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-display text-[20px] leading-tight text-ink">{result.name}</p>
+                      <div className="flex min-w-0 flex-1 items-start gap-2">
+                        <span
+                          aria-hidden
+                          className="mt-1.5 size-2.5 shrink-0 rounded-full"
+                          style={{ background: PILLAR_COLOR[pillarOfResult(result)] }}
+                          title={t(`pillars.${pillarOfResult(result)}`)}
+                        />
+                        <p className="min-w-0 break-words font-display text-[20px] leading-[1.35] text-ink">
+                          {result.name}
+                        </p>
+                      </div>
                       {percent ? (
-                        <span className="shrink-0 text-[13px] font-medium text-accent">{percent}</span>
+                        <span className="shrink-0 pt-1 text-[13px] font-medium tabular-nums text-accent">
+                          {percent}
+                        </span>
                       ) : null}
                     </div>
                     {result.why ? (
-                      <p className="mt-1 truncate text-[13px] text-text-3">{result.why}</p>
+                      <p className="mt-1.5 line-clamp-2 break-words text-[13px] leading-snug text-text-3">
+                        {result.why}
+                      </p>
                     ) : null}
+                    <p className="mt-1.5 line-clamp-3 min-w-0 break-words text-[13px] leading-snug text-text-3">
+                      {t(resultHealth(state, result.id).key, resultHealth(state, result.id).params)}
+                    </p>
                     <StagePath current={stageFocusOfResult(state, result.id)} />
                     {objectives.length > 0 ? (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
+                      <div className="mt-3 flex flex-wrap gap-2">
                         {objectives.map((objective) => (
-                          <Badge key={objective.id}>{objective.name}</Badge>
+                          <Badge key={objective.id} className="max-w-full whitespace-normal break-words px-2.5 py-1 leading-snug">
+                            {objective.name}
+                          </Badge>
                         ))}
                       </div>
                     ) : null}
                     {progress.tasksTotal > 0 ? <ProgressBar className="mt-3" ratio={progress.ratio} /> : null}
-                    {next ? (
-                      <p className="mt-2 truncate text-[13px] text-text-2">
-                        {t('planning.nextTask', { title: next.title })}
-                      </p>
-                    ) : (
-                      <p className="mt-2 text-[13px] text-text-3">{t('planning.results.noTasks')}</p>
-                    )}
                   </Link>
                   <div className="flex flex-col items-center gap-1 pt-1">
                     <RowMenu
@@ -236,7 +248,7 @@ function ResultsTab() {
               {archived.map((result) => (
                 <li
                   key={result.id}
-                  className="flex items-center justify-between gap-2 rounded-2xl border border-white/14 bg-surface px-3 py-2"
+                  className="flex items-center justify-between gap-2 rounded-2xl border border-line bg-surface px-3 py-2"
                 >
                   <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1">
                     <p className="truncate text-[15px] text-ink">{result.name}</p>

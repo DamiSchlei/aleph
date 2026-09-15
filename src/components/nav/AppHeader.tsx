@@ -7,14 +7,16 @@ import { useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { cx } from '@/components/ui/primitives'
 
-/** Top chrome: avatar opens AccountMenu; optional Inicio link; optional title. */
+/** Top chrome: avatar opens AccountMenu; optional Inicio / Plan; optional title. */
 export function AppHeader({
   title,
   showHome = false,
+  showPlanning = false,
   className,
 }: {
   title?: ReactNode
   showHome?: boolean
+  showPlanning?: boolean
   className?: string
 }) {
   const { t } = useTranslation()
@@ -24,7 +26,7 @@ export function AppHeader({
 
   return (
     <>
-      <header className={cx('flex items-center gap-3 pt-2 pb-3', className)}>
+      <header className={cx('flex flex-wrap items-center gap-x-2 gap-y-2 pt-2 pb-3', className)}>
         <button
           type="button"
           aria-label={t('account.openMenu')}
@@ -43,12 +45,24 @@ export function AppHeader({
         {showHome ? (
           <Link
             to="/"
-            className="flex min-h-11 items-center px-1 text-[15px] font-medium text-accent"
+            className="flex min-h-11 shrink-0 items-center px-1 text-[15px] font-medium text-accent"
           >
             {t('nav.home')}
           </Link>
         ) : null}
-        {title ? <div className="min-w-0 flex-1">{title}</div> : <div className="flex-1" />}
+        {showPlanning ? (
+          <Link
+            to="/planning"
+            className="flex min-h-11 shrink-0 items-center px-1 text-[15px] font-medium text-accent"
+          >
+            {t('nav.planShort')}
+          </Link>
+        ) : null}
+        {title ? (
+          <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">{title}</div>
+        ) : (
+          <div className="hidden flex-1 sm:block" />
+        )}
       </header>
       <AccountMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </>

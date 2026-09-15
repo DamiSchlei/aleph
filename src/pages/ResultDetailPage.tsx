@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { AppHeader } from '@/components/nav/AppHeader'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
 import { Button, Card, EmptyState, Page, ProgressBar, SectionTitle } from '@/components/ui/primitives'
@@ -49,8 +50,10 @@ function ObjectiveRow({
             </svg>
           </span>
         ) : null}
-        <div className="min-w-0 flex-1">
-          <p className={`font-medium text-ink ${done ? 'text-ink-3' : ''}`}>{objective.name}</p>
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <p className={`break-words leading-snug font-medium text-ink ${done ? 'text-ink-3' : ''}`}>
+            {objective.name}
+          </p>
           <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[12px] text-ink-3">
             {objective.targetDate ? (
               <span>
@@ -106,24 +109,31 @@ export function ResultDetailPage() {
 
   return (
     <Page className="flex flex-col gap-5 pt-4">
-      <button
-        type="button"
-        onClick={() => navigate('/planning')}
-        className="min-h-11 self-start text-[14px] text-text-3"
-      >
-        ← {t('planning.title')}
-      </button>
+      <AppHeader
+        showHome
+        title={
+          <button
+            type="button"
+            onClick={() => navigate('/planning')}
+            className="min-h-11 text-left text-[14px] text-text-3"
+          >
+            ← {t('planning.title')}
+          </button>
+        }
+      />
       <header>
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2">
           <span
             aria-hidden
-            className="size-2.5 shrink-0 rounded-full"
+            className="mt-2 size-2.5 shrink-0 rounded-full"
             style={{ background: PILLAR_COLOR[pillar] }}
             title={t(`pillars.${pillar}`)}
           />
-          <h1 className="text-2xl font-semibold text-ink">{result.name}</h1>
+          <h1 className="min-w-0 break-words text-2xl leading-snug font-semibold text-ink">{result.name}</h1>
         </div>
-        {result.why ? <p className="mt-1 text-[15px] text-text-3">{result.why}</p> : null}
+        {result.why ? (
+          <p className="mt-1 break-words text-[15px] leading-relaxed text-text-3">{result.why}</p>
+        ) : null}
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-text-3">
           {result.targetDate ? <span>{formatDate(result.targetDate, state.character.locale)}</span> : null}
           <span>{t(`resultStatus.${result.status}`)}</span>

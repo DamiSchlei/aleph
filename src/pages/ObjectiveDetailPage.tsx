@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { AppHeader } from '@/components/nav/AppHeader'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
 import { StagePath } from '@/components/planning/StagePath'
@@ -80,13 +81,18 @@ export function ObjectiveDetailPage() {
 
   return (
     <Page className="flex flex-col gap-5 pt-4 pb-24">
-      <button
-        type="button"
-        onClick={() => navigate(`/planning/results/${objective.resultId}`)}
-        className="min-h-11 self-start text-[14px] text-ink-3"
-      >
-        ← {result?.name ?? t('planning.results.detailTitle')}
-      </button>
+      <AppHeader
+        showHome
+        title={
+          <button
+            type="button"
+            onClick={() => navigate(`/planning/results/${objective.resultId}`)}
+            className="min-h-11 text-left text-[14px] text-ink-3"
+          >
+            ← {result?.name ?? t('planning.results.detailTitle')}
+          </button>
+        }
+      />
 
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold text-ink">{objective.name}</h1>

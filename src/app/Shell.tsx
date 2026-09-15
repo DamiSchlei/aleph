@@ -10,7 +10,7 @@ export function Shell() {
 
   return (
     <div className="relative min-h-dvh bg-bg">
-      <main className="safe-top safe-bottom mx-auto w-full max-w-lg px-4 pb-8">
+      <main className="safe-top safe-bottom mx-auto w-full max-w-lg px-4 pb-28">
         <Outlet />
       </main>
       <JournalBubble />
