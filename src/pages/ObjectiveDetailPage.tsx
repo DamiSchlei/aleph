@@ -82,7 +82,6 @@ export function ObjectiveDetailPage() {
   return (
     <Page className="flex flex-col gap-5 pt-4 pb-24">
       <AppHeader
-        showHome
         title={
           <button
             type="button"

@@ -5,6 +5,7 @@
     "tagline": "Your work, one character, three screens."
   },
   "nav": {
+    "bar": "Views",
     "home": "Home",
     "planning": "Planning",
     "tracking": "Tracking",
@@ -182,6 +183,10 @@
     "hoursOnly": "{{estimated}} h",
     "granularityDay": "Day",
     "granularityWeek": "Week",
+    "granularityMonth": "Month",
+    "periodClosed": "{{count}} closed",
+    "periodOnTime": "{{count}} on time",
+    "periodHours": "{{hours}} h",
     "freeToday": "{{n}} h free today.",
     "lostPast": "{{n}} h left unclosed.",
     "weekUsed": "You used {{closed}} of {{cap}} h.",

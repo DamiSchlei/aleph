@@ -70,10 +70,38 @@ export function isoWeekday(value: Date | string): number {
   return day === 0 ? 7 : day
 }
 
+/** First calendar day of the month containing `value`. */
+export function startOfMonth(value: Date | string): Date {
+  const d = startOfDay(value)
+  return new Date(d.getFullYear(), d.getMonth(), 1)
+}
+
 /** Last calendar day of the month containing `value`. */
 export function endOfMonth(value: Date | string): Date {
   const d = startOfDay(value)
   return new Date(d.getFullYear(), d.getMonth() + 1, 0)
+}
+
+/** Shift by calendar months, clamping the day to the target month's length. */
+export function addMonths(value: Date | string, months: number): Date {
+  const source = typeof value === 'string' ? parseLocal(value) : new Date(value)
+  const day = source.getDate()
+  const cursor = new Date(source.getFullYear(), source.getMonth() + months, 1)
+  const last = endOfMonth(cursor).getDate()
+  cursor.setDate(Math.min(day, last))
+  cursor.setHours(source.getHours(), source.getMinutes(), source.getSeconds(), source.getMilliseconds())
+  return cursor
+}
+
+/** Day keys of the calendar month containing `value`, first to last. */
+export function monthDayKeys(value: Date | string): string[] {
+  const start = startOfMonth(value)
+  const endKey = toDayKey(endOfMonth(value))
+  const keys: string[] = []
+  for (let cursor = start; toDayKey(cursor) <= endKey; cursor = addDays(cursor, 1)) {
+    keys.push(toDayKey(cursor))
+  }
+  return keys
 }
 
 /**

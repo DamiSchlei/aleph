@@ -110,7 +110,6 @@ export function ResultDetailPage() {
   return (
     <Page className="flex flex-col gap-5 pt-4">
       <AppHeader
-        showHome
         title={
           <button
             type="button"

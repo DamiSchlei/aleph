@@ -63,7 +63,6 @@ export function WeekPlanningPage() {
   return (
     <div className="flex flex-col gap-5 pt-2 pb-8">
       <AppHeader
-        showHome
         title={
           <div>
             <h1 className="font-display text-[24px] leading-tight text-ink">{t('week.title')}</h1>

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/character/Avatar'
 import { CustomizeSheet } from '@/components/character/CustomizeSheet'
@@ -80,16 +79,7 @@ export function AccountMenu({
           </div>
 
           <nav className="no-scrollbar flex-1 overflow-y-auto px-2 pb-4">
-            <MenuLink to="/" onNavigate={onClose}>
-              {t('nav.home')}
-            </MenuLink>
             <MenuButton onClick={() => setCustomize(true)}>{t('account.customize')}</MenuButton>
-            <MenuLink to="/planning" onNavigate={onClose}>
-              {t('nav.planning')}
-            </MenuLink>
-            <MenuLink to="/tracking" onNavigate={onClose}>
-              {t('nav.tracking')}
-            </MenuLink>
             <MenuButton onClick={() => setSkills(true)}>{t('account.skills')}</MenuButton>
 
             <div className="mt-3 px-3">
@@ -133,25 +123,5 @@ function MenuButton({ children, onClick }: { children: string; onClick: () => vo
     >
       {children}
     </button>
-  )
-}
-
-function MenuLink({
-  to,
-  children,
-  onNavigate,
-}: {
-  to: string
-  children: string
-  onNavigate: () => void
-}) {
-  return (
-    <NavLink
-      to={to}
-      onClick={onNavigate}
-      className="flex min-h-12 w-full items-center rounded-2xl px-3 text-[15px] text-ink hover:bg-subtle"
-    >
-      {children}
-    </NavLink>
   )
 }
