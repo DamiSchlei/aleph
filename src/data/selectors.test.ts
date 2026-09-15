@@ -15,6 +15,7 @@ import {
   resultHealth,
   resultStaleThisWeek,
   weekSeriesPulse,
+  journalFor,
 } from './selectors'
 import type { AlephState, Comment, Objective, Result, Task } from '@/domain/types'
 
@@ -24,6 +25,7 @@ function result(partial: Partial<Result> & Pick<Result, 'id' | 'name'>): Result 
   return {
     importance: 0,
     status: 'active',
+    pillar: 'mind',
     ...partial,
   }
 }
@@ -127,11 +129,12 @@ describe('attending results and plan total', () => {
     expect(pickerResults(s).map((r) => r.id)).toEqual(['a', 'p'])
   })
 
-  it('hides archived objectives from pickers', () => {
+  it('hides archived and done objectives from pickers', () => {
     const s = state({
       results: [result({ id: 'r', name: 'R' })],
       objectives: [
         objective({ id: 'live', resultId: 'r', name: 'Live' }),
+        objective({ id: 'done', resultId: 'r', name: 'Done', status: 'done' }),
         objective({ id: 'gone', resultId: 'r', name: 'Gone', archivedAt: '2026-01-01T00:00:00.000Z' }),
       ],
     })
@@ -302,3 +305,53 @@ describe('weekSeriesPulse', () => {
     ])
   })
 })
+
+describe('journalFor', () => {
+  it('does not roll objective or task comments into a result journal', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'R' })],
+      objectives: [objective({ id: 'o', resultId: 'r', name: 'O' })],
+      tasks: [task({ id: 't', title: 'T', resultId: 'r', objectiveId: 'o' })],
+      comments: [
+        comment({ id: 'cr', parentType: 'result', parentId: 'r', body: 'on result' }),
+        comment({ id: 'co', parentType: 'objective', parentId: 'o', body: 'on objective' }),
+        comment({ id: 'ct', parentType: 'task', parentId: 't', body: 'on task' }),
+      ],
+    })
+    expect(journalFor(s, 'result', 'r').map((e) => e.comment.id)).toEqual(['cr'])
+  })
+
+  it('rolls task comments into an objective journal but not the reverse', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'R' })],
+      objectives: [objective({ id: 'o', resultId: 'r', name: 'O' })],
+      tasks: [task({ id: 't', title: 'T', objectiveId: 'o' })],
+      comments: [
+        comment({ id: 'co', parentType: 'objective', parentId: 'o', body: 'obj' }),
+        comment({ id: 'ct', parentType: 'task', parentId: 't', body: 'task' }),
+      ],
+    })
+    expect(journalFor(s, 'objective', 'o').map((e) => e.comment.id).sort()).toEqual(['co', 'ct'])
+    expect(journalFor(s, 'task', 't').map((e) => e.comment.id)).toEqual(['ct'])
+  })
+
+  it('keeps the character journal separate from work threads', () => {
+    const base = initialState('es')
+    const s = state({
+      comments: [
+        comment({
+          id: 'cc',
+          parentType: 'character',
+          parentId: base.character.id,
+          body: 'across the work',
+        }),
+        comment({ id: 'ct', parentType: 'task', parentId: 't', body: 'task note' }),
+      ],
+    })
+    expect(journalFor(s, 'character', base.character.id).map((e) => e.comment.body)).toEqual([
+      'across the work',
+    ])
+    expect(journalFor(s, 'task', 't').map((e) => e.comment.body)).toEqual(['task note'])
+  })
+})
+

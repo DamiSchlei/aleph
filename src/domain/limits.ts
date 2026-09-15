@@ -13,8 +13,26 @@ export const MAX_CHECKLIST_ITEMS = 7
 /** Weekly series cap: one Task per matching day, never a Block entity. */
 export const MAX_SERIES_BLOCKS = 20
 
+/** Active = not archived and not done. Occupies the 4-slot quota. */
 export function activeObjectivesOfResult(objectives: Objective[], resultId: string): Objective[] {
+  return objectives.filter(
+    (o) => o.resultId === resultId && !o.archivedAt && o.status !== 'done',
+  )
+}
+
+/** Living = not archived (includes done). For progress / journal lists. */
+export function livingObjectivesOfResult(objectives: Objective[], resultId: string): Objective[] {
   return objectives.filter((o) => o.resultId === resultId && !o.archivedAt)
+}
+
+/** Completed living objectives (done, not archived). */
+export function completedObjectivesOfResult(
+  objectives: Objective[],
+  resultId: string,
+): Objective[] {
+  return objectives.filter(
+    (o) => o.resultId === resultId && !o.archivedAt && o.status === 'done',
+  )
 }
 
 export function canAddObjective(objectives: Objective[], resultId: string): boolean {

@@ -20,7 +20,7 @@ A customizable character represents the user. Real-life work is modeled as:
 
 **Result → (max 4) Objectives → 3 fixed Stages → Tasks**
 
-Comments roll up into a Journal. Completing a task grants XP + money + skill XP, from hours × difficulty.
+Work comments live on tasks and objectives. The character journal is a separate thread (Shell bubble). Completing a task grants XP + money + skill XP, from hours × difficulty.
 
 Three screens, one tab bar:
 
@@ -57,7 +57,25 @@ Do not keep a parallel `size: small | normal | large` economy.
 
 See `src/domain/types.ts`. Required names: Character, Skill, Result, Objective, Task, Comment, Relation, Cosmetic.
 
-Constraint: at most 4 objectives with status != archived per result (`src/domain/limits.ts`).
+Constraint: at most 4 **active** objectives per result (`status !== 'done'` and not archived). Marking an objective done frees a quota slot without XP or auto-archive (`src/domain/limits.ts`).
+
+### Pillars
+
+Results carry a required `pillar`: `mind` | `body` | `soul` (`src/domain/pillars.ts`). Reading layer over the six skills — does not replace `skillId` on tasks.
+
+| Pillar | Skills |
+|--------|--------|
+| mind | study, creativity |
+| body | health, work |
+| soul | relationships, finance |
+
+Unknown / custom skillIds map to mind. Colors: mind `#2F6BFF`, body `#0F9F6E`, soul `#C47A00`.
+
+### Journals
+
+- **Work:** comments on a task or objective. `journalFor('objective')` may include that objective’s tasks; `journalFor('task')` is that task only.
+- **Character:** `parentType: 'character'` — one prose thread across all results, opened from the Shell bubble. Never mixed into work threads.
+- **Result:** does not roll up child comments and has no composer. The company is not a diary.
 
 Stages (fixed, ordered): `research` → `execution` → `review`. New objectives start at research. Cannot jump research → review.
 

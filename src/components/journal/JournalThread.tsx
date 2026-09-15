@@ -12,11 +12,18 @@ export function JournalThread({
   parentId,
   placeholder,
   chronological = false,
+  title,
+  emptyLabel,
+  showHeading = true,
 }: {
   parentType: ParentType
   parentId: string
   placeholder?: string
   chronological?: boolean
+  title?: string
+  emptyLabel?: string
+  /** When false, omit the section heading (sheet already provides a title). */
+  showHeading?: boolean
 }) {
   const { t } = useTranslation()
   const state = useAleph()
@@ -31,10 +38,12 @@ export function JournalThread({
   }
 
   return (
-    <section className="mt-6">
-      <h3 className="mb-3 text-[13px] font-semibold tracking-[0.14em] text-ink-3 uppercase">
-        {t('journal.title')}
-      </h3>
+    <section className={showHeading ? 'mt-6' : undefined}>
+      {showHeading ? (
+        <h3 className="mb-3 text-[13px] font-semibold tracking-[0.14em] text-ink-3 uppercase">
+          {title ?? t('journal.title')}
+        </h3>
+      ) : null}
       <div className="mb-3 flex gap-2">
         <Textarea
           rows={2}
@@ -48,16 +57,20 @@ export function JournalThread({
         </Button>
       </div>
       {ordered.length === 0 ? (
-        <EmptyState>{t('journal.empty')}</EmptyState>
+        <EmptyState>{emptyLabel ?? t('journal.empty')}</EmptyState>
       ) : (
         <ol className="flex flex-col gap-2">
           {ordered.map(({ comment, originType, originTitle }) => (
             <li key={comment.id} className="rounded-2xl border border-line bg-surface px-3 py-2.5">
               <p className="text-[12px] text-ink-3">
                 {formatDateTime(comment.createdAt, locale)}
-                {' · '}
-                {t(`journal.origin.${originType}`)}
-                {originTitle ? ` · ${originTitle}` : ''}
+                {originType !== 'character' ? (
+                  <>
+                    {' · '}
+                    {t(`journal.origin.${originType}`)}
+                    {originTitle ? ` · ${originTitle}` : ''}
+                  </>
+                ) : null}
               </p>
               <p className="mt-1 text-[15px] leading-relaxed text-ink-2">{comment.body}</p>
             </li>

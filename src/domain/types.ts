@@ -1,5 +1,8 @@
 export type Locale = 'en' | 'es'
 
+/** Dominant life pillar for a Result. Groups skills; does not replace them. */
+export type Pillar = 'mind' | 'body' | 'soul'
+
 export type StageId = 'research' | 'execution' | 'review'
 
 export type Difficulty = 'low' | 'medium' | 'high'
@@ -10,7 +13,7 @@ export type ObjectiveStatus = 'pending' | 'in_progress' | 'done' | 'blocked'
 
 export type TaskStatus = 'pending' | 'in_progress' | 'done_on_time' | 'done_late' | 'cancelled'
 
-export type ParentType = 'result' | 'objective' | 'task'
+export type ParentType = 'result' | 'objective' | 'task' | 'character'
 
 export type RelationKind = 'depends_on' | 'feeds' | 'parallel'
 
@@ -40,6 +43,8 @@ export interface Character {
   dailyHourCap?: number
   /** True after the first-run onboarding finishes. */
   onboarded?: boolean
+  /** When true, the character journal bubble stays as a pip. */
+  journalBubbleHidden?: boolean
 }
 
 export interface Skill {
@@ -60,6 +65,8 @@ export interface Result {
   name: string
   why?: string
   skillId?: string
+  /** Dominant pillar. Required after storage normalize. */
+  pillar: Pillar
   targetDate?: string
   importance: number
   status: ResultStatus

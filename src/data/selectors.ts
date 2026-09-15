@@ -9,6 +9,12 @@ import {
   toDayKey,
   weekDayKeys,
 } from '@/domain/dates'
+import {
+  activeObjectivesOfResult as activeObjectivesFromLimits,
+  completedObjectivesOfResult as completedObjectivesFromLimits,
+  livingObjectivesOfResult as livingObjectivesFromLimits,
+} from '@/domain/limits'
+import { pillarOfResult } from '@/domain/pillars'
 import { STAGE_ORDER } from '@/domain/stage'
 import type {
   AlephState,
@@ -16,6 +22,7 @@ import type {
   Difficulty,
   Objective,
   ParentType,
+  Pillar,
   Result,
   ResultProgress,
   ResultStatus,
@@ -52,15 +59,33 @@ export function objectiveById(state: AlephState, id?: string): Objective | undef
   return id ? state.objectives.find((o) => o.id === id) : undefined
 }
 
+/** Living objectives (!archivedAt), including done — progress / journal. */
 export function objectivesOfResult(state: AlephState, resultId: string): Objective[] {
-  return state.objectives
-    .filter((o) => o.resultId === resultId && !o.archivedAt)
-    .sort((a, b) => a.importance - b.importance)
+  return livingObjectivesFromLimits(state.objectives, resultId).sort(
+    (a, b) => a.importance - b.importance,
+  )
 }
 
-/** Live objectives of a result for pickers. Same as objectivesOfResult; archived stay hidden. */
+export function activeObjectivesOfResult(state: AlephState, resultId: string): Objective[] {
+  return activeObjectivesFromLimits(state.objectives, resultId).sort(
+    (a, b) => a.importance - b.importance,
+  )
+}
+
+export function completedObjectivesOfResult(state: AlephState, resultId: string): Objective[] {
+  return completedObjectivesFromLimits(state.objectives, resultId).sort(
+    (a, b) => a.importance - b.importance,
+  )
+}
+
+/** Active only — never offer done objectives when assigning a task. */
 export function pickerObjectives(state: AlephState, resultId: string): Objective[] {
-  return objectivesOfResult(state, resultId)
+  return activeObjectivesOfResult(state, resultId)
+}
+
+export function resultPillar(state: AlephState, resultId: string): Pillar | undefined {
+  const result = resultById(state, resultId)
+  return result ? pillarOfResult(result) : undefined
 }
 
 export function tasksOfObjective(state: AlephState, objectiveId: string, stage?: StageId): Task[] {
@@ -352,45 +377,36 @@ export interface JournalEntry {
 }
 
 function originTitle(state: AlephState, type: ParentType, id: string): string {
+  if (type === 'character') return state.character.name
   if (type === 'result') return state.results.find((r) => r.id === id)?.name ?? ''
   if (type === 'objective') return state.objectives.find((o) => o.id === id)?.name ?? ''
   return state.tasks.find((t) => t.id === id)?.title ?? ''
 }
 
 /**
- * A journal rolls up: a result shows its own comments plus those of its objectives
- * and their tasks, newest first.
+ * Work journals: task = that task only; objective = objective + its tasks.
+ * Result = comments on that result only (no child rollup).
+ * Character = character thread only — never mixed with work.
  */
 export function journalFor(state: AlephState, type: ParentType, id: string): JournalEntry[] {
-  const ids = new Set<string>([id])
-  const types = new Map<string, ParentType>([[id, type]])
-
-  const include = (childType: ParentType, childId: string) => {
-    ids.add(childId)
-    types.set(childId, childType)
-  }
-
-  if (type === 'result') {
-    state.objectives
-      .filter((o) => o.resultId === id)
-      .forEach((o) => {
-        include('objective', o.id)
-        state.tasks.filter((t) => t.objectiveId === o.id).forEach((t) => include('task', t.id))
-      })
-    state.tasks.filter((t) => t.resultId === id).forEach((t) => include('task', t.id))
-  }
+  const matches: Array<{ parentType: ParentType; parentId: string }> = [{ parentType: type, parentId: id }]
 
   if (type === 'objective') {
-    state.tasks.filter((t) => t.objectiveId === id).forEach((t) => include('task', t.id))
+    state.tasks
+      .filter((t) => t.objectiveId === id)
+      .forEach((t) => matches.push({ parentType: 'task', parentId: t.id }))
   }
 
+  // result and character: no rollup — exact parent only
+  // task: exact parent only (already in matches)
+
   return state.comments
-    .filter((c) => ids.has(c.parentId))
+    .filter((c) => matches.some((m) => m.parentType === c.parentType && m.parentId === c.parentId))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((comment) => ({
       comment,
-      originType: types.get(comment.parentId) ?? comment.parentType,
-      originTitle: originTitle(state, types.get(comment.parentId) ?? comment.parentType, comment.parentId),
+      originType: comment.parentType,
+      originTitle: originTitle(state, comment.parentType, comment.parentId),
     }))
 }
 
