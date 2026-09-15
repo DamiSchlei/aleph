@@ -57,7 +57,19 @@ Do not keep a parallel `size: small | normal | large` economy.
 
 See `src/domain/types.ts`. Required names: Character, Skill, Result, Objective, Task, Comment, Relation, Cosmetic.
 
-Constraint: at most 4 objectives with status != archived per result (`src/domain/limits.ts`).
+Constraint: at most 4 **active** objectives per result (`status !== 'done'` and not archived). Marking an objective done frees a quota slot without XP or auto-archive (`src/domain/limits.ts`).
+
+### Pillars
+
+Results carry a required `pillar`: `mind` | `body` | `soul` (`src/domain/pillars.ts`). Reading layer over the six skills — does not replace `skillId` on tasks.
+
+| Pillar | Skills |
+|--------|--------|
+| mind | study, creativity |
+| body | health, work |
+| soul | relationships, finance |
+
+Unknown / custom skillIds map to mind. Colors: mind `#2F6BFF`, body `#0F9F6E`, soul `#C47A00`.
 
 Stages (fixed, ordered): `research` → `execution` → `review`. New objectives start at research. Cannot jump research → review.
 

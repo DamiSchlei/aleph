@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Field, Input, Textarea } from '@/components/ui/primitives'
+import { Button, Chip, Field, Input, Textarea } from '@/components/ui/primitives'
 import { Sheet } from '@/components/ui/Sheet'
 import { createResult, updateResult } from '@/data/actions'
-import type { Result } from '@/domain/types'
+import { PILLAR_COLOR, PILLAR_ORDER } from '@/domain/pillars'
+import type { Pillar, Result } from '@/domain/types'
 
 export function ResultForm({
   open,
@@ -20,11 +21,13 @@ export function ResultForm({
   const [name, setName] = useState(result?.name ?? initialName ?? '')
   const [why, setWhy] = useState(result?.why ?? '')
   const [targetDate, setTargetDate] = useState(result?.targetDate ?? '')
+  const [pillar, setPillar] = useState<Pillar>(result?.pillar ?? 'mind')
 
   const reset = (next?: Result, seed?: string) => {
     setName(next?.name ?? seed ?? '')
     setWhy(next?.why ?? '')
     setTargetDate(next?.targetDate ?? '')
+    setPillar(next?.pillar ?? 'mind')
   }
 
   const visible = open
@@ -40,12 +43,14 @@ export function ResultForm({
         name: trimmed,
         why: why.trim() || undefined,
         targetDate: targetDate || undefined,
+        pillar,
       })
     } else {
       createResult({
         name: trimmed,
         why: why.trim() || undefined,
         targetDate: targetDate || undefined,
+        pillar,
       })
     }
     reset()
@@ -79,6 +84,20 @@ export function ResultForm({
             placeholder={t('planning.results.namePlaceholder')}
             autoFocus
           />
+        </Field>
+        <Field label={t('pillars.label')}>
+          <div className="flex flex-wrap gap-2">
+            {PILLAR_ORDER.map((id) => (
+              <Chip key={id} active={pillar === id} onClick={() => setPillar(id)} className="min-h-11">
+                <span
+                  aria-hidden
+                  className="mr-1.5 inline-block size-2 rounded-full"
+                  style={{ background: PILLAR_COLOR[id] }}
+                />
+                {t(`pillars.${id}`)}
+              </Chip>
+            ))}
+          </div>
         </Field>
         <Field label={`${t('common.why')} (${t('common.optional')})`}>
           <Textarea

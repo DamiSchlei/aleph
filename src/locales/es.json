@@ -207,6 +207,9 @@
         "body": "Cuerpo con rutina sostenida 8 semanas"
       },
       "objectivesCount": "{{count}} de {{max}} objetivos",
+      "activeObjectives": "{{count}} de {{max}} activos",
+      "completedObjectives": "Completados",
+      "noActiveObjectives": "No hay objetivos activos. Sumá el próximo cuando quieras.",
       "noObjectives": "Todavía no hay objetivos. Sumá el primero.",
       "noTasks": "Todavía sin tareas",
       "progress": "{{done}} de {{total}} tareas",
@@ -237,7 +240,7 @@
     },
     "objectives": {
       "new": "Sumar objetivo",
-      "limitReached": "Este resultado ya tiene 4 objetivos. Archivá uno o creá otro resultado.",
+      "limitReached": "Este resultado ya tiene 4 objetivos activos. Marcá uno como listo o archivá uno para liberar un lugar.",
       "createTitle": "Nuevo objetivo",
       "editTitle": "Editar objetivo",
       "namePlaceholder": "¿Qué tiene que pasar para llegar al resultado?",
@@ -594,7 +597,16 @@
     "completedTasksTitle": "Tareas completas",
     "completedCount": "{{n}} tareas realizadas",
     "createTask": "Crear tarea",
-    "statusLabel": "Estado"
+    "statusLabel": "Estado",
+    "completedCtaTitle": "Objetivo listo. Liberaste un lugar en este resultado.",
+    "newObjective": "Nuevo objetivo…",
+    "backToResult": "Volver al resultado"
+  },
+  "pillars": {
+    "label": "Pilar",
+    "mind": "Mente",
+    "body": "Cuerpo",
+    "soul": "Alma"
   },
   "account": {
     "menuTitle": "Cuenta",

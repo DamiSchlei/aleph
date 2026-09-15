@@ -1,5 +1,8 @@
 export type Locale = 'en' | 'es'
 
+/** Dominant life pillar for a Result. Groups skills; does not replace them. */
+export type Pillar = 'mind' | 'body' | 'soul'
+
 export type StageId = 'research' | 'execution' | 'review'
 
 export type Difficulty = 'low' | 'medium' | 'high'
@@ -60,6 +63,8 @@ export interface Result {
   name: string
   why?: string
   skillId?: string
+  /** Dominant pillar. Required after storage normalize. */
+  pillar: Pillar
   targetDate?: string
   importance: number
   status: ResultStatus

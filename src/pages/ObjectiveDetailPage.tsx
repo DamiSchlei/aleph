@@ -10,7 +10,7 @@ import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { useTaskActions } from '@/components/task/useTaskActions'
 import { Button, Card, Chip, EmptyState, Page, ProgressBar, cx } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
-import { archiveObjective, updateObjective } from '@/data/actions'
+import { archiveObjective, setObjectiveStatus } from '@/data/actions'
 import {
   deriveObjectiveStage,
   objectiveById,
@@ -21,6 +21,7 @@ import {
 import { useAleph } from '@/data/store'
 import { isTaskDone } from '@/domain/economy'
 import { toDayKey } from '@/domain/dates'
+import { canAddObjective } from '@/domain/limits'
 import { formatDate } from '@/i18n/format'
 import type { ObjectiveStatus, Task } from '@/domain/types'
 
@@ -38,8 +39,10 @@ export function ObjectiveDetailPage() {
   const actions = useTaskActions()
   const [edit, setEdit] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [creatingObjective, setCreatingObjective] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | undefined>()
   const [archiveOpen, setArchiveOpen] = useState(false)
+  const canAddNext = objective ? canAddObjective(state.objectives, objective.resultId) : false
 
   const all = useMemo(
     () => (objective ? tasksOfObjective(state, objective.id) : []),
@@ -125,7 +128,7 @@ export function ObjectiveDetailPage() {
             <Chip
               key={status}
               active={objective.status === status}
-              onClick={() => updateObjective(objective.id, { status })}
+              onClick={() => setObjectiveStatus(objective.id, status)}
               className="min-h-11"
             >
               {t(`objectiveStatus.${status}`)}
@@ -133,6 +136,26 @@ export function ObjectiveDetailPage() {
           ))}
         </div>
       </section>
+
+      {objective.status === 'done' ? (
+        <Card className="space-y-3 rounded-[20px]">
+          <p className="text-[15px] text-ink-3">{t('objectiveDetail.completedCtaTitle')}</p>
+          <div className="flex flex-col gap-2">
+            {canAddNext ? (
+              <Button className="min-h-11 w-full" onClick={() => setCreatingObjective(true)}>
+                {t('objectiveDetail.newObjective')}
+              </Button>
+            ) : null}
+            <Button
+              variant="secondary"
+              className="min-h-11 w-full"
+              onClick={() => navigate(`/planning/results/${objective.resultId}`)}
+            >
+              {t('objectiveDetail.backToResult')}
+            </Button>
+          </div>
+        </Card>
+      ) : null}
 
       <div className="flex gap-2">
         <Button variant="secondary" className="min-h-11 flex-1" onClick={() => setEdit(true)}>
@@ -211,6 +234,11 @@ export function ObjectiveDetailPage() {
         resultId={objective.resultId}
         objective={objective}
         onClose={() => setEdit(false)}
+      />
+      <ObjectiveFormSheet
+        open={creatingObjective}
+        resultId={objective.resultId}
+        onClose={() => setCreatingObjective(false)}
       />
       <TaskFormSheet
         open={creating}

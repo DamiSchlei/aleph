@@ -24,6 +24,7 @@ function result(partial: Partial<Result> & Pick<Result, 'id' | 'name'>): Result 
   return {
     importance: 0,
     status: 'active',
+    pillar: 'mind',
     ...partial,
   }
 }
@@ -127,11 +128,12 @@ describe('attending results and plan total', () => {
     expect(pickerResults(s).map((r) => r.id)).toEqual(['a', 'p'])
   })
 
-  it('hides archived objectives from pickers', () => {
+  it('hides archived and done objectives from pickers', () => {
     const s = state({
       results: [result({ id: 'r', name: 'R' })],
       objectives: [
         objective({ id: 'live', resultId: 'r', name: 'Live' }),
+        objective({ id: 'done', resultId: 'r', name: 'Done', status: 'done' }),
         objective({ id: 'gone', resultId: 'r', name: 'Gone', archivedAt: '2026-01-01T00:00:00.000Z' }),
       ],
     })

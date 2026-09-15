@@ -1,5 +1,6 @@
 import { DEFAULT_SKILLS, initialState, newCharacter, STATE_VERSION } from './seed'
 import { MIN_ESTIMATED_HOURS } from '@/domain/limits'
+import { skillIdToPillar } from '@/domain/pillars'
 import { xpToNextForLevel } from '@/domain/economy'
 import type { AlephState, Locale, Objective, Result, Task } from '@/domain/types'
 
@@ -37,6 +38,7 @@ function adoptLegacy(raw: LegacyState): Partial<AlephState> {
         name,
         why: legacy.why,
         skillId: legacy.skillId,
+        pillar: skillIdToPillar(legacy.skillId),
         importance: results.length,
         status: 'active',
       })
@@ -126,11 +128,16 @@ export function normalize(input: unknown): AlephState {
     rewardApplied: t.rewardApplied ?? false,
   }))
 
+  const results = (raw.results ?? adopted.results ?? []).map((result) => ({
+    ...result,
+    pillar: result.pillar ?? skillIdToPillar(result.skillId),
+  }))
+
   return {
     version: STATE_VERSION,
     character,
     skills,
-    results: raw.results ?? adopted.results ?? [],
+    results,
     objectives: raw.objectives ?? adopted.objectives ?? [],
     tasks,
     comments: raw.comments ?? [],

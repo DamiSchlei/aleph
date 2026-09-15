@@ -1,6 +1,12 @@
 import { getState, newId, setState } from './store'
 import { addCharacterXp, addSkillXp, computeReward, isTaskDone, shouldPayReward, type Reward } from '@/domain/economy'
-import { MAX_OBJECTIVES_PER_RESULT, MAX_SERIES_BLOCKS, activeObjectivesOfResult, MIN_ESTIMATED_HOURS } from '@/domain/limits'
+import {
+  MAX_SERIES_BLOCKS,
+  activeObjectivesOfResult,
+  canAddObjective,
+  MIN_ESTIMATED_HOURS,
+} from '@/domain/limits'
+import { skillIdToPillar } from '@/domain/pillars'
 import { seriesDayKeys, toDayKey } from '@/domain/dates'
 import { taskDayKey } from '@/data/selectors'
 import type {
@@ -11,7 +17,9 @@ import type {
   Difficulty,
   Objective,
   ObjectiveInventory,
+  ObjectiveStatus,
   ParentType,
+  Pillar,
   Result,
   ResultStatus,
   Skill,
@@ -80,16 +88,19 @@ export interface ResultInput {
   name: string
   why?: string
   skillId?: string
+  pillar?: Pillar
   targetDate?: string
 }
 
 export function createResult(input: ResultInput): Result {
   const state = getState()
+  const skillId = input.skillId || undefined
   const result: Result = {
     id: newId('result'),
     name: input.name.trim(),
     why: input.why?.trim() || undefined,
-    skillId: input.skillId || undefined,
+    skillId,
+    pillar: input.pillar ?? skillIdToPillar(skillId),
     targetDate: input.targetDate || undefined,
     importance: state.results.length,
     status: 'active',
@@ -101,7 +112,15 @@ export function createResult(input: ResultInput): Result {
 export function updateResult(id: string, patch: Partial<Omit<Result, 'id'>>): void {
   setState((s) => ({
     ...s,
-    results: s.results.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    results: s.results.map((r) => {
+      if (r.id !== id) return r
+      const next = { ...r, ...patch }
+      // Changing skillId alone must not overwrite an existing pillar.
+      if (patch.pillar === undefined && !r.pillar) {
+        next.pillar = skillIdToPillar(next.skillId)
+      }
+      return next
+    }),
   }))
 }
 
@@ -156,8 +175,8 @@ export class ObjectiveLimitError extends Error {
 
 export function createObjective(input: ObjectiveInput): Objective {
   const state = getState()
+  if (!canAddObjective(state.objectives, input.resultId)) throw new ObjectiveLimitError()
   const siblings = activeObjectivesOfResult(state.objectives, input.resultId)
-  if (siblings.length >= MAX_OBJECTIVES_PER_RESULT) throw new ObjectiveLimitError()
 
   const objective: Objective = {
     id: newId('objective'),
@@ -183,6 +202,15 @@ export function updateObjective(id: string, patch: Partial<Omit<Objective, 'id' 
     ...s,
     objectives: s.objectives.map((o) => (o.id === id ? { ...o, ...patch } : o)),
   }))
+}
+
+/**
+ * Single path for ObjectiveDetail status changes.
+ * Marking done does not pay XP and does not auto-archive.
+ * Flipping done → in_progress occupies a quota slot again (create still enforces the cap).
+ */
+export function setObjectiveStatus(id: string, status: ObjectiveStatus): void {
+  updateObjective(id, { status })
 }
 
 export function updateObjectiveInventory(
@@ -219,15 +247,19 @@ export function archiveObjective(id: string): void {
   }))
 }
 
+/** Reorders active objectives only; completed / archived keep their importance. */
 export function reorderObjectives(resultId: string, orderedIds: string[]): void {
-  setState((s) => ({
-    ...s,
-    objectives: s.objectives.map((o) => {
-      if (o.resultId !== resultId) return o
-      const index = orderedIds.indexOf(o.id)
-      return index >= 0 ? { ...o, importance: index + 1 } : o
-    }),
-  }))
+  setState((s) => {
+    const activeIds = new Set(activeObjectivesOfResult(s.objectives, resultId).map((o) => o.id))
+    return {
+      ...s,
+      objectives: s.objectives.map((o) => {
+        if (o.resultId !== resultId || !activeIds.has(o.id)) return o
+        const index = orderedIds.indexOf(o.id)
+        return index >= 0 ? { ...o, importance: index + 1 } : o
+      }),
+    }
+  })
 }
 
 // -------------------------------------------------------------------- tasks

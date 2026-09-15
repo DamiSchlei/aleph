@@ -3,12 +3,15 @@ import {
   captureLooseTask,
   closeTask,
   completeTask,
+  createObjective,
   createResult,
   createTask,
   createTaskSeries,
   executeTask,
   executeTaskWithNote,
   reopenTask,
+  setObjectiveStatus,
+  updateResult,
 } from './actions'
 import { getState, setState } from './store'
 import { initialState } from './seed'
@@ -185,5 +188,56 @@ describe('closeTask', () => {
     expect(getState().character.xp).toBe(xpAfterPay)
     expect(getState().character.money).toBe(moneyAfterPay)
     expect(getState().comments.filter((c) => c.parentId === created.id)).toHaveLength(2)
+  })
+})
+
+describe('result pillar', () => {
+  it('defaults createResult pillar to mind and derives from skillId', () => {
+    const plain = createResult({ name: 'Sin skill' })
+    expect(plain.pillar).toBe('mind')
+    const body = createResult({ name: 'Cuerpo', skillId: 'health' })
+    expect(body.pillar).toBe('body')
+    const explicit = createResult({ name: 'Alma', skillId: 'study', pillar: 'soul' })
+    expect(explicit.pillar).toBe('soul')
+  })
+
+  it('does not overwrite an existing pillar when only skillId changes', () => {
+    const created = createResult({ name: 'Empresa', pillar: 'soul' })
+    updateResult(created.id, { skillId: 'health' })
+    expect(getState().results.find((r) => r.id === created.id)?.pillar).toBe('soul')
+  })
+})
+
+describe('objective quota and status', () => {
+  it('frees a quota slot when an objective is marked done', () => {
+    const result = createResult({ name: 'Cuota' })
+    for (let i = 0; i < 4; i++) {
+      createObjective({ resultId: result.id, name: `O${i}` })
+    }
+    expect(() => createObjective({ resultId: result.id, name: 'Extra' })).toThrow(
+      'MAX_OBJECTIVES_PER_RESULT',
+    )
+
+    const fourth = getState().objectives.find((o) => o.name === 'O3')!
+    setObjectiveStatus(fourth.id, 'done')
+    expect(createObjective({ resultId: result.id, name: 'Nuevo' }).name).toBe('Nuevo')
+  })
+
+  it('marking done does not change character XP, skill XP, or money', () => {
+    const result = createResult({ name: 'Empresa' })
+    const objective = createObjective({ resultId: result.id, name: 'Cerrar' })
+    const before = getState()
+    const xp = before.character.xp
+    const money = before.character.money
+    const skillXp = before.skills.map((s) => s.xp)
+
+    setObjectiveStatus(objective.id, 'done')
+
+    const after = getState()
+    expect(after.character.xp).toBe(xp)
+    expect(after.character.money).toBe(money)
+    expect(after.skills.map((s) => s.xp)).toEqual(skillXp)
+    expect(after.objectives.find((o) => o.id === objective.id)?.archivedAt).toBeUndefined()
+    expect(after.objectives.find((o) => o.id === objective.id)?.status).toBe('done')
   })
 })

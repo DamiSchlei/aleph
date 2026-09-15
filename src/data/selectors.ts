@@ -9,6 +9,12 @@ import {
   toDayKey,
   weekDayKeys,
 } from '@/domain/dates'
+import {
+  activeObjectivesOfResult as activeObjectivesFromLimits,
+  completedObjectivesOfResult as completedObjectivesFromLimits,
+  livingObjectivesOfResult as livingObjectivesFromLimits,
+} from '@/domain/limits'
+import { pillarOfResult } from '@/domain/pillars'
 import { STAGE_ORDER } from '@/domain/stage'
 import type {
   AlephState,
@@ -16,6 +22,7 @@ import type {
   Difficulty,
   Objective,
   ParentType,
+  Pillar,
   Result,
   ResultProgress,
   ResultStatus,
@@ -52,15 +59,33 @@ export function objectiveById(state: AlephState, id?: string): Objective | undef
   return id ? state.objectives.find((o) => o.id === id) : undefined
 }
 
+/** Living objectives (!archivedAt), including done — progress / journal. */
 export function objectivesOfResult(state: AlephState, resultId: string): Objective[] {
-  return state.objectives
-    .filter((o) => o.resultId === resultId && !o.archivedAt)
-    .sort((a, b) => a.importance - b.importance)
+  return livingObjectivesFromLimits(state.objectives, resultId).sort(
+    (a, b) => a.importance - b.importance,
+  )
 }
 
-/** Live objectives of a result for pickers. Same as objectivesOfResult; archived stay hidden. */
+export function activeObjectivesOfResult(state: AlephState, resultId: string): Objective[] {
+  return activeObjectivesFromLimits(state.objectives, resultId).sort(
+    (a, b) => a.importance - b.importance,
+  )
+}
+
+export function completedObjectivesOfResult(state: AlephState, resultId: string): Objective[] {
+  return completedObjectivesFromLimits(state.objectives, resultId).sort(
+    (a, b) => a.importance - b.importance,
+  )
+}
+
+/** Active only — never offer done objectives when assigning a task. */
 export function pickerObjectives(state: AlephState, resultId: string): Objective[] {
-  return objectivesOfResult(state, resultId)
+  return activeObjectivesOfResult(state, resultId)
+}
+
+export function resultPillar(state: AlephState, resultId: string): Pillar | undefined {
+  const result = resultById(state, resultId)
+  return result ? pillarOfResult(result) : undefined
 }
 
 export function tasksOfObjective(state: AlephState, objectiveId: string, stage?: StageId): Task[] {

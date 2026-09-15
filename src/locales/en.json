@@ -207,6 +207,9 @@
         "body": "A body routine held for 8 weeks"
       },
       "objectivesCount": "{{count}} of {{max}} objectives",
+      "activeObjectives": "{{count}} of {{max}} active",
+      "completedObjectives": "Completed",
+      "noActiveObjectives": "No active objectives. Add the next one when you are ready.",
       "noObjectives": "There are no objectives yet. Add the first one.",
       "noTasks": "No tasks yet",
       "progress": "{{done}} of {{total}} tasks",
@@ -237,7 +240,7 @@
     },
     "objectives": {
       "new": "Add objective",
-      "limitReached": "This result already has 4 objectives. Archive one or create another result.",
+      "limitReached": "This result already has 4 active objectives. Mark one done or archive one to free a slot.",
       "createTitle": "New objective",
       "editTitle": "Edit objective",
       "namePlaceholder": "What has to happen for this result?",
@@ -594,7 +597,16 @@
     "completedTasksTitle": "Completed tasks",
     "completedCount": "{{n}} tasks done",
     "createTask": "Create task",
-    "statusLabel": "Status"
+    "statusLabel": "Status",
+    "completedCtaTitle": "Objective done. You freed a slot on this result.",
+    "newObjective": "New objective…",
+    "backToResult": "Back to result"
+  },
+  "pillars": {
+    "label": "Pillar",
+    "mind": "Mind",
+    "body": "Body",
+    "soul": "Soul"
   },
   "account": {
     "menuTitle": "Account",
