@@ -150,8 +150,8 @@
     "dayBarOverflow": "Today's tasks add up to {{count}} h. The day has 24.",
     "literature": "Literature",
     "literatureEmpty": "Literature is what remains written after the step.",
-    "literatureDone": "What remains of this?",
-    "literatureBlocked": "What held you back?",
+    "literatureDone": "What did you actually do?",
+    "literatureBlocked": "What blocked this step?",
     "skillsTitle": "Skills",
     "newSkill": "New skill",
     "newSkillName": "Skill name",
@@ -207,7 +207,7 @@
         "body": "A body routine held for 8 weeks"
       },
       "objectivesCount": "{{count}} of {{max}} objectives",
-      "activeObjectives": "{{count}} of {{max}} active",
+      "activeObjectives": "Active ({{count}} of {{max}})",
       "completedObjectives": "Completed",
       "noActiveObjectives": "No active objectives. Add the next one when you are ready.",
       "noObjectives": "There are no objectives yet. Add the first one.",
@@ -236,11 +236,13 @@
         "overdue": "You have {{count}} overdue task(s).",
         "next": "Next step: {{title}}",
         "allClear": "No pending steps. A good moment to add the next one."
-      }
+      },
+      "completedEmpty": "No completed objectives yet.",
+      "pillar": "Pillar"
     },
     "objectives": {
       "new": "Add objective",
-      "limitReached": "This result already has 4 active objectives. Mark one done or archive one to free a slot.",
+      "limitReached": "This result already has 4 active objectives. Complete or archive one to add another.",
       "createTitle": "New objective",
       "editTitle": "Edit objective",
       "namePlaceholder": "What has to happen for this result?",
@@ -271,7 +273,10 @@
       "stageAdvance": "Advance stage",
       "stageCannotSkip": "Stages run in order. You cannot skip from research to conclusion.",
       "tasksInStage": "Tasks in this stage",
-      "stageEmpty": "No tasks in this stage yet."
+      "stageEmpty": "No tasks in this stage yet.",
+      "completedCtaTitle": "Objective completed. This result has a free slot.",
+      "completedCtaNew": "New objective in this result",
+      "completedCtaBack": "Back to result"
     },
     "tasks": {
       "new": "+ Task",
@@ -310,7 +315,7 @@
       "complete": "Complete",
       "closeTitle": "Close this step",
       "closeHours": "Actual hours",
-      "closeComment": "What remains of this?",
+      "closeComment": "What did you actually do?",
       "backToResearch": "Back to research",
       "executeNoNote": "No note for this step. Execute anyway?",
       "deleteConfirm": "Delete this task? It earns no XP and can't be undone.",
@@ -389,14 +394,22 @@
     "title": "Journal",
     "add": "Add comment",
     "placeholder": "What happened?",
-    "workingPlaceholder": "What happened? What is holding you back?",
+    "workingPlaceholder": "What did you actually do?",
     "empty": "Nothing written yet.",
     "origin": {
       "result": "Result",
       "objective": "Objective",
-      "task": "Task"
+      "task": "Task",
+      "character": "Journal"
     },
-    "post": "Post"
+    "post": "Post",
+    "workPlaceholder": "What did you actually do?",
+    "objectivePlaceholder": "What moved in this objective?",
+    "characterTitle": "Journal",
+    "characterPlaceholder": "What is this leaving you, across the work?",
+    "characterEmpty": "Nothing written yet.",
+    "bubbleOpen": "Open journal",
+    "bubbleHide": "Hide journal"
   },
   "relations": {
     "title": "Relations",

@@ -139,11 +139,11 @@ export function ObjectiveDetailPage() {
 
       {objective.status === 'done' ? (
         <Card className="space-y-3 rounded-[20px]">
-          <p className="text-[15px] text-ink-3">{t('objectiveDetail.completedCtaTitle')}</p>
+          <p className="text-[15px] text-ink-3">{t('planning.objectives.completedCtaTitle')}</p>
           <div className="flex flex-col gap-2">
             {canAddNext ? (
               <Button className="min-h-11 w-full" onClick={() => setCreatingObjective(true)}>
-                {t('objectiveDetail.newObjective')}
+                {t('planning.objectives.completedCtaNew')}
               </Button>
             ) : null}
             <Button
@@ -151,7 +151,7 @@ export function ObjectiveDetailPage() {
               className="min-h-11 w-full"
               onClick={() => navigate(`/planning/results/${objective.resultId}`)}
             >
-              {t('objectiveDetail.backToResult')}
+              {t('planning.objectives.completedCtaBack')}
             </Button>
           </div>
         </Card>
@@ -223,7 +223,7 @@ export function ObjectiveDetailPage() {
       <JournalThread
         parentType="objective"
         parentId={objective.id}
-        placeholder={t('journal.workingPlaceholder')}
+        placeholder={t('journal.objectivePlaceholder')}
         chronological
       />
       {completionDialog}

@@ -150,8 +150,8 @@
     "dayBarOverflow": "Las tareas de hoy suman {{count}} h. El día tiene 24.",
     "literature": "Literatura",
     "literatureEmpty": "La literatura es lo que queda escrito después del paso.",
-    "literatureDone": "¿Qué quedó de esto?",
-    "literatureBlocked": "¿Qué te detuvo?",
+    "literatureDone": "¿Qué hiciste de verdad?",
+    "literatureBlocked": "¿Qué trabó este paso?",
     "skillsTitle": "Habilidades",
     "newSkill": "Nueva habilidad",
     "newSkillName": "Nombre de la habilidad",
@@ -207,7 +207,7 @@
         "body": "Cuerpo con rutina sostenida 8 semanas"
       },
       "objectivesCount": "{{count}} de {{max}} objetivos",
-      "activeObjectives": "{{count}} de {{max}} activos",
+      "activeObjectives": "Activos ({{count}} de {{max}})",
       "completedObjectives": "Completados",
       "noActiveObjectives": "No hay objetivos activos. Sumá el próximo cuando quieras.",
       "noObjectives": "Todavía no hay objetivos. Sumá el primero.",
@@ -236,11 +236,13 @@
         "overdue": "Tenés {{count}} tarea(s) vencida(s).",
         "next": "Próximo paso: {{title}}",
         "allClear": "Sin pasos pendientes. Buen momento para sumar el próximo."
-      }
+      },
+      "completedEmpty": "Todavía no hay objetivos completados.",
+      "pillar": "Pilar"
     },
     "objectives": {
       "new": "Sumar objetivo",
-      "limitReached": "Este resultado ya tiene 4 objetivos activos. Marcá uno como listo o archivá uno para liberar un lugar.",
+      "limitReached": "Este resultado ya tiene 4 objetivos activos. Completá o archivá uno para sumar otro.",
       "createTitle": "Nuevo objetivo",
       "editTitle": "Editar objetivo",
       "namePlaceholder": "¿Qué tiene que pasar para llegar al resultado?",
@@ -271,7 +273,10 @@
       "stageAdvance": "Avanzar de etapa",
       "stageCannotSkip": "Las etapas van en orden. No podés saltar de investigación a conclusión.",
       "tasksInStage": "Tareas de esta etapa",
-      "stageEmpty": "Todavía no hay tareas en esta etapa."
+      "stageEmpty": "Todavía no hay tareas en esta etapa.",
+      "completedCtaTitle": "Objetivo completado. Este resultado tiene un lugar libre.",
+      "completedCtaNew": "Nuevo objetivo en este resultado",
+      "completedCtaBack": "Volver al resultado"
     },
     "tasks": {
       "new": "+ Tarea",
@@ -310,7 +315,7 @@
       "complete": "Completar",
       "closeTitle": "Cerrar el paso",
       "closeHours": "Horas reales",
-      "closeComment": "¿Qué quedó de esto?",
+      "closeComment": "¿Qué hiciste de verdad?",
       "backToResearch": "Volver a investigación",
       "executeNoNote": "No hay nota de este paso. ¿Ejecutar igual?",
       "deleteConfirm": "¿Eliminar esta tarea? No suma XP y no se puede deshacer.",
@@ -389,14 +394,22 @@
     "title": "Bitácora",
     "add": "Agregar comentario",
     "placeholder": "¿Qué pasó?",
-    "workingPlaceholder": "¿Qué pasó? ¿Qué te detiene?",
+    "workingPlaceholder": "¿Qué hiciste de verdad?",
     "empty": "Todavía no escribiste nada.",
     "origin": {
       "result": "Resultado",
       "objective": "Objetivo",
-      "task": "Tarea"
+      "task": "Tarea",
+      "character": "Bitácora"
     },
-    "post": "Publicar"
+    "post": "Publicar",
+    "workPlaceholder": "¿Qué hiciste de verdad?",
+    "objectivePlaceholder": "¿Qué se movió en este objetivo?",
+    "characterTitle": "Bitácora",
+    "characterPlaceholder": "¿Qué te está dejando esto, entre las empresas?",
+    "characterEmpty": "Todavía no escribiste nada.",
+    "bubbleOpen": "Abrir bitácora",
+    "bubbleHide": "Esconder bitácora"
   },
   "relations": {
     "title": "Relaciones",

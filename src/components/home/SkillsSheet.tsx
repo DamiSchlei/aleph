@@ -60,7 +60,6 @@ export function SkillsSheet({ open, onClose }: { open: boolean; onClose: () => v
       <div className="flex flex-col gap-5">
         {PILLAR_ORDER.map((pillar) => {
           const list = byPillar[pillar]
-          if (list.length === 0) return null
           return (
             <section key={pillar}>
               <p className="mb-2 flex items-center gap-2 text-[13px] font-semibold tracking-[0.14em] text-ink-3 uppercase">

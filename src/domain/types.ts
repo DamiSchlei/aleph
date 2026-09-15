@@ -13,7 +13,7 @@ export type ObjectiveStatus = 'pending' | 'in_progress' | 'done' | 'blocked'
 
 export type TaskStatus = 'pending' | 'in_progress' | 'done_on_time' | 'done_late' | 'cancelled'
 
-export type ParentType = 'result' | 'objective' | 'task'
+export type ParentType = 'result' | 'objective' | 'task' | 'character'
 
 export type RelationKind = 'depends_on' | 'feeds' | 'parallel'
 
@@ -43,6 +43,8 @@ export interface Character {
   dailyHourCap?: number
   /** True after the first-run onboarding finishes. */
   onboarded?: boolean
+  /** When true, the character journal bubble stays as a pip. */
+  journalBubbleHidden?: boolean
 }
 
 export interface Skill {

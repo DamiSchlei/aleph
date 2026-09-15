@@ -50,6 +50,11 @@ export function setDailyHourCap(hours: number): void {
   setState((s) => ({ ...s, character: { ...s.character, dailyHourCap: hours } }))
 }
 
+export function setJournalBubbleHidden(hidden: boolean): void {
+  setState((s) => ({ ...s, character: { ...s.character, journalBubbleHidden: hidden } }))
+}
+
+
 
 /**
  * Basic avatar layers (skin, hair, eyes, outfit, accessory, background) are all

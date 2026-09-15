@@ -11,6 +11,7 @@ import {
   executeTaskWithNote,
   reopenTask,
   setObjectiveStatus,
+  setJournalBubbleHidden,
   updateResult,
 } from './actions'
 import { getState, setState } from './store'
@@ -197,6 +198,8 @@ describe('result pillar', () => {
     expect(plain.pillar).toBe('mind')
     const body = createResult({ name: 'Cuerpo', skillId: 'health' })
     expect(body.pillar).toBe('body')
+    const soul = createResult({ name: 'Finanzas', skillId: 'finance' })
+    expect(soul.pillar).toBe('soul')
     const explicit = createResult({ name: 'Alma', skillId: 'study', pillar: 'soul' })
     expect(explicit.pillar).toBe('soul')
   })
@@ -241,3 +244,13 @@ describe('objective quota and status', () => {
     expect(after.objectives.find((o) => o.id === objective.id)?.status).toBe('done')
   })
 })
+
+describe('character journal bubble', () => {
+  it('persists journalBubbleHidden on the character', () => {
+    setJournalBubbleHidden(true)
+    expect(getState().character.journalBubbleHidden).toBe(true)
+    setJournalBubbleHidden(false)
+    expect(getState().character.journalBubbleHidden).toBe(false)
+  })
+})
+

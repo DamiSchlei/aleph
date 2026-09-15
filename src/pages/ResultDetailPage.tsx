@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { JournalThread } from '@/components/journal/JournalThread'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
 import { Button, Card, EmptyState, Page, ProgressBar, SectionTitle } from '@/components/ui/primitives'
@@ -192,9 +191,11 @@ export function ResultDetailPage() {
         )}
       </div>
 
-      {completed.length > 0 ? (
-        <div>
-          <SectionTitle>{t('planning.results.completedObjectives')}</SectionTitle>
+      <div>
+        <SectionTitle>{t('planning.results.completedObjectives')}</SectionTitle>
+        {completed.length === 0 ? (
+          <EmptyState>{t('planning.results.completedEmpty')}</EmptyState>
+        ) : (
           <ul className="flex flex-col gap-2">
             {completed.map((objective) => (
               <li key={objective.id}>
@@ -202,10 +203,8 @@ export function ResultDetailPage() {
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
-
-      <JournalThread parentType="result" parentId={result.id} />
+        )}
+      </div>
 
       <ResultFormSheet open={edit} result={result} onClose={() => setEdit(false)} />
       <ObjectiveFormSheet
