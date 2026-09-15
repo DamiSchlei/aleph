@@ -93,7 +93,6 @@ function DayItem({ dayKey, localeTag }: { dayKey: string; localeTag: string }) {
   const todayKey = toDayKey(new Date())
   const isToday = dayKey === todayKey
   const isPast = dayKey < todayKey
-  const isFuture = dayKey > todayKey
   const free = freeHoursForDay(cap, planned)
   const lost = lostHoursForDay(cap, closed)
   const over = planned > cap
@@ -127,7 +126,7 @@ function DayItem({ dayKey, localeTag }: { dayKey: string; localeTag: string }) {
     if (outcome?.paid) celebrate(outcome)
   }
 
-  const showWorkload = !isFuture || planned > 0
+  const showWorkload = planned > 0
 
   return (
     <section id={`day-feed-${dayKey}`} data-day-key={dayKey} className="flex scroll-mt-3 flex-col gap-3">
@@ -154,14 +153,14 @@ function DayItem({ dayKey, localeTag }: { dayKey: string; localeTag: string }) {
             </p>
           ) : null}
         </div>
-        <div className="mt-2 h-1 overflow-hidden rounded-full bg-subtle">
-          {!empty ? (
+        {empty ? null : (
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-subtle">
             <div
               className={cx('h-full rounded-full transition-[width]', over ? 'bg-amber' : 'bg-accent')}
               style={{ width: `${Math.min(100, (planned / Math.max(cap, 0.1)) * 100)}%` }}
             />
-          ) : null}
-        </div>
+          </div>
+        )}
         {over ? (
           <p className="mt-1.5 text-[12px] text-amber">
             {t('home.overCap', {
