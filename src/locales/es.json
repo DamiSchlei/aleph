@@ -7,7 +7,8 @@
   "nav": {
     "home": "Inicio",
     "planning": "Planificación",
-    "tracking": "Seguimiento"
+    "tracking": "Seguimiento",
+    "planShort": "Plan"
   },
   "common": {
     "save": "Guardar",
@@ -572,7 +573,8 @@
     "boardTitle": "Vista Semanal",
     "unassigned": "Tareas por asignar",
     "addToBlock": "+ Sumar tarea al bloque",
-    "back": "Volver a Planificación"
+    "back": "Volver a Planificación",
+    "dayEmpty": "Nada en este día."
   },
   "inventory": {
     "title": "Inventario / Planilla",

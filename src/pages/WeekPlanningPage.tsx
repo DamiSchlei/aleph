@@ -99,8 +99,8 @@ export function WeekPlanningPage() {
 
         <ul className="space-y-2">
           {dayTasks.length === 0 ? (
-            <li className="rounded-2xl border border-dashed border-line-strong px-3 py-4 text-center text-[13px] text-text-3">
-              {t('week.unassigned')}
+            <li className="rounded-2xl border border-dashed border-line px-3 py-4 text-center text-[13px] text-text-3">
+              {t('week.dayEmpty')}
             </li>
           ) : (
             dayTasks.map((task) => {
