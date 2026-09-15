@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '@/components/character/Avatar'
 import { AccountMenu } from '@/components/nav/AccountMenu'
@@ -7,16 +6,12 @@ import { useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { cx } from '@/components/ui/primitives'
 
-/** Top chrome: avatar opens AccountMenu; optional Inicio / Plan; optional title. */
+/** Top chrome: avatar opens AccountMenu; optional title. */
 export function AppHeader({
   title,
-  showHome = false,
-  showPlanning = false,
   className,
 }: {
   title?: ReactNode
-  showHome?: boolean
-  showPlanning?: boolean
   className?: string
 }) {
   const { t } = useTranslation()
@@ -42,22 +37,6 @@ export function AppHeader({
             />
           </span>
         </button>
-        {showHome ? (
-          <Link
-            to="/"
-            className="flex min-h-11 shrink-0 items-center px-1 text-[15px] font-medium text-accent"
-          >
-            {t('nav.home')}
-          </Link>
-        ) : null}
-        {showPlanning ? (
-          <Link
-            to="/planning"
-            className="flex min-h-11 shrink-0 items-center px-1 text-[15px] font-medium text-accent"
-          >
-            {t('nav.planShort')}
-          </Link>
-        ) : null}
         {title ? (
           <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">{title}</div>
         ) : (

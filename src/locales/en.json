@@ -5,6 +5,7 @@
     "tagline": "Your work, one character, three screens."
   },
   "nav": {
+    "bar": "Views",
     "home": "Home",
     "planning": "Planning",
     "tracking": "Tracking",

@@ -5,6 +5,7 @@
     "tagline": "Tu trabajo, un personaje, tres pantallas."
   },
   "nav": {
+    "bar": "Vistas",
     "home": "Inicio",
     "planning": "Planificación",
     "tracking": "Seguimiento",

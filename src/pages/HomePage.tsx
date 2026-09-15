@@ -146,7 +146,6 @@ export function HomePage() {
   return (
     <div className="flex flex-col">
       <AppHeader
-        showPlanning
         title={
           <div className="flex w-full flex-col gap-2">
             <div className="min-w-0">
