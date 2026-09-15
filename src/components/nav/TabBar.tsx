@@ -33,6 +33,7 @@ export function TabBar() {
             <NavLink
               key={tab.id}
               to={tab.to}
+              end={tab.to === '/'}
               aria-label={t(tab.labelKey)}
               aria-current={active ? 'page' : undefined}
               className={cx(
