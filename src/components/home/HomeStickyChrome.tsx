@@ -78,18 +78,20 @@ export function HomeStickyChrome({
           parseLocal(activeDay),
         )
       : granularity === 'week'
-        ? formatWeekHeading(activeDay, locale)
+        ? t('home.weekNumber', { n: isoWeekNumber(activeDay) })
         : weekdayDate(activeDay, localeTag)
 
   const line2 =
     granularity === 'day'
       ? longDateLine(activeDay, localeTag, t('home.weekNumber', { n: isoWeekNumber(activeDay) }))
-      : null
+      : granularity === 'week'
+        ? formatWeekHeading(activeDay, locale).replace(/^[^·]+·\s*/, '')
+        : null
 
   return (
     <div
       ref={ref}
-      className="sticky z-20 -mx-4 border-b border-line bg-bg/90 px-4 pt-1 pb-3 backdrop-blur-md"
+      className="sticky z-20 -mx-4 border-b border-line bg-bg/95 px-4 pt-1 pb-3 backdrop-blur-md"
       style={{ top: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="flex items-start gap-2">
