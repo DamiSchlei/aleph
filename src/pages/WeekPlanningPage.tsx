@@ -6,10 +6,14 @@ import { Button, Card, cx } from '@/components/ui/primitives'
 import { updateTask } from '@/data/actions'
 import { useAleph } from '@/data/store'
 import { isTaskDone } from '@/domain/economy'
-import { addDays, startOfWeek, toDayKey, weekDayKeys } from '@/domain/dates'
-import { formatDate, formatHours } from '@/i18n/format'
-
-const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'] as const
+import {
+  addDays,
+  formatWeekHeading,
+  startOfWeek,
+  toDayKey,
+  weekDayKeys,
+} from '@/domain/dates'
+import { formatHours } from '@/i18n/format'
 
 function blockWindow(hours: number): { start: string; end: string } {
   const startHour = 9
@@ -19,21 +23,39 @@ function blockWindow(hours: number): { start: string; end: string } {
   return { start, end }
 }
 
+function weekdayShort(dayKey: string, localeTag: string): string {
+  const date = new Date(`${dayKey}T12:00:00`)
+  return new Intl.DateTimeFormat(localeTag, { weekday: 'short' }).format(date)
+}
+
 export function WeekPlanningPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const state = useAleph()
   const locale = state.character.locale
+  const localeTag = i18n.language?.startsWith('en') ? 'en-US' : 'es-AR'
   const today = toDayKey(new Date())
-  const weekStart = startOfWeek(new Date())
+  const [anchorDay, setAnchorDay] = useState(today)
+  const weekStart = startOfWeek(anchorDay)
+  const weekStartKey = toDayKey(weekStart)
   const days = weekDayKeys(weekStart)
   const [activeDay, setActiveDay] = useState(
-    days.includes(today) ? today : days[0] ?? today,
+    days.includes(today) ? today : (days[0] ?? today),
   )
 
-  const rangeLabel = useMemo(() => {
-    const end = addDays(weekStart, 6)
-    return `${formatDate(weekStart, locale)} – ${formatDate(end, locale)}`
-  }, [weekStart, locale])
+  const heading = useMemo(
+    () => formatWeekHeading(weekStartKey, locale),
+    [weekStartKey, locale],
+  )
+
+  const shiftWeek = (direction: -1 | 1) => {
+    const next = toDayKey(addDays(anchorDay, direction * 7))
+    setAnchorDay(next)
+    const nextDays = weekDayKeys(next)
+    setActiveDay((prev) => {
+      const weekday = days.indexOf(prev)
+      return nextDays[weekday >= 0 ? weekday : 0] ?? nextDays[0] ?? next
+    })
+  }
 
   const openTasks = state.tasks.filter(
     (task) => !isTaskDone(task.status) && task.status !== 'cancelled',
@@ -72,25 +94,47 @@ export function WeekPlanningPage() {
       />
 
       <Card className="space-y-4 rounded-[20px]">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[16px] font-semibold text-ink">{t('week.boardTitle')}</h2>
-          <p className="text-[12px] text-text-3">{rangeLabel}</p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label={t('home.prevPeriod')}
+            onClick={() => shiftWeek(-1)}
+            className="flex size-11 shrink-0 items-center justify-center rounded-2xl text-[18px] text-ink-2 hover:bg-subtle"
+          >
+            ‹
+          </button>
+          <div className="min-w-0 flex-1 text-center">
+            <h2 className="text-[16px] font-semibold text-ink">{t('week.boardTitle')}</h2>
+            <p className="mt-0.5 text-[12px] text-text-3">{heading}</p>
+          </div>
+          <button
+            type="button"
+            aria-label={t('home.nextPeriod')}
+            onClick={() => shiftWeek(1)}
+            className="flex size-11 shrink-0 items-center justify-center rounded-2xl text-[18px] text-ink-2 hover:bg-subtle"
+          >
+            ›
+          </button>
         </div>
 
         <div className="flex gap-1">
-          {days.map((day, index) => {
+          {days.map((day) => {
             const active = day === activeDay
+            const isToday = day === today
             return (
               <button
                 key={day}
                 type="button"
                 onClick={() => setActiveDay(day)}
                 className={cx(
-                  'flex h-10 flex-1 items-center justify-center rounded-xl text-[13px] font-medium transition-colors',
+                  'flex min-h-11 flex-1 flex-col items-center justify-center rounded-xl text-[12px] font-medium transition-colors',
                   active ? 'bg-subtle text-ink' : 'text-text-3',
                 )}
               >
-                {DAY_LABELS[index]}
+                <span className="uppercase">{weekdayShort(day, localeTag)}</span>
+                <span className={cx('tabular-nums', isToday && 'text-accent')}>
+                  {Number(day.slice(8, 10))}
+                </span>
               </button>
             )
           })}
@@ -109,10 +153,7 @@ export function WeekPlanningPage() {
               return (
                 <li
                   key={task.id}
-                  className={cx(
-                    'rounded-2xl border bg-subtle px-3 py-3',
-                    'border-line',
-                  )}
+                  className={cx('rounded-2xl border bg-subtle px-3 py-3', 'border-line')}
                 >
                   <p className="text-[15px] font-medium text-ink">{task.title}</p>
                   <p className="mt-1 text-[12px] text-text-3">

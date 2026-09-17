@@ -192,7 +192,13 @@
     "weekUsed": "Usaste {{closed}} de {{cap}} h.",
     "weekOpenLeft": " · {{n}} h abiertas.",
     "weekRange": "{{start}}–{{end}} {{month}}",
-    "metaDate": "Meta: {{date}}"
+    "metaDate": "Meta: {{date}}",
+    "weekNumber": "Semana {{n}}",
+    "weekHeading": "Semana {{n}} · {{range}}",
+    "noObjective": "Sin objetivo",
+    "doneWhen": "Hecho cuando: {{text}}",
+    "prevPeriod": "Anterior",
+    "nextPeriod": "Siguiente"
   },
   "planning": {
     "title": "Planificación",
