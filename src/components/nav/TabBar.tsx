@@ -1,6 +1,9 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Avatar } from '@/components/character/Avatar'
 import { cx } from '@/components/ui/primitives'
+import { useAleph } from '@/data/store'
+import { useFeedback } from '@/app/FeedbackProvider'
 
 const TABS = [
   { id: 'planning', to: '/planning', labelKey: 'nav.planning' },
@@ -15,9 +18,17 @@ function tabIsActive(pathname: string, to: string): boolean {
   return false
 }
 
-export function TabBar() {
+export function TabBar({
+  characterOpen = false,
+  onCharacterClick,
+}: {
+  characterOpen?: boolean
+  onCharacterClick?: () => void
+}) {
   const { t } = useTranslation()
   const { pathname } = useLocation()
+  const { character } = useAleph()
+  const { pulseKey } = useFeedback()
   if (pathname.startsWith('/onboarding')) return null
 
   return (
@@ -45,6 +56,25 @@ export function TabBar() {
             </NavLink>
           )
         })}
+        <button
+          type="button"
+          aria-label={t('nav.character')}
+          aria-pressed={characterOpen}
+          onClick={onCharacterClick}
+          className={cx(
+            'flex size-11 items-center justify-center rounded-full',
+            characterOpen ? 'ring-1 ring-accent' : '',
+          )}
+        >
+          <span className="block size-8 overflow-hidden rounded-full ring-1 ring-line">
+            <Avatar
+              avatar={character.avatar}
+              size={32}
+              pulseKey={pulseKey}
+              className="rounded-full"
+            />
+          </span>
+        </button>
       </div>
     </nav>
   )

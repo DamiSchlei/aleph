@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type ReactNode } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DayTaskViewer } from '@/components/home/DayTaskViewer'
 import { WeekStrip } from '@/components/home/WeekStrip'
@@ -165,53 +165,5 @@ export function HomeStickyChrome({
         </div>
       ) : null}
     </div>
-  )
-}
-
-/** Scroll-away Home hero: greeting, name, XP. Avatar opens AccountMenu via parent. */
-export function HomeHero({
-  greeting,
-  name,
-  levelLabel,
-  moneyLabel,
-  xpLabel,
-  xpRatio,
-  avatar,
-}: {
-  greeting: string
-  name: string
-  levelLabel: string
-  moneyLabel: string
-  xpLabel: string
-  xpRatio: number | null
-  avatar: ReactNode
-}) {
-  return (
-    <section className="flex items-start gap-4 pt-2 pb-4">
-      <div className="min-w-0 flex-1">
-        <p className="text-[13px] text-text-3">{greeting}</p>
-        <h1 className="mt-1 font-display text-[32px] leading-none text-ink">{name}</h1>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <span className="inline-flex h-7 items-center rounded-full bg-subtle px-3 text-[12px] text-ink">
-            {levelLabel}
-          </span>
-          <span className="inline-flex h-7 items-center rounded-full bg-subtle px-3 text-[12px] text-ink">
-            {moneyLabel}
-          </span>
-        </div>
-        <div className="mt-3">
-          <div className="h-2 overflow-hidden rounded-full bg-subtle">
-            {xpRatio !== null ? (
-              <div
-                className="h-full rounded-full bg-accent transition-[width]"
-                style={{ width: `${Math.min(100, Math.max(0, xpRatio * 100))}%` }}
-              />
-            ) : null}
-          </div>
-          <p className="mt-1 text-[12px] text-text-3">{xpLabel}</p>
-        </div>
-      </div>
-      <div className="shrink-0">{avatar}</div>
-    </section>
   )
 }
