@@ -88,3 +88,30 @@ export function parseComposerInput(
     difficulty,
   }
 }
+
+/**
+ * Home composer write: keep parsed title / hours / difficulty, but always
+ * schedule on the strip-selected `dayKey` (never mañana / weekday hops).
+ */
+export function composerWriteForDay(
+  raw: string,
+  dayKey: string,
+  hours: number,
+  now: Date = new Date(),
+): {
+  title: string
+  scheduledFor: string
+  dueAt: string
+  estimatedHours: number
+  difficulty: Difficulty
+} {
+  const parsed = parseComposerInput(raw, dayKey, now)
+  const hasHourToken = HOUR_RE.test(raw)
+  return {
+    title: parsed.title,
+    scheduledFor: dayKey,
+    dueAt: dayKey,
+    estimatedHours: hasHourToken ? parsed.estimatedHours : hours,
+    difficulty: parsed.difficulty,
+  }
+}

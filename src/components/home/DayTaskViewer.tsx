@@ -9,7 +9,7 @@ import { freeHoursForDay, plannedHoursForDay } from '@/data/dayLoad'
 import { blockContext, tasksForDay } from '@/data/selectors'
 import { getState, useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
-import { parseLocal, toDayKey } from '@/domain/dates'
+import { parseLocal } from '@/domain/dates'
 import { isTaskDone } from '@/domain/economy'
 import { formatHours } from '@/i18n/format'
 import type { Task } from '@/domain/types'
@@ -17,8 +17,10 @@ import type { Task } from '@/domain/types'
 const DEFAULT_CAP = 5
 const VISIBLE_CAP = 4
 
-function weekdayLong(dayKey: string, localeTag: string): string {
-  return new Intl.DateTimeFormat(localeTag, { weekday: 'long' }).format(parseLocal(dayKey))
+function weekdayDateLabel(dayKey: string, localeTag: string): string {
+  const date = parseLocal(dayKey)
+  const weekday = new Intl.DateTimeFormat(localeTag, { weekday: 'long' }).format(date)
+  return `${weekday} ${date.getDate()}`
 }
 
 /**
@@ -52,10 +54,10 @@ export function DayTaskViewer({
 
   useEffect(() => {
     const hasTasks = tasksForDay(getState(), activeDay).length > 0
-    setOpen(activeDay === toDayKey(new Date()) || hasTasks)
+    setOpen(activeDay === todayKey || hasTasks)
     setExpanded(false)
     setAdding(false)
-  }, [activeDay])
+  }, [activeDay, todayKey])
 
   const toggle = (task: Task) => {
     if (isTaskDone(task.status)) {
@@ -68,7 +70,7 @@ export function DayTaskViewer({
 
   const title = isToday
     ? t('home.viewerTitleToday')
-    : t('home.viewerTitle', { day: weekdayLong(activeDay, localeTag) })
+    : t('home.viewerTitle', { day: weekdayDateLabel(activeDay, localeTag) })
   const collapsedTitle = t('home.viewerTitle', { day: String(tasks.length) })
   const hoursLabel =
     planned > 0
@@ -150,7 +152,7 @@ export function DayTaskViewer({
                   onClick={() => setExpanded(true)}
                   className="min-h-11 self-start px-1 text-[14px] font-medium text-accent"
                 >
-                  {t('home.viewerSeeAll', { n: hiddenCount })}
+                  {t('home.viewerSeeAll', { n: tasks.length })}
                 </button>
               ) : null}
             </>

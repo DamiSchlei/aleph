@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cx } from '@/components/ui/primitives'
 import { captureLooseTask } from '@/data/actions'
-import { parseComposerInput } from '@/domain/composerParse'
+import { composerWriteForDay } from '@/domain/composerParse'
 
 /**
  * Title + hours + submit. Creates a loose task on `dayKey` (not always today).
@@ -16,13 +16,12 @@ export function Composer({ dayKey }: { dayKey: string }) {
   const submit = useCallback(() => {
     const raw = draft.trim()
     if (!raw) return
-    const parsed = parseComposerInput(raw, dayKey)
-    const hasHourToken = /\d+(?:[.,]\d+)?\s*h\b/i.test(raw)
-    captureLooseTask(parsed.title, {
-      scheduledFor: parsed.scheduledFor,
-      dueAt: parsed.scheduledFor,
-      estimatedHours: hasHourToken ? parsed.estimatedHours : hours,
-      difficulty: parsed.difficulty,
+    const write = composerWriteForDay(raw, dayKey, hours)
+    captureLooseTask(write.title, {
+      scheduledFor: write.scheduledFor,
+      dueAt: write.dueAt,
+      estimatedHours: write.estimatedHours,
+      difficulty: write.difficulty,
     })
     setDraft('')
     setHours(1)

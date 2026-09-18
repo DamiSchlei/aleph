@@ -118,6 +118,18 @@ describe('createTaskSeries', () => {
     expect(loose?.seriesId).toBeUndefined()
     expect(loose?.seriesWeekdays).toBeUndefined()
   })
+
+  it('pins a composer capture onto the selected day', () => {
+    const loose = captureLooseTask('Comprar pan', {
+      scheduledFor: '2026-09-20',
+      dueAt: '2026-09-20',
+      estimatedHours: 2,
+    })
+    expect(loose?.scheduledFor).toBe('2026-09-20')
+    expect(loose?.dueAt).toBe('2026-09-20')
+    expect(loose?.estimatedHours).toBe(2)
+    expect(getState().tasks.find((task) => task.id === loose?.id)?.scheduledFor).toBe('2026-09-20')
+  })
 })
 
 describe('executeTaskWithNote', () => {

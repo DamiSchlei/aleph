@@ -144,7 +144,7 @@ function DayItem({
         id={`day-feed-${dayKey}`}
         data-day-key={dayKey}
         aria-hidden
-        className="h-px scroll-mt-3"
+        className="h-2 scroll-mt-3"
         style={{ scrollMarginTop: `${scrollMarginTop + 8}px` }}
       />
     )
