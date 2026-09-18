@@ -105,6 +105,44 @@ export function monthDayKeys(value: Date | string): string[] {
 }
 
 /**
+ * ISO-8601 week number. Week starts Monday.
+ * Week 1 is the week that contains the year's first Thursday.
+ */
+export function isoWeekNumber(value: Date | string): number {
+  const d = startOfDay(value)
+  // Thursday of this week decides the ISO year/week.
+  const thursday = addDays(d, 4 - isoWeekday(d))
+  const yearStart = new Date(thursday.getFullYear(), 0, 1)
+  return Math.floor((thursday.getTime() - yearStart.getTime()) / 86_400_000 / 7) + 1
+}
+
+/** Compact range for a Monday-start week, e.g. "14–20 sep". */
+export function weekRangeLabel(startKey: string, locale: 'en' | 'es'): string {
+  const tag = locale === 'en' ? 'en-US' : 'es-AR'
+  const start = parseLocal(startKey)
+  const end = addDays(start, 6)
+  const startDay = start.getDate()
+  const endDay = end.getDate()
+  if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+    const month = new Intl.DateTimeFormat(tag, { month: 'short' }).format(end)
+    return `${startDay}–${endDay} ${month}`
+  }
+  const startLabel = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'short' }).format(start)
+  const endLabel = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'short' }).format(end)
+  return `${startLabel} – ${endLabel}`
+}
+
+/** "Semana 38 · 14–20 sep 2026" / "Week 38 · 14–20 Sep 2026". */
+export function formatWeekHeading(anchorKey: string, locale: 'en' | 'es'): string {
+  const monday = startOfWeek(anchorKey)
+  const mondayKey = toDayKey(monday)
+  const n = isoWeekNumber(monday)
+  const year = addDays(monday, 6).getFullYear()
+  const range = `${weekRangeLabel(mondayKey, locale)} ${year}`
+  return locale === 'en' ? `Week ${n} · ${range}` : `Semana ${n} · ${range}`
+}
+
+/**
  * Matching weekdays from today through the horizon, never past dates.
  * Caps at `cap` (20 for series). ISO weekdays: 1=Mon … 7=Sun.
  */

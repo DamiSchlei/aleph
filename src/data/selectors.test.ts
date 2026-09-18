@@ -4,6 +4,7 @@ import {
   agendaCalendarDay,
   agendaTasks,
   attendingResults,
+  blockContext,
   dayLoad,
   dueAtForFilter,
   featuredAgendaTask,
@@ -352,6 +353,68 @@ describe('journalFor', () => {
       'across the work',
     ])
     expect(journalFor(s, 'task', 't').map((e) => e.comment.body)).toEqual(['task note'])
+  })
+})
+
+describe('blockContext', () => {
+  it('marks anchored tasks with objective and result skill color', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Literatura', skillId: 'study', pillar: 'mind' })],
+      objectives: [objective({ id: 'o', resultId: 'r', name: 'Capítulo' })],
+      tasks: [
+        task({
+          id: 't',
+          title: 'Escribir',
+          objectiveId: 'o',
+          scheduledStart: '09:00',
+          scheduledEnd: '10:30',
+          doneCheck: 'Borrador listo',
+          estimatedHours: 1.5,
+        }),
+      ],
+    })
+    const ctx = blockContext(s, s.tasks[0])
+    expect(ctx.kind).toBe('anchored')
+    expect(ctx.result?.name).toBe('Literatura')
+    expect(ctx.objective?.name).toBe('Capítulo')
+    expect(ctx.color).toBe('#60a5fa')
+    expect(ctx.timeRange).toEqual({ start: '09:00', end: '10:30' })
+    expect(ctx.doneWhen).toBe('Borrador listo')
+    expect(ctx.hours).toBe(1.5)
+  })
+
+  it('inherits result from objective when task.resultId is missing', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Empresa', skillId: 'work', pillar: 'body' })],
+      objectives: [objective({ id: 'o', resultId: 'r', name: 'MVP' })],
+      tasks: [task({ id: 't', title: 'Ship', objectiveId: 'o' })],
+    })
+    const ctx = blockContext(s, s.tasks[0])
+    expect(ctx.kind).toBe('anchored')
+    expect(ctx.result?.id).toBe('r')
+    expect(ctx.color).toBe('#facc15')
+  })
+
+  it('marks result-only and loose kinds', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Arte', skillId: 'creativity', pillar: 'soul' })],
+      tasks: [
+        task({ id: 't1', title: 'Sketch', resultId: 'r' }),
+        task({ id: 't2', title: 'Loose note' }),
+      ],
+    })
+    expect(blockContext(s, s.tasks[0]).kind).toBe('result-only')
+    expect(blockContext(s, s.tasks[0]).color).toBe('#a78bfa')
+    expect(blockContext(s, s.tasks[1]).kind).toBe('loose')
+    expect(blockContext(s, s.tasks[1]).color).toContain('amber')
+  })
+
+  it('falls back to pillar color when no skill is set', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Sin skill', pillar: 'mind' })],
+      tasks: [task({ id: 't', title: 'Paso', resultId: 'r' })],
+    })
+    expect(blockContext(s, s.tasks[0]).color).toBe('#2F6BFF')
   })
 })
 

@@ -1,35 +1,50 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/nav/AppHeader'
+import { Avatar } from '@/components/character/Avatar'
 import { DayFeed } from '@/components/home/DayFeed'
+import { HomeHero, HomeStickyChrome, type HomeGranularity } from '@/components/home/HomeStickyChrome'
 import { PeriodGrid } from '@/components/home/PeriodGrid'
-import { cx } from '@/components/ui/primitives'
+import { AccountMenu } from '@/components/nav/AccountMenu'
+import { useFeedback } from '@/app/FeedbackProvider'
 import { weekStartKeyOf } from '@/data/dayLoad'
-import { addDays, startOfMonth, toDayKey } from '@/domain/dates'
+import { useAleph } from '@/data/store'
+import { addDays, addMonths, startOfMonth, toDayKey } from '@/domain/dates'
+import { dayMoment } from '@/i18n/dayMoment'
+import { formatMoney } from '@/i18n/format'
 
-const DAY_WINDOW = 14
-
-type Granularity = 'day' | 'week' | 'month'
-
-function buildDays(anchorKey: string): string[] {
-  return Array.from({ length: DAY_WINDOW * 2 + 1 }, (_, i) =>
-    toDayKey(addDays(anchorKey, i - DAY_WINDOW)),
-  )
-}
+const DAY_WINDOW_STEP = 14
+const DAY_WINDOW_MAX = 90
 
 function sameMonth(a: string, b: string): boolean {
   return toDayKey(startOfMonth(a)) === toDayKey(startOfMonth(b))
 }
 
+function buildDays(anchorKey: string, radius: number): string[] {
+  return Array.from({ length: radius * 2 + 1 }, (_, i) =>
+    toDayKey(addDays(anchorKey, i - radius)),
+  )
+}
+
 export function HomePage() {
   const { t, i18n } = useTranslation()
+  const { character } = useAleph()
+  const { pulseKey } = useFeedback()
   const todayKey = toDayKey(new Date())
-  const days = useMemo(() => buildDays(todayKey), [todayKey])
-  const [granularity, setGranularity] = useState<Granularity>('day')
+  const localeTag = i18n.language?.startsWith('en') ? 'en-US' : 'es-AR'
+  const locale = character.locale
+
+  const [granularity, setGranularity] = useState<HomeGranularity>('day')
   const [activeDay, setActiveDay] = useState(todayKey)
   const [jumpDay, setJumpDay] = useState(todayKey)
   const [jumpNonce, setJumpNonce] = useState(0)
-  const localeTag = i18n.language?.startsWith('en') ? 'en-US' : 'es-AR'
+  const [dayRadius, setDayRadius] = useState(DAY_WINDOW_STEP)
+  const [chromeHeight, setChromeHeight] = useState(120)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const days = useMemo(
+    () => buildDays(todayKey, dayRadius),
+    [todayKey, dayRadius],
+  )
 
   const showHoy =
     granularity === 'day'
@@ -44,7 +59,7 @@ export function HomePage() {
     setJumpNonce((value) => value + 1)
   }, [])
 
-  const setMode = (mode: Granularity) => {
+  const setMode = (mode: HomeGranularity) => {
     if (mode === granularity) return
     if (mode === 'day') {
       setJumpDay(activeDay)
@@ -53,48 +68,74 @@ export function HomePage() {
     setGranularity(mode)
   }
 
-  const modes: Granularity[] = ['day', 'week', 'month']
+  const shiftPeriod = (direction: -1 | 1) => {
+    let next = activeDay
+    if (granularity === 'day') next = toDayKey(addDays(activeDay, direction))
+    else if (granularity === 'week') next = toDayKey(addDays(activeDay, direction * 7))
+    else next = toDayKey(addMonths(activeDay, direction))
+    if (granularity === 'day') jumpTo(next)
+    else setActiveDay(next)
+  }
+
+  const onApproachEdge = useCallback(
+    (edge: 'start' | 'end', dayKey: string) => {
+      setDayRadius((radius) => {
+        if (radius >= DAY_WINDOW_MAX) return radius
+        const index = buildDays(todayKey, radius).indexOf(dayKey)
+        if (edge === 'start' && index <= 2) return Math.min(DAY_WINDOW_MAX, radius + DAY_WINDOW_STEP)
+        if (edge === 'end' && index >= radius * 2 - 2) {
+          return Math.min(DAY_WINDOW_MAX, radius + DAY_WINDOW_STEP)
+        }
+        return radius
+      })
+    },
+    [todayKey],
+  )
+
+  const xpRatio = character.xpToNext > 0 ? character.xp / character.xpToNext : null
 
   return (
     <div className="flex flex-col">
-      <AppHeader
-        title={
-          <div className="flex w-full flex-col gap-2">
-            <div className="min-w-0">
-              <h1 className="truncate text-[20px] font-semibold text-ink">{t('home.title')}</h1>
-            </div>
-            <div className="flex w-full flex-wrap items-center gap-1">
-              {showHoy ? (
-                <button
-                  type="button"
-                  onClick={() => jumpTo(todayKey)}
-                  className="min-h-11 shrink-0 rounded-full px-3 text-[14px] font-medium text-accent"
-                >
-                  {t('home.todayJump')}
-                </button>
-              ) : null}
-              <div className="flex min-w-0 flex-1 rounded-2xl border border-line-strong bg-subtle p-0.5">
-                {modes.map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setMode(mode)}
-                    className={cx(
-                      'min-h-11 min-w-0 flex-1 rounded-xl px-2 text-[14px] font-medium',
-                      granularity === mode ? 'bg-bg text-ink shadow-sm' : 'text-ink-3',
-                    )}
-                  >
-                    {mode === 'day'
-                      ? t('home.granularityDay')
-                      : mode === 'week'
-                        ? t('home.granularityWeek')
-                        : t('home.granularityMonth')}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+      <HomeHero
+        greeting={t(`home.greeting.${dayMoment()}`)}
+        name={character.name}
+        levelLabel={t('home.levelChip', { level: character.level })}
+        moneyLabel={`${t('common.money')}${formatMoney(character.money, locale)}`}
+        xpLabel={t('home.xpLabel', { xp: character.xp, next: character.xpToNext })}
+        xpRatio={xpRatio}
+        avatar={
+          <button
+            type="button"
+            aria-label={t('account.openMenu')}
+            onClick={() => setMenuOpen(true)}
+            className="rounded-full ring-1 ring-accent/40"
+          >
+            <span className="block overflow-hidden rounded-full border border-line">
+              <Avatar avatar={character.avatar} size={96} pulseKey={pulseKey} className="rounded-full" />
+            </span>
+          </button>
         }
+      />
+
+      <HomeStickyChrome
+        activeDay={activeDay}
+        todayKey={todayKey}
+        granularity={granularity}
+        locale={locale}
+        localeTag={localeTag}
+        showHoy={showHoy}
+        onGranularity={setMode}
+        onHoy={() => {
+          setGranularity('day')
+          jumpTo(todayKey)
+        }}
+        onPrev={() => shiftPeriod(-1)}
+        onNext={() => shiftPeriod(1)}
+        onSelectDay={(dayKey) => {
+          setGranularity('day')
+          jumpTo(dayKey)
+        }}
+        onHeightChange={setChromeHeight}
       />
 
       {granularity === 'day' ? (
@@ -103,7 +144,9 @@ export function HomePage() {
           jumpDay={jumpDay}
           jumpNonce={jumpNonce}
           localeTag={localeTag}
+          scrollMarginTop={chromeHeight}
           onActiveDayChange={setActiveDay}
+          onApproachEdge={onApproachEdge}
         />
       ) : (
         <PeriodGrid
@@ -117,6 +160,8 @@ export function HomePage() {
           }}
         />
       )}
+
+      <AccountMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   )
 }

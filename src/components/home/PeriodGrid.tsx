@@ -1,20 +1,20 @@
 import { useTranslation } from 'react-i18next'
+import { TaskBlockChip } from '@/components/home/TaskBlock'
 import { cx } from '@/components/ui/primitives'
-import { closedHoursForDay, dayTaskHoursBreakdown } from '@/data/dayLoad'
+import { closedHoursForDay } from '@/data/dayLoad'
 import { tasksForDay } from '@/data/selectors'
 import { useAleph } from '@/data/store'
-import { isoWeekday, monthDayKeys, parseLocal, weekDayKeys } from '@/domain/dates'
+import {
+  formatWeekHeading,
+  isoWeekday,
+  monthDayKeys,
+  parseLocal,
+  toDayKey,
+  weekDayKeys,
+} from '@/domain/dates'
 import { isTaskDone } from '@/domain/economy'
 import { formatHours } from '@/i18n/format'
 import type { AlephState } from '@/domain/types'
-
-function weekRangeLabel(weekStartKey: string, localeTag: string): { start: number; end: number; month: string } {
-  const start = new Date(`${weekStartKey}T12:00:00`)
-  const end = new Date(start)
-  end.setDate(end.getDate() + 6)
-  const month = new Intl.DateTimeFormat(localeTag, { month: 'short' }).format(end)
-  return { start: start.getDate(), end: end.getDate(), month }
-}
 
 function weekdayHeaders(localeTag: string): string[] {
   return Array.from({ length: 7 }, (_, i) => {
@@ -62,16 +62,16 @@ export function PeriodGrid({
   const stats = periodStats(state, dayKeys)
   const showStats = stats.closedBlocks > 0 || stats.hours > 0
   const lead = mode === 'month' ? isoWeekday(dayKeys[0] ?? anchorDay) - 1 : 0
+  const monthKey = toDayKey(parseLocal(anchorDay)).slice(0, 7)
   const title =
     mode === 'week'
-      ? (() => {
-          const range = weekRangeLabel(dayKeys[0] ?? anchorDay, localeTag)
-          return t('home.weekRange', { start: range.start, end: range.end, month: range.month })
-        })()
-      : new Intl.DateTimeFormat(localeTag, { month: 'long', year: 'numeric' }).format(parseLocal(anchorDay))
+      ? formatWeekHeading(anchorDay, locale)
+      : new Intl.DateTimeFormat(localeTag, { month: 'long', year: 'numeric' }).format(
+          parseLocal(anchorDay),
+        )
 
   return (
-    <section className="flex flex-col gap-4 pb-6">
+    <section className="flex flex-col gap-4 pb-6 pt-3">
       <div>
         <h2 className="text-[20px] font-semibold capitalize text-ink">{title}</h2>
         {showStats ? (
@@ -85,7 +85,7 @@ export function PeriodGrid({
         ) : null}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {weekdayHeaders(localeTag).map((label, index) => (
           <p
             key={`${label}-${index}`}
@@ -102,6 +102,7 @@ export function PeriodGrid({
             key={dayKey}
             dayKey={dayKey}
             today={dayKey === todayKey}
+            muted={mode === 'month' && !dayKey.startsWith(monthKey)}
             onOpen={() => onOpenDay(dayKey)}
           />
         ))}
@@ -113,48 +114,45 @@ export function PeriodGrid({
 function DayCell({
   dayKey,
   today,
+  muted,
   onOpen,
 }: {
   dayKey: string
   today: boolean
+  muted?: boolean
   onOpen: () => void
 }) {
   const state = useAleph()
-  const locale = state.character.locale
   const tasks = tasksForDay(state, dayKey)
-  const closed = tasks.filter((task) => isTaskDone(task.status)).length
-  const open = tasks.length - closed
-  const { committed, closed: closedHours } = dayTaskHoursBreakdown(state, dayKey)
-  const hours = closedHours > 0 ? closedHours : committed
   const date = Number(dayKey.slice(8, 10))
-  const empty = tasks.length === 0
-  const hoursLabel = hours > 0 ? formatHours(hours, locale) : null
+  const visible = tasks.slice(0, 3)
+  const overflow = tasks.length - visible.length
 
   return (
     <button
       type="button"
       onClick={onOpen}
       aria-current={today ? 'date' : undefined}
-      aria-label={
-        empty
-          ? dayKey
-          : `${dayKey} ${closed}/${open}${hoursLabel ? ` ${hoursLabel}h` : ''}`
-      }
+      aria-label={dayKey}
       className={cx(
-        'flex min-h-11 flex-col items-center justify-center rounded-xl px-0.5 py-1.5',
-        today ? 'border border-accent/40 bg-accent-soft' : 'border border-transparent',
+        'flex min-h-[4.5rem] flex-col items-stretch gap-0.5 rounded-xl px-1 py-1.5 text-left',
+        today ? 'ring-1 ring-accent/50 bg-accent-soft' : 'border border-transparent',
+        muted && 'opacity-40',
       )}
     >
-      <span className={cx('text-[13px] font-medium tabular-nums', today ? 'text-accent' : 'text-ink')}>
+      <span
+        className={cx(
+          'text-[13px] font-semibold tabular-nums',
+          today ? 'text-accent' : 'text-ink',
+        )}
+      >
         {date}
       </span>
-      {!empty ? (
-        <>
-          <span className="text-[10px] tabular-nums text-ink-3">
-            {closed}/{open}
-          </span>
-          {hoursLabel ? <span className="text-[10px] tabular-nums text-ink-3">{hoursLabel}h</span> : null}
-        </>
+      {visible.map((task) => (
+        <TaskBlockChip key={task.id} task={task} />
+      ))}
+      {overflow > 0 ? (
+        <span className="text-[10px] text-text-3">+{overflow}</span>
       ) : null}
     </button>
   )

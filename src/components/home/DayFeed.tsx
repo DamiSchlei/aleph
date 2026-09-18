@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { TaskBlock } from '@/components/home/TaskBlock'
 import { TodayStep } from '@/components/home/TodayStep'
+import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { SortableList } from '@/components/ui/SortableList'
 import { cx } from '@/components/ui/primitives'
 import { captureLooseTask, completeTask, reopenTask, reorderTasks } from '@/data/actions'
@@ -11,7 +12,7 @@ import {
   lostHoursForDay,
   plannedHoursForDay,
 } from '@/data/dayLoad'
-import { resultById, tasksForDay } from '@/data/selectors'
+import { blockContext, tasksForDay } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { useFeedback } from '@/app/FeedbackProvider'
 import { parseComposerInput } from '@/domain/composerParse'
@@ -19,7 +20,7 @@ import { toDayKey } from '@/domain/dates'
 import { isTaskDone } from '@/domain/economy'
 import { dayMoment } from '@/i18n/dayMoment'
 import { formatHours } from '@/i18n/format'
-import type { Locale, Task } from '@/domain/types'
+import type { Task } from '@/domain/types'
 
 const DEFAULT_CAP = 5
 
@@ -34,13 +35,19 @@ export function DayFeed({
   jumpDay,
   jumpNonce,
   localeTag,
+  scrollMarginTop = 12,
   onActiveDayChange,
+  onApproachEdge,
 }: {
   days: string[]
   jumpDay: string
   jumpNonce: number
   localeTag: string
+  /** Sticky chrome height in px — used for scroll-mt and observer rootMargin. */
+  scrollMarginTop?: number
   onActiveDayChange: (dayKey: string) => void
+  /** Fired when the visible day is near the first/last loaded day. */
+  onApproachEdge?: (edge: 'start' | 'end', dayKey: string) => void
 }) {
   const jumping = useRef(false)
 
@@ -50,13 +57,14 @@ export function DayFeed({
     node?.scrollIntoView({ block: 'start', behavior: jumpNonce === 0 ? 'auto' : 'smooth' })
     const timer = window.setTimeout(() => {
       jumping.current = false
-    }, 400)
+    }, 450)
     return () => window.clearTimeout(timer)
   }, [jumpDay, jumpNonce])
 
   useEffect(() => {
     const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-day-key]'))
     if (nodes.length === 0) return
+    const topGap = Math.max(8, Math.round(scrollMarginTop))
     const observer = new IntersectionObserver(
       (entries) => {
         if (jumping.current) return
@@ -64,24 +72,45 @@ export function DayFeed({
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
         const key = visible[0]?.target.getAttribute('data-day-key')
-        if (key) onActiveDayChange(key)
+        if (!key) return
+        onActiveDayChange(key)
+        const index = days.indexOf(key)
+        if (index >= 0 && index <= 2) onApproachEdge?.('start', key)
+        if (index >= days.length - 3) onApproachEdge?.('end', key)
       },
-      { root: null, rootMargin: '-18% 0px -55% 0px', threshold: [0.15, 0.35, 0.6] },
+      {
+        root: null,
+        rootMargin: `-${topGap}px 0px -55% 0px`,
+        threshold: [0.15, 0.35, 0.6],
+      },
     )
     nodes.forEach((node) => observer.observe(node))
     return () => observer.disconnect()
-  }, [days, onActiveDayChange])
+  }, [days, onActiveDayChange, onApproachEdge, scrollMarginTop])
 
   return (
     <div className="flex flex-col gap-10 pb-6">
       {days.map((dayKey) => (
-        <DayItem key={dayKey} dayKey={dayKey} localeTag={localeTag} />
+        <DayItem
+          key={dayKey}
+          dayKey={dayKey}
+          localeTag={localeTag}
+          scrollMarginTop={scrollMarginTop}
+        />
       ))}
     </div>
   )
 }
 
-function DayItem({ dayKey, localeTag }: { dayKey: string; localeTag: string }) {
+function DayItem({
+  dayKey,
+  localeTag,
+  scrollMarginTop,
+}: {
+  dayKey: string
+  localeTag: string
+  scrollMarginTop: number
+}) {
   const { t } = useTranslation()
   const state = useAleph()
   const { celebrate } = useFeedback()
@@ -99,6 +128,7 @@ function DayItem({ dayKey, localeTag }: { dayKey: string; localeTag: string }) {
   const empty = tasks.length === 0
   const [draft, setDraft] = useState('')
   const [hours, setHours] = useState(1)
+  const [editing, setEditing] = useState<Task | undefined>()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const submit = useCallback(() => {
@@ -127,16 +157,35 @@ function DayItem({ dayKey, localeTag }: { dayKey: string; localeTag: string }) {
   }
 
   const showWorkload = planned > 0
+  const groupHeads = new Set<string>()
+  {
+    let last: string | undefined
+    for (const task of tasks) {
+      const id = blockContext(state, task).result?.id
+      if (id && id !== last) {
+        groupHeads.add(task.id)
+        last = id
+      }
+    }
+  }
 
   return (
-    <section id={`day-feed-${dayKey}`} data-day-key={dayKey} className="flex scroll-mt-3 flex-col gap-3">
+    <section
+      id={`day-feed-${dayKey}`}
+      data-day-key={dayKey}
+      className="flex flex-col gap-3"
+      style={{ scrollMarginTop: `${scrollMarginTop + 8}px` }}
+    >
       {isToday ? (
         <p className="text-[13px] text-ink-3">{t(`home.greeting.${dayMoment()}`)}</p>
       ) : null}
 
-      <div>
+      <div
+        className="sticky z-10 -mx-1 bg-bg/90 px-1 py-2 backdrop-blur-md"
+        style={{ top: `${scrollMarginTop}px` }}
+      >
         <div className="flex flex-wrap items-end justify-between gap-x-2 gap-y-1">
-          <h2 className="min-w-0 flex-1 truncate text-[26px] leading-tight font-semibold capitalize text-ink">
+          <h2 className="min-w-0 flex-1 truncate text-[22px] leading-tight font-semibold capitalize text-ink">
             {dayHeading(dayKey, localeTag)}
           </h2>
           {showWorkload ? (
@@ -245,105 +294,23 @@ function DayItem({ dayKey, localeTag }: { dayKey: string; localeTag: string }) {
             const task = tasks.find((item) => item.id === id)
             if (!task) return null
             return (
-              <BlockRow
+              <TaskBlock
                 task={task}
                 handle={handle}
                 onToggle={() => toggle(task)}
-                resultName={resultById(state, task.resultId)?.name}
-                locale={locale}
+                onOpen={() => setEditing(task)}
+                showGroupLabel={groupHeads.has(task.id)}
               />
             )
           }}
         </SortableList>
       )}
+
+      <TaskFormSheet
+        open={Boolean(editing)}
+        task={editing}
+        onClose={() => setEditing(undefined)}
+      />
     </section>
-  )
-}
-
-function BlockRow({
-  task,
-  handle,
-  onToggle,
-  resultName,
-  locale,
-}: {
-  task: Task
-  handle: ReactNode
-  onToggle: () => void
-  resultName?: string
-  locale: Locale
-}) {
-  const { t } = useTranslation()
-  const done = isTaskDone(task.status)
-  const hoursLabel =
-    task.actualHours !== undefined
-      ? t('home.hoursActual', {
-          actual: formatHours(task.actualHours, locale),
-          estimated: formatHours(task.estimatedHours, locale),
-        })
-      : t('home.hoursOnly', { estimated: formatHours(task.estimatedHours, locale) })
-
-  return (
-    <div
-      className={cx(
-        'flex items-start gap-1 rounded-2xl border border-line bg-surface px-1 py-1.5',
-        done && 'opacity-60',
-      )}
-    >
-      {handle}
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={done}
-        aria-label={t('home.completeBlock')}
-        onClick={onToggle}
-        className="flex size-11 shrink-0 items-center justify-center"
-      >
-        <span
-          className={cx(
-            'flex size-[22px] items-center justify-center rounded-md border-2',
-            done ? 'border-mint bg-mint text-white' : 'border-line-strong',
-          )}
-        >
-          {done ? (
-            <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3.5 8.5 6.5 11.5 12.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          ) : null}
-        </span>
-      </button>
-      {(() => {
-        const href = task.objectiveId
-          ? `/planning/objectives/${task.objectiveId}`
-          : task.resultId
-            ? `/planning/results/${task.resultId}`
-            : undefined
-        const body = (
-          <>
-            <p
-              className={cx(
-                'line-clamp-2 break-words text-[15px] leading-snug text-ink',
-                done && 'line-through',
-              )}
-            >
-              {task.title}
-            </p>
-            {resultName ? (
-              <p className="mt-0.5 line-clamp-1 break-words text-[12px] leading-snug text-ink-3">
-                {resultName}
-              </p>
-            ) : null}
-          </>
-        )
-        return href ? (
-          <Link to={href} className="min-w-0 flex-1 overflow-hidden py-2 pr-2">
-            {body}
-          </Link>
-        ) : (
-          <div className="min-w-0 flex-1 overflow-hidden py-2 pr-2">{body}</div>
-        )
-      })()}
-      <span className="shrink-0 self-center pr-2 text-[12px] tabular-nums text-ink-3">{hoursLabel}</span>
-    </div>
   )
 }

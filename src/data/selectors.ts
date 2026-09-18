@@ -14,7 +14,7 @@ import {
   completedObjectivesOfResult as completedObjectivesFromLimits,
   livingObjectivesOfResult as livingObjectivesFromLimits,
 } from '@/domain/limits'
-import { pillarOfResult } from '@/domain/pillars'
+import { pillarOfResult, PILLAR_COLOR } from '@/domain/pillars'
 import { STAGE_ORDER } from '@/domain/stage'
 import type {
   AlephState,
@@ -166,11 +166,81 @@ function isArchivedTask(state: AlephState, task: Task): boolean {
   return taskResultStatus(state, task) === 'archived'
 }
 
+/** Home agenda: group by result, then clock start, then day order. */
+function byHomeBlockOrder(state: AlephState, a: Task, b: Task): number {
+  const ca = blockContext(state, a)
+  const cb = blockContext(state, b)
+  const ra = ca.result?.id ?? ''
+  const rb = cb.result?.id ?? ''
+  if (ra !== rb) {
+    if (!ra) return 1
+    if (!rb) return -1
+    return ra.localeCompare(rb)
+  }
+  const sa = a.scheduledStart ?? ''
+  const sb = b.scheduledStart ?? ''
+  if (sa !== sb) return sa.localeCompare(sb)
+  return byDayOrder(a, b)
+}
+
 /** Tasks that belong to a given day: due that day or scheduled for it. */
 export function tasksForDay(state: AlephState, dayKey: string): Task[] {
   return state.tasks
     .filter((t) => t.status !== 'cancelled' && !isArchivedTask(state, t) && taskDayKey(t) === dayKey)
-    .sort(byDayOrder)
+    .sort((a, b) => byHomeBlockOrder(state, a, b))
+}
+
+export type BlockKind = 'anchored' | 'result-only' | 'loose'
+
+export interface BlockContext {
+  result: Result | undefined
+  objective: Objective | undefined
+  pillar: Pillar | undefined
+  color: string
+  stage: StageId
+  hours: number
+  timeRange: { start?: string; end?: string }
+  doneWhen?: string
+  kind: BlockKind
+}
+
+const LOOSE_COLOR = 'color-mix(in srgb, var(--color-amber) 45%, transparent)'
+
+/**
+ * Closed-block identity for a scheduled task on Home / week chips.
+ * Color: result skill → task skill → pillar token → loose amber.
+ */
+export function blockContext(state: AlephState, task: Task): BlockContext {
+  const objective = objectiveById(state, task.objectiveId)
+  const result =
+    resultById(state, task.resultId) ?? resultById(state, objective?.resultId)
+  const kind: BlockKind = objective
+    ? 'anchored'
+    : result
+      ? 'result-only'
+      : 'loose'
+  const pillar = result ? pillarOfResult(result) : undefined
+  const resultSkill = skillById(state, result?.skillId)
+  const taskSkill = skillById(state, task.skillId)
+  const color =
+    resultSkill?.color ??
+    taskSkill?.color ??
+    (pillar ? PILLAR_COLOR[pillar] : LOOSE_COLOR)
+
+  return {
+    result,
+    objective,
+    pillar,
+    color,
+    stage: task.stage,
+    hours: task.actualHours ?? task.estimatedHours,
+    timeRange: {
+      start: task.scheduledStart,
+      end: task.scheduledEnd,
+    },
+    doneWhen: task.doneCheck,
+    kind,
+  }
 }
 
 export type AgendaFilter = 'today' | 'tomorrow' | 'week' | 'overdue' | 'pick' | 'undated'
