@@ -198,7 +198,12 @@
     "noObjective": "Sin objetivo",
     "doneWhen": "Hecho cuando: {{text}}",
     "prevPeriod": "Anterior",
-    "nextPeriod": "Siguiente"
+    "nextPeriod": "Siguiente",
+    "viewerTitle": "Tareas · {{day}}",
+    "viewerTitleToday": "Tareas · hoy",
+    "viewerEmpty": "No hay tareas en este día.",
+    "viewerSeeAll": "Ver las {{n}}",
+    "addTask": "Agregar tarea"
   },
   "planning": {
     "title": "Planificación",

@@ -144,6 +144,7 @@ export function HomePage() {
           jumpDay={jumpDay}
           jumpNonce={jumpNonce}
           localeTag={localeTag}
+          omitDay={activeDay}
           scrollMarginTop={chromeHeight}
           onActiveDayChange={setActiveDay}
           onApproachEdge={onApproachEdge}
