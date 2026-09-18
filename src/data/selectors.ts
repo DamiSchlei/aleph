@@ -3,7 +3,6 @@ import {
   addDays,
   daysBetween,
   deadlineOf,
-  lastSevenDayKeys,
   startOfDay,
   startOfWeek,
   toDayKey,
@@ -243,6 +242,58 @@ export function blockContext(state: AlephState, task: Task): BlockContext {
   }
 }
 
+/** Result rail: skill color → pillar token (same family as blockContext). */
+export function resultRailColor(state: AlephState, result: Result): string {
+  return skillById(state, result.skillId)?.color ?? PILLAR_COLOR[pillarOfResult(result)]
+}
+
+function dominantRailColor(state: AlephState, tasks: Task[]): string | undefined {
+  if (tasks.length === 0) return undefined
+  const counts = new Map<string, number>()
+  for (const task of tasks) {
+    const color = blockContext(state, task).color
+    counts.set(color, (counts.get(color) ?? 0) + 1)
+  }
+  let best: string | undefined
+  let bestCount = 0
+  for (const [color, count] of counts) {
+    if (count > bestCount) {
+      best = color
+      bestCount = count
+    }
+  }
+  return best
+}
+
+/** Completions and planned load for one result inside the ISO week of `weekAnchor`. */
+export function resultWeekStats(
+  state: AlephState,
+  resultId: string,
+  weekAnchor: Date | string = new Date(),
+): { hours: number; done: number; planned: number; ratio: number | null } {
+  const days = new Set(weekDayKeys(weekAnchor))
+  const tasks = tasksOfResult(state, resultId).filter((task) => task.status !== 'cancelled')
+  const plannedTasks = tasks.filter((task) => {
+    const day = taskDayKey(task)
+    return Boolean(day && days.has(day))
+  })
+  const completedThisWeek = tasks.filter(
+    (task) => task.completedAt && days.has(toDayKey(task.completedAt)),
+  )
+  const planned = plannedTasks.length
+  const done = plannedTasks.filter((task) => isTaskDone(task.status)).length
+  const hours = completedThisWeek.reduce(
+    (sum, task) => sum + (task.actualHours ?? task.estimatedHours),
+    0,
+  )
+  return {
+    hours: Math.round(hours * 10) / 10,
+    done,
+    planned,
+    ratio: planned === 0 ? null : done / planned,
+  }
+}
+
 export type AgendaFilter = 'today' | 'tomorrow' | 'week' | 'overdue' | 'pick' | 'undated'
 
 export const AGENDA_FILTERS: AgendaFilter[] = [
@@ -329,13 +380,13 @@ export interface TrackingStats {
   /** Null when nothing is late: an average over an empty sample is not zero. */
   avgDelayDays: number | null
   hoursLast7: number
-  perDay: Array<{ dayKey: string; count: number; hours: number }>
+  perDay: Array<{ dayKey: string; count: number; hours: number; color?: string }>
   weekHours: number
   weekCompleted: number
   weekOnTime: number
 }
 
-export function trackingStats(state: AlephState, today: Date = new Date()): TrackingStats {
+export function trackingStats(state: AlephState, weekAnchor: Date | string = new Date()): TrackingStats {
   const done = state.tasks.filter((t) => isTaskDone(t.status) && t.completedAt)
   const onTime = done.filter((t) => t.status === 'done_on_time')
   const late = done.filter((t) => t.status === 'done_late')
@@ -347,27 +398,31 @@ export function trackingStats(state: AlephState, today: Date = new Date()): Trac
     ? Math.round((delays.reduce((a, b) => a + b, 0) / delays.length) * 10) / 10
     : null
 
-  const days = lastSevenDayKeys(today)
+  const days = weekDayKeys(weekAnchor)
+  const daySet = new Set(days)
   const perDay = days.map((dayKey) => {
     const dayTasks = done.filter((t) => toDayKey(t.completedAt!) === dayKey)
     return {
       dayKey,
       count: dayTasks.length,
       hours: dayTasks.reduce((sum, t) => sum + (t.actualHours ?? t.estimatedHours), 0),
+      color: dominantRailColor(state, dayTasks),
     }
   })
 
-  const weekStart = startOfWeek(today).getTime()
-  const weekTasks = done.filter((t) => new Date(t.completedAt!).getTime() >= weekStart)
+  const weekTasks = done.filter((t) => daySet.has(toDayKey(t.completedAt!)))
+  const weekHours = Math.round(
+    weekTasks.reduce((sum, t) => sum + (t.actualHours ?? t.estimatedHours), 0) * 10,
+  ) / 10
 
   return {
     completed: done.length,
     onTime: onTime.length,
     late: late.length,
     avgDelayDays,
-    hoursLast7: Math.round(perDay.reduce((sum, d) => sum + d.hours, 0) * 10) / 10,
+    hoursLast7: weekHours,
     perDay,
-    weekHours: Math.round(weekTasks.reduce((sum, t) => sum + (t.actualHours ?? t.estimatedHours), 0) * 10) / 10,
+    weekHours,
     weekCompleted: weekTasks.length,
     weekOnTime: weekTasks.filter((t) => t.status === 'done_on_time').length,
   }

@@ -1,18 +1,22 @@
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/primitives'
-import { startOfWeek, toDayKey, addDays } from '@/domain/dates'
 import type { TrackingStats } from '@/data/selectors'
 
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
 
-export function WeekChart({ stats, today = new Date() }: { stats: TrackingStats; today?: Date }) {
+/** Ticks for empty days, bars for activity. Bound to trackingStats of the selected week. */
+export function WeekChart({ stats }: { stats: TrackingStats }) {
   const { t } = useTranslation()
-  const monday = startOfWeek(today)
   const week = WEEKDAY_KEYS.map((key, index) => {
-    const dayKey = toDayKey(addDays(monday, index))
-    const fromRolling = stats.perDay.find((d) => d.dayKey === dayKey)
-    const count = fromRolling?.count ?? 0
-    return { key, dayKey, count, isSunday: key === 'sun' }
+    const row = stats.perDay[index]
+    const count = row?.count ?? 0
+    return {
+      key,
+      dayKey: row?.dayKey ?? key,
+      count,
+      color: row?.color,
+      isSunday: key === 'sun',
+    }
   })
   const max = Math.max(1, ...week.map((d) => d.count))
 
@@ -21,11 +25,16 @@ export function WeekChart({ stats, today = new Date() }: { stats: TrackingStats;
       <div className="flex h-36 items-end justify-between gap-1.5">
         {week.map((day) => (
           <div key={day.dayKey} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
-            <span className="text-[11px] text-text-3">{day.count || ''}</span>
+            <span className="text-[11px] tabular-nums text-text-3">{day.count || ''}</span>
             {day.count > 0 ? (
               <div
-                className="w-full max-w-8 rounded-t-lg bg-accent/80"
-                style={{ height: `${(day.count / max) * 100}%`, minHeight: 6 }}
+                className="w-full max-w-8 rounded-t-lg"
+                style={{
+                  height: `${(day.count / max) * 100}%`,
+                  minHeight: 6,
+                  background: day.color ?? 'var(--color-accent)',
+                  opacity: day.color ? 1 : 0.8,
+                }}
               />
             ) : day.isSunday ? (
               <div
