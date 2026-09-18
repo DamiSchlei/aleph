@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { DayTaskViewer } from '@/components/home/DayTaskViewer'
 import { WeekStrip } from '@/components/home/WeekStrip'
 import { cx } from '@/components/ui/primitives'
 import { formatWeekHeading, isoWeekNumber, parseLocal } from '@/domain/dates'
@@ -91,8 +92,8 @@ export function HomeStickyChrome({
   return (
     <div
       ref={ref}
-      className="sticky z-20 -mx-4 border-b border-line bg-bg/95 px-4 pt-1 pb-3 backdrop-blur-md"
-      style={{ top: 'env(safe-area-inset-top, 0px)' }}
+      className="isolate sticky z-20 -mx-4 border-b border-line bg-bg px-4 pt-1 pb-3"
+      style={{ top: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--color-bg)' }}
     >
       <div className="flex items-start gap-2">
         <button
@@ -155,6 +156,11 @@ export function HomeStickyChrome({
             todayKey={todayKey}
             localeTag={localeTag}
             onSelectDay={onSelectDay}
+          />
+          <DayTaskViewer
+            activeDay={activeDay}
+            todayKey={todayKey}
+            localeTag={localeTag}
           />
         </div>
       ) : null}
