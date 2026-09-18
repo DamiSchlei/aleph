@@ -44,6 +44,7 @@ export function DayFeed({
   const jumping = useRef(false)
 
   useEffect(() => {
+    if (scrollMarginTop <= 0) return
     jumping.current = true
     const node = document.getElementById(`day-feed-${jumpDay}`)
     node?.scrollIntoView({ block: 'start', behavior: jumpNonce === 0 ? 'auto' : 'smooth' })
@@ -51,7 +52,7 @@ export function DayFeed({
       jumping.current = false
     }, 450)
     return () => window.clearTimeout(timer)
-  }, [jumpDay, jumpNonce])
+  }, [jumpDay, jumpNonce, scrollMarginTop])
 
   useEffect(() => {
     const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-day-key]'))

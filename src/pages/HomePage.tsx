@@ -38,7 +38,7 @@ export function HomePage() {
   const [jumpDay, setJumpDay] = useState(todayKey)
   const [jumpNonce, setJumpNonce] = useState(0)
   const [dayRadius, setDayRadius] = useState(DAY_WINDOW_STEP)
-  const [chromeHeight, setChromeHeight] = useState(120)
+  const [chromeHeight, setChromeHeight] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
 
   const days = useMemo(
@@ -138,7 +138,7 @@ export function HomePage() {
         onHeightChange={setChromeHeight}
       />
 
-      {granularity === 'day' ? (
+      {granularity === 'day' && chromeHeight > 0 ? (
         <DayFeed
           days={days}
           jumpDay={jumpDay}
@@ -149,7 +149,7 @@ export function HomePage() {
           onActiveDayChange={setActiveDay}
           onApproachEdge={onApproachEdge}
         />
-      ) : (
+      ) : granularity !== 'day' ? (
         <PeriodGrid
           mode={granularity}
           anchorDay={activeDay}
@@ -160,7 +160,7 @@ export function HomePage() {
             jumpTo(dayKey)
           }}
         />
-      )}
+      ) : null}
 
       <AccountMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>

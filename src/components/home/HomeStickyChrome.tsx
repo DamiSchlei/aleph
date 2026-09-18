@@ -92,8 +92,8 @@ export function HomeStickyChrome({
   return (
     <div
       ref={ref}
-      className="sticky z-20 -mx-4 border-b border-line bg-bg px-4 pt-1 pb-3"
-      style={{ top: 'env(safe-area-inset-top, 0px)' }}
+      className="isolate sticky z-20 -mx-4 border-b border-line bg-bg px-4 pt-1 pb-3"
+      style={{ top: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--color-bg)' }}
     >
       <div className="flex items-start gap-2">
         <button

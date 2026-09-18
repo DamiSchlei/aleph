@@ -105,7 +105,7 @@ export function DayTaskViewer({
         <span aria-hidden className="w-4 text-[13px] text-ink-3">
           {open ? '▾' : '▸'}
         </span>
-        <span className="min-w-0 flex-1 truncate text-[14px] font-medium capitalize text-ink">
+        <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-ink">
           {open ? title : collapsedTitle}
         </span>
         {hoursLabel ? (
