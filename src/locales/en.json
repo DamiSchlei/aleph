@@ -198,7 +198,12 @@
     "noObjective": "No objective",
     "doneWhen": "Done when: {{text}}",
     "prevPeriod": "Previous",
-    "nextPeriod": "Next"
+    "nextPeriod": "Next",
+    "viewerTitle": "Tasks · {{day}}",
+    "viewerTitleToday": "Tasks · today",
+    "viewerEmpty": "No tasks on this day.",
+    "viewerSeeAll": "See all {{n}}",
+    "addTask": "Add task"
   },
   "planning": {
     "title": "Planning",
