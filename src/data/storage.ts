@@ -1,6 +1,7 @@
 import { DEFAULT_SKILLS, initialState, newCharacter, STATE_VERSION } from './seed'
 import { MIN_ESTIMATED_HOURS } from '@/domain/limits'
 import { skillIdToPillar } from '@/domain/pillars'
+import { isTerrain } from '@/domain/terrains'
 import { xpToNextForLevel } from '@/domain/economy'
 import type { AlephState, Locale, Objective, Result, Task } from '@/domain/types'
 
@@ -126,6 +127,7 @@ export function normalize(input: unknown): AlephState {
     estimatedHours: Math.max(MIN_ESTIMATED_HOURS, t.estimatedHours || 1),
     difficulty: t.difficulty ?? 'medium',
     rewardApplied: t.rewardApplied ?? false,
+    terrain: isTerrain(t.terrain) ? t.terrain : undefined,
   }))
 
   const results = (raw.results ?? adopted.results ?? []).map((result) => ({

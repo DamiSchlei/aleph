@@ -77,6 +77,9 @@ export function TaskBlock({
             type="button"
             onClick={onOpen}
             className="min-h-11 min-w-0 flex-1 py-0 text-left"
+            aria-label={
+              ctx.terrain ? `${task.title} · ${t(`terrains.${ctx.terrain}`)}` : task.title
+            }
           >
             <p
               className={cx(

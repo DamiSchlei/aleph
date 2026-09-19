@@ -57,6 +57,13 @@
     "dash": "—",
     "percent": "{{value}}%"
   },
+  "terrains": {
+    "label": "Terreno",
+    "art": "Arte",
+    "literature": "Literatura",
+    "enterprise": "Empresa",
+    "hint": "Arte es el contacto. Literatura es el contrato. Empresa hace que toque el mundo."
+  },
   "difficulty": {
     "low": "Baja",
     "medium": "Media",
@@ -411,7 +418,12 @@
     "skillStreak": "En racha",
     "thisWeek": "Esta semana",
     "resultOverall": "Avance total",
-    "hoy": "Hoy"
+    "hoy": "Hoy",
+    "pairArtWithoutLit": "En {{names}} hubo contacto y nada escrito.",
+    "pairLitWithoutArt": "En {{names}} hubo texto y ningún roce.",
+    "pairEnterpriseOnly": "En {{names}} hubo un hecho sin contacto ni contrato.",
+    "pairNamesTwo": "{{a}} y {{b}}",
+    "pairNamesMore": "{{a}}, {{b}} y {{n}} más"
   },
   "journal": {
     "title": "Bitácora",

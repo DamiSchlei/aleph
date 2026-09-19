@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { JournalThread } from '@/components/journal/JournalThread'
+import { TerrainChips } from '@/components/task/TerrainChips'
 import { Button, Chip, Field, Input, Select, Textarea, cx } from '@/components/ui/primitives'
 import { ConfirmDialog, Sheet } from '@/components/ui/Sheet'
 import { addComment, createTask, createTaskSeries, deleteTask, updateTask } from '@/data/actions'
@@ -11,7 +12,7 @@ import { MAX_CHECKLIST_ITEMS, MAX_SERIES_BLOCKS, MIN_ESTIMATED_HOURS } from '@/d
 import { addDays, isoWeekday, seriesDayKeys, startOfWeek, toDayKey } from '@/domain/dates'
 import { isTaskDone } from '@/domain/economy'
 import { skillName } from '@/i18n/labels'
-import type { Difficulty, Task, TaskCheckItem } from '@/domain/types'
+import type { Difficulty, Task, TaskCheckItem, Terrain } from '@/domain/types'
 
 const ISO_WEEKDAYS = [
   { iso: 1, key: 'mon' },
@@ -119,6 +120,7 @@ function TaskFormBody({
   const [resultId, setResultId] = useState(task?.resultId ?? preset?.resultId ?? '')
   const [objectiveId, setObjectiveId] = useState(task?.objectiveId ?? preset?.objectiveId ?? '')
   const [skillId, setSkillId] = useState(task?.skillId ?? '')
+  const [terrain, setTerrain] = useState<Terrain | undefined>(task?.terrain)
   const [hours, setHours] = useState(String(task?.estimatedHours ?? 1))
   const [difficulty, setDifficulty] = useState<Difficulty>(task?.difficulty ?? 'medium')
   const [dueAt, setDueAt] = useState(task?.dueAt?.slice(0, 10) ?? preset?.dueAt ?? '')
@@ -144,7 +146,10 @@ function TaskFormBody({
   const seriesDates = asSeries && !task ? seriesDayKeys(weekdays, horizon, new Date(), MAX_SERIES_BLOCKS) : []
   const seriesWouldOverflow =
     asSeries && !task && seriesDayKeys(weekdays, horizon, new Date(), MAX_SERIES_BLOCKS + 1).length > MAX_SERIES_BLOCKS
-  const canSave = Boolean(title.trim()) && (!asSeries || Boolean(task) || seriesDates.length > 0)
+  const canSave =
+    Boolean(title.trim()) &&
+    (!asSeries || Boolean(task) || seriesDates.length > 0) &&
+    (Boolean(task) || Boolean(terrain))
   const checklistDone = checklist.filter((item) => item.done).length
 
   const toggleWeekday = (iso: number) => {
@@ -156,6 +161,7 @@ function TaskFormBody({
   const save = () => {
     const trimmed = title.trim()
     if (!trimmed) return
+    if (!task && !terrain) return
     const estimatedHours = Math.max(MIN_ESTIMATED_HOURS, Number(hours) || 1)
     const payload = {
       title: trimmed,
@@ -163,6 +169,14 @@ function TaskFormBody({
       resultId: resultId || undefined,
       objectiveId: objectiveId || undefined,
       skillId: skillId || undefined,
+      terrain,
+      estimatedHours,
+      title: trimmed,
+      notes: notes.trim() || undefined,
+      resultId: resultId || undefined,
+      objectiveId: objectiveId || undefined,
+      skillId: skillId || undefined,
+      terrain,
       estimatedHours,
       difficulty,
       dueAt: dueAt || undefined,
@@ -202,6 +216,8 @@ function TaskFormBody({
           autoFocus
         />
       </Field>
+
+      <TerrainChips value={terrain} onChange={setTerrain} />
 
       <div className="grid grid-cols-2 gap-3">
         <Field label={t('taskEdit.hours')}>

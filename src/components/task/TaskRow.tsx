@@ -97,6 +97,7 @@ export function TaskRow({
   const canReturn = task.stage === 'execution' && !done && Boolean(onReturn)
 
   const metaParts: string[] = [`${formatHours(task.actualHours ?? task.estimatedHours, locale)} h`]
+  if (task.terrain) metaParts.push(t(`terrains.${task.terrain}`))
   if (showContext) {
     if (loose) metaParts.push(t('planning.tasks.loose'))
     else if (contextResult?.name) metaParts.push(contextResult.name)

@@ -38,6 +38,7 @@ iOS-first: safe-area, tab bar fixed, hit targets ≥ 44px, content never hidden 
 | Objective | Objective | Objetivo |
 | Stage | Stage | Etapa |
 | Task | Task | Tarea |
+| Terrain | Terrain | Terreno |
 | Block | Block | Bloque |
 | Skill | Skill | Habilidad |
 | Character | Character | Personaje |
@@ -70,6 +71,20 @@ Results carry a required `pillar`: `mind` | `body` | `soul` (`src/domain/pillars
 | soul | relationships, finance |
 
 Unknown / custom skillIds map to mind. Colors: mind `#2F6BFF`, body `#0F9F6E`, soul `#C47A00`.
+
+### Terrains
+
+Each Task may carry one `terrain`: `art` | `literature` | `enterprise` (`src/domain/terrains.ts`). One step, one terrain. Not Stage, not Pillar, and not the Home literature journal fold (`home.literature*`).
+
+| Code | EN UI | ES UI |
+|---|---|---|
+| art | Art | Arte |
+| literature | Literature | Literatura |
+| enterprise | Enterprise | Empresa |
+
+Art is contact. Literature is the contract. Enterprise makes what was written touch the world. The product does not lock order. Missing terrain (legacy) keeps the skill / pillar rail.
+
+Home: group by Result (the work), rail by terrain when set. Tracking: a week sentence if a Result had Art without Literature, Literature without Art, or Enterprise with neither.
 
 ### Journals
 

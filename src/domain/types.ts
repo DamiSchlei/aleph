@@ -5,6 +5,9 @@ export type Pillar = 'mind' | 'body' | 'soul'
 
 export type StageId = 'research' | 'execution' | 'review'
 
+/** One step, one terrain. Not Stage and not Pillar. */
+export type Terrain = 'art' | 'literature' | 'enterprise'
+
 export type Difficulty = 'low' | 'medium' | 'high'
 
 export type ResultStatus = 'active' | 'paused' | 'achieved' | 'archived'
@@ -117,6 +120,8 @@ export interface Task {
   objectiveId?: string
   stage: StageId
   skillId?: string
+  /** Art / literature / enterprise. Missing on legacy rows. */
+  terrain?: Terrain
   estimatedHours: number
   actualHours?: number
   difficulty: Difficulty
