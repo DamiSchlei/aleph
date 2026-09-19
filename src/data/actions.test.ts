@@ -124,11 +124,28 @@ describe('createTaskSeries', () => {
       scheduledFor: '2026-09-20',
       dueAt: '2026-09-20',
       estimatedHours: 2,
+      terrain: 'literature',
     })
     expect(loose?.scheduledFor).toBe('2026-09-20')
     expect(loose?.dueAt).toBe('2026-09-20')
     expect(loose?.estimatedHours).toBe(2)
+    expect(loose?.terrain).toBe('literature')
     expect(getState().tasks.find((task) => task.id === loose?.id)?.scheduledFor).toBe('2026-09-20')
+  })
+
+  it('copies terrain onto every series task', () => {
+    const created = createTaskSeries(
+      {
+        title: 'Entrenar',
+        weekdays: [5, 6],
+        hoursPerBlock: 1,
+        horizon: 'week',
+        terrain: 'art',
+      },
+      friday,
+    )
+    expect(created.length).toBeGreaterThan(0)
+    expect(created.every((task) => task.terrain === 'art')).toBe(true)
   })
 })
 

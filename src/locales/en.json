@@ -57,6 +57,13 @@
     "dash": "—",
     "percent": "{{value}}%"
   },
+  "terrains": {
+    "label": "Terrain",
+    "art": "Art",
+    "literature": "Literature",
+    "enterprise": "Enterprise",
+    "hint": "Art is contact. Literature is the contract. Enterprise makes it touch the world."
+  },
   "difficulty": {
     "low": "Low",
     "medium": "Medium",
@@ -411,7 +418,12 @@
     "skillStreak": "On a streak",
     "thisWeek": "This week",
     "resultOverall": "Overall progress",
-    "hoy": "Today"
+    "hoy": "Today",
+    "pairArtWithoutLit": "In {{names}} there was contact and nothing written.",
+    "pairLitWithoutArt": "In {{names}} there was text and no friction.",
+    "pairEnterpriseOnly": "In {{names}} there was a fact without contact or contract.",
+    "pairNamesTwo": "{{a}} and {{b}}",
+    "pairNamesMore": "{{a}}, {{b}} and {{n}} more"
   },
   "journal": {
     "title": "Journal",

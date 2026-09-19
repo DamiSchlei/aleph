@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import type { Cosmetic, Skill, StageId } from '@/domain/types'
+import type { Cosmetic, Skill, StageId, Terrain } from '@/domain/types'
 
 /** Seeded skills carry a key; custom skills carry the name the user typed. */
 export function skillName(t: TFunction, skill?: Skill): string {
@@ -14,6 +14,10 @@ export function stageName(t: TFunction, stage: StageId): string {
 
 export function stageShort(t: TFunction, stage: StageId): string {
   return t(`stages.${stage}.short`)
+}
+
+export function terrainName(t: TFunction, terrain: Terrain): string {
+  return t(`terrains.${terrain}`)
 }
 
 export function cosmeticName(t: TFunction, cosmetic: Cosmetic): string {

@@ -5,10 +5,25 @@ import { SkillsSheet } from '@/components/home/SkillsSheet'
 import { ResultProgress } from '@/components/tracking/ResultProgress'
 import { WeekChart } from '@/components/tracking/WeekChart'
 import { Button } from '@/components/ui/primitives'
-import { trackingStats } from '@/data/selectors'
+import { trackingStats, weekPairGaps, type PairGapKind } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { addDays, formatWeekHeading, startOfWeek, toDayKey } from '@/domain/dates'
 import { formatHours } from '@/i18n/format'
+import type { TFunction } from 'i18next'
+
+const PAIR_COPY: Record<PairGapKind, string> = {
+  artWithoutLiterature: 'tracking.pairArtWithoutLit',
+  literatureWithoutArt: 'tracking.pairLitWithoutArt',
+  enterpriseOnly: 'tracking.pairEnterpriseOnly',
+}
+
+function pairNames(names: string[], t: TFunction): string {
+  if (names.length === 2) return t('tracking.pairNamesTwo', { a: names[0], b: names[1] })
+  if (names.length > 2) {
+    return t('tracking.pairNamesMore', { a: names[0], b: names[1], n: names.length - 2 })
+  }
+  return names[0] ?? ''
+}
 
 export function TrackingPage() {
   const { t } = useTranslation()
@@ -20,6 +35,7 @@ export function TrackingPage() {
   const [skillsOpen, setSkillsOpen] = useState(false)
 
   const stats = trackingStats(state, weekAnchor)
+  const pairGaps = weekPairGaps(state, weekAnchor)
   const lifetimeEmpty = stats.completed === 0
   const showHoy = toDayKey(startOfWeek(weekAnchor)) !== toDayKey(startOfWeek(todayKey))
 
@@ -84,6 +100,15 @@ export function TrackingPage() {
           </button>
         ) : null}
         <p className="font-display text-[22px] leading-snug text-ink">{weekSentence}</p>
+        {pairGaps.length > 0 ? (
+          <div className="flex flex-col gap-1.5">
+            {pairGaps.map((gap) => (
+              <p key={gap.kind} className="text-[15px] leading-relaxed text-ink-3">
+                {t(PAIR_COPY[gap.kind], { names: pairNames(gap.names, t) })}
+              </p>
+            ))}
+          </div>
+        ) : null}
       </header>
 
       {lifetimeEmpty ? (

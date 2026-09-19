@@ -14,6 +14,7 @@ import {
   livingObjectivesOfResult as livingObjectivesFromLimits,
 } from '@/domain/limits'
 import { pillarOfResult, PILLAR_COLOR } from '@/domain/pillars'
+import { isTerrain, TERRAIN_COLOR } from '@/domain/terrains'
 import { STAGE_ORDER } from '@/domain/stage'
 import type {
   AlephState,
@@ -28,6 +29,7 @@ import type {
   Skill,
   StageId,
   Task,
+  Terrain,
 } from '@/domain/types'
 
 export function activeResults(state: AlephState): Result[] {
@@ -197,6 +199,7 @@ export interface BlockContext {
   pillar: Pillar | undefined
   color: string
   stage: StageId
+  terrain?: Terrain
   hours: number
   timeRange: { start?: string; end?: string }
   doneWhen?: string
@@ -207,7 +210,7 @@ const LOOSE_COLOR = 'color-mix(in srgb, var(--color-amber) 45%, transparent)'
 
 /**
  * Closed-block identity for a scheduled task on Home / week chips.
- * Color: result skill → task skill → pillar token → loose amber.
+ * Color: terrain token when tagged, else result skill → task skill → pillar → loose amber.
  */
 export function blockContext(state: AlephState, task: Task): BlockContext {
   const objective = objectiveById(state, task.objectiveId)
@@ -221,10 +224,12 @@ export function blockContext(state: AlephState, task: Task): BlockContext {
   const pillar = result ? pillarOfResult(result) : undefined
   const resultSkill = skillById(state, result?.skillId)
   const taskSkill = skillById(state, task.skillId)
-  const color =
-    resultSkill?.color ??
-    taskSkill?.color ??
-    (pillar ? PILLAR_COLOR[pillar] : LOOSE_COLOR)
+  const terrain = isTerrain(task.terrain) ? task.terrain : undefined
+  const color = terrain
+    ? TERRAIN_COLOR[terrain]
+    : resultSkill?.color ??
+      taskSkill?.color ??
+      (pillar ? PILLAR_COLOR[pillar] : LOOSE_COLOR)
 
   return {
     result,
@@ -232,6 +237,7 @@ export function blockContext(state: AlephState, task: Task): BlockContext {
     pillar,
     color,
     stage: task.stage,
+    terrain,
     hours: task.actualHours ?? task.estimatedHours,
     timeRange: {
       start: task.scheduledStart,
@@ -426,6 +432,63 @@ export function trackingStats(state: AlephState, weekAnchor: Date | string = new
     weekCompleted: weekTasks.length,
     weekOnTime: weekTasks.filter((t) => t.status === 'done_on_time').length,
   }
+}
+
+export type PairGapKind = 'artWithoutLiterature' | 'literatureWithoutArt' | 'enterpriseOnly'
+
+export interface WeekPairGap {
+  kind: PairGapKind
+  names: string[]
+}
+
+/**
+ * Path diagnostic for the ISO week: Art without Literature, the reverse, or
+ * Enterprise with neither. Loose (no result) and untagged tasks are ignored.
+ * Empty when the pair is present — never a 0% line.
+ */
+export function weekPairGaps(state: AlephState, weekAnchor: Date | string): WeekPairGap[] {
+  const days = new Set(weekDayKeys(weekAnchor))
+  const terrainsByResult = new Map<string, Set<Terrain>>()
+
+  for (const task of state.tasks) {
+    if (task.status === 'cancelled') continue
+    const day = taskDayKey(task)
+    if (!day || !days.has(day)) continue
+    if (!isTerrain(task.terrain)) continue
+    const result =
+      resultById(state, task.resultId) ?? resultById(state, objectiveById(state, task.objectiveId)?.resultId)
+    if (!result || result.status === 'archived') continue
+    const set = terrainsByResult.get(result.id) ?? new Set<Terrain>()
+    set.add(task.terrain)
+    terrainsByResult.set(result.id, set)
+  }
+
+  const artWithoutLiterature: string[] = []
+  const literatureWithoutArt: string[] = []
+  const enterpriseOnly: string[] = []
+
+  for (const result of [...state.results].sort((a, b) => a.importance - b.importance)) {
+    const set = terrainsByResult.get(result.id)
+    if (!set) continue
+    const hasArt = set.has('art')
+    const hasLiterature = set.has('literature')
+    const hasEnterprise = set.has('enterprise')
+    if (hasArt && !hasLiterature) artWithoutLiterature.push(result.name)
+    if (hasLiterature && !hasArt) literatureWithoutArt.push(result.name)
+    if (hasEnterprise && !hasArt && !hasLiterature) enterpriseOnly.push(result.name)
+  }
+
+  const gaps: WeekPairGap[] = []
+  if (artWithoutLiterature.length) {
+    gaps.push({ kind: 'artWithoutLiterature', names: artWithoutLiterature })
+  }
+  if (literatureWithoutArt.length) {
+    gaps.push({ kind: 'literatureWithoutArt', names: literatureWithoutArt })
+  }
+  if (enterpriseOnly.length) {
+    gaps.push({ kind: 'enterpriseOnly', names: enterpriseOnly })
+  }
+  return gaps
 }
 
 export interface SeriesPulse {

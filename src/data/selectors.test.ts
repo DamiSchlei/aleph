@@ -18,6 +18,7 @@ import {
   resultStaleThisWeek,
   resultWeekStats,
   trackingStats,
+  weekPairGaps,
   weekSeriesPulse,
   journalFor,
 } from './selectors'
@@ -419,6 +420,23 @@ describe('blockContext', () => {
     })
     expect(blockContext(s, s.tasks[0]).color).toBe('#2F6BFF')
   })
+
+  it('paints the rail by terrain when tagged, even inside the same result', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Obra', skillId: 'creativity', pillar: 'soul' })],
+      tasks: [
+        task({ id: 'art', title: 'Sostener el precio', resultId: 'r', terrain: 'art' }),
+        task({ id: 'lit', title: 'Escribir la tarifa', resultId: 'r', terrain: 'literature' }),
+        task({ id: 'legacy', title: 'Sin etiqueta', resultId: 'r' }),
+      ],
+    })
+    expect(blockContext(s, s.tasks[0]).color).toBe('#C47A00')
+    expect(blockContext(s, s.tasks[0]).terrain).toBe('art')
+    expect(blockContext(s, s.tasks[1]).color).toBe('#2F6BFF')
+    expect(blockContext(s, s.tasks[1]).terrain).toBe('literature')
+    expect(blockContext(s, s.tasks[2]).color).toBe('#a78bfa')
+    expect(blockContext(s, s.tasks[2]).terrain).toBeUndefined()
+  })
 })
 
 describe('trackingStats', () => {
@@ -502,6 +520,109 @@ describe('resultWeekStats', () => {
     expect(week.hours).toBe(2)
     expect(week.ratio).toBe(0.5)
     expect(resultRailColor(s, s.results[0])).toBe('#a78bfa')
+  })
+})
+
+describe('weekPairGaps', () => {
+  const week = '2026-09-16'
+
+  it('flags art without literature on a result', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Obra', importance: 0 })],
+      tasks: [
+        task({ id: 'a', title: 'Roce', resultId: 'r', dueAt: '2026-09-16', terrain: 'art' }),
+      ],
+    })
+    expect(weekPairGaps(s, week)).toEqual([
+      { kind: 'artWithoutLiterature', names: ['Obra'] },
+    ])
+  })
+
+  it('flags literature without art', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Obra' })],
+      tasks: [
+        task({ id: 'l', title: 'Tarifa', resultId: 'r', dueAt: '2026-09-17', terrain: 'literature' }),
+      ],
+    })
+    expect(weekPairGaps(s, week)).toEqual([
+      { kind: 'literatureWithoutArt', names: ['Obra'] },
+    ])
+  })
+
+  it('flags enterprise with neither contact nor contract', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Obra' })],
+      tasks: [
+        task({ id: 'e', title: 'Cargar', resultId: 'r', dueAt: '2026-09-18', terrain: 'enterprise' }),
+      ],
+    })
+    expect(weekPairGaps(s, week)).toEqual([
+      { kind: 'enterpriseOnly', names: ['Obra'] },
+    ])
+  })
+
+  it('stays silent when the pair is present', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Obra' })],
+      tasks: [
+        task({ id: 'a', title: 'Roce', resultId: 'r', dueAt: '2026-09-16', terrain: 'art' }),
+        task({ id: 'l', title: 'Tarifa', resultId: 'r', dueAt: '2026-09-17', terrain: 'literature' }),
+        task({ id: 'e', title: 'Cargar', resultId: 'r', dueAt: '2026-09-18', terrain: 'enterprise' }),
+      ],
+    })
+    expect(weekPairGaps(s, week)).toEqual([])
+  })
+
+  it('ignores loose tasks and untagged rows', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Obra' })],
+      tasks: [
+        task({ id: 'loose', title: 'Suelto', dueAt: '2026-09-16', terrain: 'art' }),
+        task({ id: 'plain', title: 'Sin terreno', resultId: 'r', dueAt: '2026-09-16' }),
+      ],
+    })
+    expect(weekPairGaps(s, week)).toEqual([])
+  })
+
+  it('lists more than one result and skips cancelled or other-week rows', () => {
+    const s = state({
+      results: [
+        result({ id: 'a', name: 'Uno', importance: 0 }),
+        result({ id: 'b', name: 'Dos', importance: 1 }),
+        result({ id: 'c', name: 'Tres', importance: 2 }),
+      ],
+      tasks: [
+        task({ id: 'a1', title: 'A', resultId: 'a', dueAt: '2026-09-16', terrain: 'art' }),
+        task({ id: 'b1', title: 'B', resultId: 'b', dueAt: '2026-09-16', terrain: 'art' }),
+        task({ id: 'c1', title: 'C', resultId: 'c', dueAt: '2026-09-16', terrain: 'art' }),
+        task({
+          id: 'cancel',
+          title: 'No',
+          resultId: 'a',
+          dueAt: '2026-09-16',
+          terrain: 'literature',
+          status: 'cancelled',
+        }),
+        task({ id: 'old', title: 'Otra semana', resultId: 'a', dueAt: '2026-09-09', terrain: 'literature' }),
+      ],
+    })
+    expect(weekPairGaps(s, week)).toEqual([
+      { kind: 'artWithoutLiterature', names: ['Uno', 'Dos', 'Tres'] },
+    ])
+  })
+
+  it('does not treat enterprise as filling the literature side of the pair', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Obra' })],
+      tasks: [
+        task({ id: 'a', title: 'Roce', resultId: 'r', dueAt: '2026-09-16', terrain: 'art' }),
+        task({ id: 'e', title: 'Cargar', resultId: 'r', dueAt: '2026-09-18', terrain: 'enterprise' }),
+      ],
+    })
+    expect(weekPairGaps(s, week)).toEqual([
+      { kind: 'artWithoutLiterature', names: ['Obra'] },
+    ])
   })
 })
 

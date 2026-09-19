@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button, Card, Input } from '@/components/ui/primitives'
+import { TerrainChips } from '@/components/task/TerrainChips'
 import { createTask, markOnboarded } from '@/data/actions'
 import { useAleph } from '@/data/store'
 import { toDayKey } from '@/domain/dates'
+import type { Terrain } from '@/domain/types'
 
 export function OnboardingBlockPage() {
   const { t } = useTranslation()
@@ -12,9 +14,10 @@ export function OnboardingBlockPage() {
   const state = useAleph()
   const [title, setTitle] = useState('')
   const [hours, setHours] = useState(1.5)
+  const [terrain, setTerrain] = useState<Terrain | undefined>()
 
   const resultId = useMemo(() => state.results[0]?.id, [state.results])
-  const canContinue = title.trim().length > 0 && hours > 0
+  const canContinue = title.trim().length > 0 && hours > 0 && Boolean(terrain)
 
   const bump = (delta: number) => {
     setHours((value) => Math.max(0.25, Math.round((value + delta) * 100) / 100))
@@ -29,6 +32,7 @@ export function OnboardingBlockPage() {
       dueAt: today,
       scheduledFor: today,
       resultId,
+      terrain,
     })
     markOnboarded()
     navigate('/', { replace: true })
@@ -86,6 +90,8 @@ export function OnboardingBlockPage() {
             </button>
           </div>
         </div>
+        <div className="h-px bg-line" />
+        <TerrainChips value={terrain} onChange={setTerrain} />
       </Card>
 
       <Button className="w-full rounded-full" disabled={!canContinue} onClick={confirm}>

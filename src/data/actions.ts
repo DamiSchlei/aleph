@@ -25,6 +25,7 @@ import type {
   Skill,
   Task,
   TaskCheckItem,
+  Terrain,
 } from '@/domain/types'
 
 const now = () => new Date().toISOString()
@@ -275,6 +276,7 @@ export interface TaskInput {
   resultId?: string
   objectiveId?: string
   skillId?: string
+  terrain?: Terrain
   estimatedHours?: number
   difficulty?: Difficulty
   dueAt?: string
@@ -310,6 +312,7 @@ export function createTask(input: TaskInput): Task {
     objectiveId: input.objectiveId || undefined,
     stage: 'research',
     skillId: input.skillId || undefined,
+    terrain: input.terrain,
     estimatedHours: Math.max(MIN_ESTIMATED_HOURS, input.estimatedHours ?? 1),
     difficulty: input.difficulty ?? 'medium',
     importance: siblings.length,
@@ -420,6 +423,7 @@ export function captureLooseTask(
     estimatedHours?: number
     difficulty?: Difficulty
     dayOrder?: number
+    terrain?: Terrain
   },
 ): Task | null {
   const trimmed = title.trim()
@@ -444,6 +448,7 @@ export function captureLooseTask(
     dueAt: day,
     scheduledFor: day,
     dayOrder: nextOrder,
+    terrain: options?.terrain,
   })
 }
 
