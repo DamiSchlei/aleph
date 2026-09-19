@@ -607,6 +607,11 @@ describe('weekPairGaps', () => {
         task({ id: 'old', title: 'Otra semana', resultId: 'a', dueAt: '2026-09-09', terrain: 'literature' }),
       ],
     })
+    expect(weekPairGaps(s, week)).toEqual([
+      { kind: 'artWithoutLiterature', names: ['Uno', 'Dos', 'Tres'] },
+    ])
+  })
+
   it('does not treat enterprise as filling the literature side of the pair', () => {
     const s = state({
       results: [result({ id: 'r', name: 'Obra' })],
