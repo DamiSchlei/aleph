@@ -103,14 +103,16 @@ function ResultsTab() {
         <p className="text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
           {t('planning.activeEnterprises')}
         </p>
-        <button
-          type="button"
-          aria-label={t('planning.results.new')}
-          onClick={() => requestCreate()}
-          className="flex size-11 items-center justify-center rounded-full border border-line text-accent"
-        >
-          +
-        </button>
+        {results.length > 0 ? (
+          <button
+            type="button"
+            aria-label={t('planning.results.new')}
+            onClick={() => requestCreate()}
+            className="flex size-11 items-center justify-center rounded-full border border-line text-accent"
+          >
+            +
+          </button>
+        ) : null}
       </div>
 
       <Link to="/planning/week" className="text-[13px] text-accent">

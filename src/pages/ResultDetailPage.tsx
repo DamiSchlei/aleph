@@ -166,9 +166,15 @@ export function ResultDetailPage() {
         <SectionTitle
           action={
             isArchived ? null : (
-              <Button disabled={atLimit} className="min-h-11 px-3" onClick={() => setAddObjective(true)}>
-                {t('planning.objectives.new')}
-              </Button>
+              <button
+                type="button"
+                disabled={atLimit}
+                aria-label={t('planning.objectives.new')}
+                onClick={() => setAddObjective(true)}
+                className="flex size-11 items-center justify-center rounded-full border border-line text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                +
+              </button>
             )
           }
         >
