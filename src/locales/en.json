@@ -204,7 +204,15 @@
     "viewerTitleToday": "Tasks · today",
     "viewerEmpty": "No tasks on this day.",
     "viewerSeeAll": "See all {{n}}",
-    "addTask": "Add task"
+    "addTask": "Add task",
+    "indexNone": "No tasks",
+    "indexOne": "1 task",
+    "indexMany": "{{n}} tasks",
+    "freeInline": "{{n}} free",
+    "completeNamed": "Complete {{title}}",
+    "reopenNamed": "Reopen {{title}}",
+    "blockA11y": "{{title}}, {{hours}}, {{stage}}",
+    "blockA11yDone": "{{title}}, {{hours}}, {{stage}}, completed"
   },
   "planning": {
     "title": "Planning",
