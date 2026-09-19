@@ -358,7 +358,9 @@
     "nextTask": "Next: {{title}}",
     "newResult": "+ New result",
     "resultHint": "A result is an enterprise you are building.",
-    "openWeek": "Weekly view"
+    "openWeek": "Weekly view",
+    "objectiveCount": "{{count}} objectives",
+    "objectiveCountOne": "1 objective"
   },
   "tracking": {
     "title": "Tracking",

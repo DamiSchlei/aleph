@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/nav/AppHeader'
-import { Button, Card, cx } from '@/components/ui/primitives'
+import { Button, cx } from '@/components/ui/primitives'
 import { updateTask } from '@/data/actions'
+import { blockContext } from '@/data/selectors'
 import { useAleph } from '@/data/store'
 import { isTaskDone } from '@/domain/economy'
 import {
@@ -83,112 +83,111 @@ export function WeekPlanningPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 pt-2 pb-8">
-      <AppHeader
-        title={
-          <div>
-            <h1 className="font-display text-[24px] leading-tight text-ink">{t('week.title')}</h1>
-            <p className="mt-1 text-[13px] text-ink-3">{t('week.subtitle')}</p>
-          </div>
-        }
-      />
-
-      <Card className="space-y-4 rounded-[20px]">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label={t('home.prevPeriod')}
-            onClick={() => shiftWeek(-1)}
-            className="flex size-11 shrink-0 items-center justify-center rounded-2xl text-[18px] text-ink-2 hover:bg-subtle"
-          >
-            ‹
-          </button>
-          <div className="min-w-0 flex-1 text-center">
-            <h2 className="text-[16px] font-semibold text-ink">{t('week.boardTitle')}</h2>
-            <p className="mt-0.5 text-[12px] text-text-3">{heading}</p>
-          </div>
-          <button
-            type="button"
-            aria-label={t('home.nextPeriod')}
-            onClick={() => shiftWeek(1)}
-            className="flex size-11 shrink-0 items-center justify-center rounded-2xl text-[18px] text-ink-2 hover:bg-subtle"
-          >
-            ›
-          </button>
+    <div className="flex flex-col gap-4 pt-2 pb-8">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label={t('home.prevPeriod')}
+          onClick={() => shiftWeek(-1)}
+          className="flex size-11 shrink-0 items-center justify-center rounded-2xl text-[18px] text-ink-2 hover:bg-subtle"
+        >
+          ‹
+        </button>
+        <div className="min-w-0 flex-1 text-center">
+          <h1 className="text-[17px] font-semibold text-ink">{t('week.boardTitle')}</h1>
+          <p className="mt-0.5 text-[12px] text-text-3">{heading}</p>
         </div>
+        <button
+          type="button"
+          aria-label={t('home.nextPeriod')}
+          onClick={() => shiftWeek(1)}
+          className="flex size-11 shrink-0 items-center justify-center rounded-2xl text-[18px] text-ink-2 hover:bg-subtle"
+        >
+          ›
+        </button>
+      </div>
 
-        <div className="flex gap-1">
-          {days.map((day) => {
-            const active = day === activeDay
-            const isToday = day === today
+      <div className="flex gap-1">
+        {days.map((day) => {
+          const active = day === activeDay
+          const isToday = day === today
+          return (
+            <button
+              key={day}
+              type="button"
+              onClick={() => setActiveDay(day)}
+              className={cx(
+                'flex min-h-11 flex-1 flex-col items-center justify-center rounded-xl text-[12px] font-medium transition-colors',
+                active ? 'bg-subtle text-ink' : 'text-text-3',
+              )}
+            >
+              <span className="uppercase">{weekdayShort(day, localeTag)}</span>
+              <span className={cx('tabular-nums', isToday && 'text-accent')}>
+                {Number(day.slice(8, 10))}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <ul className="space-y-2">
+        {dayTasks.length === 0 ? (
+          <li className="px-1 py-3 text-center text-[13px] text-text-3">{t('week.dayEmpty')}</li>
+        ) : (
+          dayTasks.map((task) => {
+            const fallback = blockWindow(task.estimatedHours)
+            const start = task.scheduledStart ?? fallback.start
+            const end = task.scheduledEnd ?? fallback.end
+            const ctx = blockContext(state, task)
             return (
-              <button
-                key={day}
-                type="button"
-                onClick={() => setActiveDay(day)}
-                className={cx(
-                  'flex min-h-11 flex-1 flex-col items-center justify-center rounded-xl text-[12px] font-medium transition-colors',
-                  active ? 'bg-subtle text-ink' : 'text-text-3',
-                )}
+              <li
+                key={task.id}
+                className="relative overflow-hidden rounded-2xl border border-line bg-surface-2"
               >
-                <span className="uppercase">{weekdayShort(day, localeTag)}</span>
-                <span className={cx('tabular-nums', isToday && 'text-accent')}>
-                  {Number(day.slice(8, 10))}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        <ul className="space-y-2">
-          {dayTasks.length === 0 ? (
-            <li className="rounded-2xl border border-dashed border-line px-3 py-4 text-center text-[13px] text-text-3">
-              {t('week.dayEmpty')}
-            </li>
-          ) : (
-            dayTasks.map((task) => {
-              const fallback = blockWindow(task.estimatedHours)
-              const start = task.scheduledStart ?? fallback.start
-              const end = task.scheduledEnd ?? fallback.end
-              return (
-                <li
-                  key={task.id}
-                  className={cx('rounded-2xl border bg-subtle px-3 py-3', 'border-line')}
-                >
-                  <p className="text-[15px] font-medium text-ink">{task.title}</p>
-                  <p className="mt-1 text-[12px] text-text-3">
-                    {start} – {end} · {formatHours(task.estimatedHours, locale)}h
+                <span
+                  aria-hidden
+                  className="absolute inset-y-0 left-0 w-1.5"
+                  style={{ background: ctx.color }}
+                />
+                <div className="py-2.5 pr-3 pl-3">
+                  <p className="line-clamp-1 text-[15px] font-medium text-ink">{task.title}</p>
+                  <p className="mt-0.5 truncate text-[12px] text-text-3">
+                    {start} – {end} · {formatHours(task.estimatedHours, locale)} h
                   </p>
-                </li>
-              )
-            })
-          )}
-        </ul>
-      </Card>
+                </div>
+              </li>
+            )
+          })
+        )}
+      </ul>
 
-      <section className="space-y-3">
-        <h2 className="text-[16px] font-semibold text-ink">{t('week.unassigned')}</h2>
-        <ul className="space-y-2">
-          {unassigned.map((task) => (
-            <li key={task.id}>
-              <Card className="flex items-center gap-3 rounded-2xl bg-surface-2 py-3">
-                <span className="w-10 text-[12px] text-text-3">
+      {unassigned.length > 0 ? (
+        <section className="space-y-2">
+          <h2 className="text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
+            {t('week.unassigned')}
+          </h2>
+          <ul className="space-y-2">
+            {unassigned.map((task) => (
+              <li
+                key={task.id}
+                className="flex min-h-11 items-center gap-2 rounded-2xl border border-line bg-surface-2 py-2 pr-2 pl-3"
+              >
+                <span className="w-10 shrink-0 text-[12px] text-text-3">
                   {formatHours(task.estimatedHours, locale)}h
                 </span>
-                <span className="size-6 rounded-full border border-line-strong" aria-hidden />
                 <p className="min-w-0 flex-1 truncate text-[15px] text-ink">{task.title}</p>
                 <Button
                   variant="secondary"
-                  className="min-h-9 rounded-full px-3 text-[12px]"
+                  className="min-h-11 rounded-full px-3 text-[12px]"
                   onClick={() => assignToDay(task.id)}
                 >
                   {t('week.addToBlock')}
                 </Button>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      </section>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <Link to="/planning" className="text-[14px] text-accent">
         {t('week.back')}

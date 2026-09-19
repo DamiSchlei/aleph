@@ -1,12 +1,12 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/nav/AppHeader'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
-import { Button, Card, EmptyState, Page, ProgressBar, SectionTitle } from '@/components/ui/primitives'
+import { Button, EmptyState, Page, SectionTitle, cx } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
 import { SortableList } from '@/components/ui/SortableList'
+import { RowMenu } from '@/components/ui/RowMenu'
 import { archiveResult, reorderObjectives, restoreResult } from '@/data/actions'
 import { canAddObjective, MAX_OBJECTIVES_PER_RESULT } from '@/domain/limits'
 import { pillarOfResult, PILLAR_COLOR } from '@/domain/pillars'
@@ -16,12 +16,16 @@ import {
   deriveObjectiveStage,
   objectiveProgress,
   resultById,
-  resultHealth,
+  skillById,
 } from '@/data/selectors'
 import { useAleph } from '@/data/store'
-import { formatDate } from '@/i18n/format'
+import { formatDate, formatPercent } from '@/i18n/format'
 import { stageShort } from '@/i18n/labels'
-import type { Objective } from '@/domain/types'
+import type { AlephState, Objective, Result } from '@/domain/types'
+
+function railColor(state: AlephState, result: Result): string {
+  return skillById(state, result.skillId)?.color ?? PILLAR_COLOR[pillarOfResult(result)]
+}
 
 function ObjectiveRow({
   objective,
@@ -32,16 +36,30 @@ function ObjectiveRow({
 }) {
   const { t } = useTranslation()
   const state = useAleph()
+  const locale = state.character.locale
   const obj = objectiveProgress(state, objective.id)
   const done = objective.status === 'done'
+  const percent =
+    !done && obj.tasksTotal > 0 && obj.ratio && obj.ratio > 0
+      ? formatPercent(obj.ratio, locale)
+      : null
+  const meta = [
+    objective.targetDate ? formatDate(objective.targetDate, locale) : null,
+    !done ? stageShort(t, deriveObjectiveStage(state, objective.id)) : t(`objectiveStatus.${objective.status}`),
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
-    <Card
-      className={`flex items-start gap-1 border border-line bg-surface p-2 ${done ? 'opacity-80' : ''}`}
+    <div
+      className={cx(
+        'relative flex overflow-hidden rounded-2xl border border-line bg-surface-2',
+        done && 'opacity-80',
+      )}
     >
       <Link
         to={`/planning/objectives/${objective.id}`}
-        className="flex min-h-11 min-w-0 flex-1 items-center gap-2 p-2"
+        className="flex min-h-11 min-w-0 flex-1 items-center gap-2 py-2.5 pr-2 pl-3"
       >
         {done ? (
           <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-mint text-white">
@@ -50,28 +68,22 @@ function ObjectiveRow({
             </svg>
           </span>
         ) : null}
-        <div className="min-w-0 flex-1 overflow-hidden">
-          <p className={`break-words leading-snug font-medium text-ink ${done ? 'text-ink-3' : ''}`}>
+        <div className="min-w-0 flex-1">
+          <p className={cx('line-clamp-1 text-[15px] leading-snug font-medium', done ? 'text-ink-3' : 'text-ink')}>
             {objective.name}
           </p>
-          <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[12px] text-ink-3">
-            {objective.targetDate ? (
-              <span>
-                {t('home.metaDate', {
-                  date: formatDate(objective.targetDate, state.character.locale),
-                })}
-              </span>
-            ) : null}
-            {!done ? <span>{stageShort(t, deriveObjectiveStage(state, objective.id))}</span> : null}
-          </div>
-          {!done && obj.tasksTotal > 0 ? <ProgressBar className="mt-2" ratio={obj.ratio} /> : null}
+          <p className="mt-0.5 truncate text-[12px] leading-tight text-text-3">{meta}</p>
         </div>
-        <span aria-hidden className="text-ink-3">
-          ›
-        </span>
+        {percent ? (
+          <span className="shrink-0 text-[13px] tabular-nums text-accent">{percent}</span>
+        ) : (
+          <span aria-hidden className="text-ink-3">
+            ›
+          </span>
+        )}
       </Link>
-      {handle}
-    </Card>
+      {handle ? <div className="opacity-30">{handle}</div> : null}
+    </div>
   )
 }
 
@@ -83,13 +95,13 @@ export function ResultDetailPage() {
   const result = resultById(state, resultId)
   const active = result ? activeObjectivesOfResult(state, result.id) : []
   const completed = result ? completedObjectivesOfResult(state, result.id) : []
-  const health = result ? resultHealth(state, result.id) : null
   const [edit, setEdit] = useState(false)
   const [addObjective, setAddObjective] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
   const atLimit = !canAddObjective(state.objectives, resultId)
   const isArchived = result?.status === 'archived'
   const pillar = result ? pillarOfResult(result) : 'mind'
+  const color = result ? railColor(state, result) : PILLAR_COLOR[pillar]
 
   if (!result) {
     return (
@@ -107,67 +119,62 @@ export function ResultDetailPage() {
     )
   }
 
+  const meta = [
+    result.targetDate ? formatDate(result.targetDate, state.character.locale) : null,
+    t(`resultStatus.${result.status}`),
+    t(`pillars.${pillar}`),
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
   return (
-    <Page className="flex flex-col gap-5 pt-4">
-      <AppHeader
-        title={
-          <button
-            type="button"
-            onClick={() => navigate('/planning')}
-            className="min-h-11 text-left text-[14px] text-text-3"
-          >
-            ← {t('planning.title')}
-          </button>
-        }
-      />
-      <header>
-        <div className="flex items-start gap-2">
-          <span
-            aria-hidden
-            className="mt-2 size-2.5 shrink-0 rounded-full"
-            style={{ background: PILLAR_COLOR[pillar] }}
-            title={t(`pillars.${pillar}`)}
+    <Page className="flex flex-col gap-4 pt-2">
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => navigate('/planning')}
+          className="min-h-11 text-left text-[14px] text-text-3"
+        >
+          ← {t('planning.title')}
+        </button>
+        {isArchived ? (
+          <Button variant="secondary" className="min-h-11 px-3" onClick={() => restoreResult(result.id)}>
+            {t('planning.results.restore')}
+          </Button>
+        ) : (
+          <RowMenu
+            items={[
+              { label: t('common.edit'), onClick: () => setEdit(true) },
+              { label: t('common.archive'), tone: 'danger', onClick: () => setArchiveOpen(true) },
+            ]}
           />
-          <h1 className="min-w-0 break-words text-2xl leading-snug font-semibold text-ink">{result.name}</h1>
-        </div>
-        {result.why ? (
-          <p className="mt-1 break-words text-[15px] leading-relaxed text-text-3">{result.why}</p>
-        ) : null}
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-text-3">
-          {result.targetDate ? <span>{formatDate(result.targetDate, state.character.locale)}</span> : null}
-          <span>{t(`resultStatus.${result.status}`)}</span>
-          <span>{t(`pillars.${pillar}`)}</span>
+        )}
+      </div>
+
+      <header className="relative overflow-hidden rounded-2xl border border-line bg-surface-2 py-2.5 pr-3 pl-3">
+        <span aria-hidden className="absolute inset-y-0 left-0 w-1.5" style={{ background: color }} />
+        <div className="pl-2">
+          <h1 className="line-clamp-2 text-[17px] leading-snug font-semibold text-ink">{result.name}</h1>
+          <p className="mt-0.5 truncate text-[12px] leading-tight text-text-3">{meta}</p>
+          {result.why ? (
+            <p className="mt-1 line-clamp-1 break-words text-[13px] text-text-3">{result.why}</p>
+          ) : null}
         </div>
       </header>
-
-      {health ? (
-        <Card>
-          <p className="text-[14px] leading-relaxed text-text-3">{t(health.key, health.params)}</p>
-        </Card>
-      ) : null}
-
-      {isArchived ? (
-        <Button variant="secondary" onClick={() => restoreResult(result.id)}>
-          {t('planning.results.restore')}
-        </Button>
-      ) : (
-        <div className="flex gap-2">
-          <Button variant="secondary" className="flex-1" onClick={() => setEdit(true)}>
-            {t('common.edit')}
-          </Button>
-          <Button variant="danger" className="flex-1" onClick={() => setArchiveOpen(true)}>
-            {t('common.archive')}
-          </Button>
-        </div>
-      )}
 
       <div>
         <SectionTitle
           action={
             isArchived ? null : (
-              <Button disabled={atLimit} onClick={() => setAddObjective(true)}>
-                {t('planning.objectives.new')}
-              </Button>
+              <button
+                type="button"
+                disabled={atLimit}
+                aria-label={t('planning.objectives.new')}
+                onClick={() => setAddObjective(true)}
+                className="flex size-11 items-center justify-center rounded-full border border-line text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                +
+              </button>
             )
           }
         >
@@ -200,11 +207,9 @@ export function ResultDetailPage() {
         )}
       </div>
 
-      <div>
-        <SectionTitle>{t('planning.results.completedObjectives')}</SectionTitle>
-        {completed.length === 0 ? (
-          <EmptyState>{t('planning.results.completedEmpty')}</EmptyState>
-        ) : (
+      {completed.length > 0 ? (
+        <div>
+          <SectionTitle>{t('planning.results.completedObjectives')}</SectionTitle>
           <ul className="flex flex-col gap-2">
             {completed.map((objective) => (
               <li key={objective.id}>
@@ -212,8 +217,8 @@ export function ResultDetailPage() {
               </li>
             ))}
           </ul>
-        )}
-      </div>
+        </div>
+      ) : null}
 
       <ResultFormSheet open={edit} result={result} onClose={() => setEdit(false)} />
       <ObjectiveFormSheet

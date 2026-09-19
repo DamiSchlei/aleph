@@ -1,9 +1,7 @@
-import { AppHeader } from '@/components/nav/AppHeader'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ResultFormSheet } from '@/components/planning/ResultForm'
-import { StagePath } from '@/components/planning/StagePath'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { AssignSheet } from '@/components/task/AssignSheet'
 import { TaskRow } from '@/components/task/TaskRow'
@@ -12,14 +10,11 @@ import { useTaskActions } from '@/components/task/useTaskActions'
 import { SortableList } from '@/components/ui/SortableList'
 import { RowMenu } from '@/components/ui/RowMenu'
 import {
-  Badge,
   Button,
-  Card,
   Chip,
   EmptyState,
   Input,
   Page,
-  ProgressBar,
   Select,
 } from '@/components/ui/primitives'
 import { ConfirmDialog, Sheet } from '@/components/ui/Sheet'
@@ -28,11 +23,10 @@ import {
   activeResults,
   attendingResults,
   leastActiveAttending,
-  objectivesOfResult,
   pickerObjectives,
   pickerResults,
-  resultHealth,
   resultProgress,
+  skillById,
   stageFocusOfResult,
   taskResultStatus,
 } from '@/data/selectors'
@@ -41,28 +35,22 @@ import { shouldSoftWarnActiveResults } from '@/domain/limits'
 import { STAGE_ORDER } from '@/domain/stage'
 import { pillarOfResult, PILLAR_COLOR } from '@/domain/pillars'
 import { formatPercent } from '@/i18n/format'
-import { skillName } from '@/i18n/labels'
-import type { StageId, Task, TaskStatus } from '@/domain/types'
+import { skillName, stageShort } from '@/i18n/labels'
+import type { AlephState, Result, StageId, Task, TaskStatus } from '@/domain/types'
 
 type PlanningTab = 'results' | 'tasks'
 
-const CHIP_KEYS = ['product', 'money', 'body'] as const
+function railColor(state: AlephState, result: Result): string {
+  return skillById(state, result.skillId)?.color ?? PILLAR_COLOR[pillarOfResult(result)]
+}
 
 export function PlanningPage() {
   const { t } = useTranslation()
   const [tab, setTab] = useState<PlanningTab>('results')
 
   return (
-    <Page className="flex flex-col gap-4 pt-2">
-      <AppHeader
-        title={
-          <div>
-            <h1 className="text-[28px] font-semibold text-ink">{t('planning.title')}</h1>
-            <p className="mt-1 text-[14px] text-ink-3">{t('planning.subtitle')}</p>
-          </div>
-        }
-      />
-      <div className="flex justify-center gap-2">
+    <Page className="flex flex-col gap-3 pt-2">
+      <div className="flex gap-2">
         <Chip active={tab === 'results'} onClick={() => setTab('results')} className="min-w-28 justify-center">
           {t('planning.tabs.results')}
         </Chip>
@@ -72,18 +60,6 @@ export function PlanningPage() {
       </div>
       {tab === 'results' ? <ResultsTab /> : <TasksTab />}
     </Page>
-  )
-}
-
-function DashedNewResult({ onClick, label }: { onClick: () => void; label: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-h-11 w-full items-center justify-center rounded-[20px] border border-dashed border-line px-4 py-3 text-[14px] text-text-3"
-    >
-      {label}
-    </button>
   )
 }
 
@@ -122,19 +98,21 @@ function ResultsTab() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[13px] font-semibold tracking-[0.14em] text-text-3 uppercase">
           {t('planning.activeEnterprises')}
         </p>
-        <button
-          type="button"
-          aria-label={t('planning.results.new')}
-          onClick={() => requestCreate()}
-          className="flex size-11 items-center justify-center rounded-full border border-line text-accent"
-        >
-          +
-        </button>
+        {results.length > 0 ? (
+          <button
+            type="button"
+            aria-label={t('planning.results.new')}
+            onClick={() => requestCreate()}
+            className="flex size-11 items-center justify-center rounded-full border border-line text-accent"
+          >
+            +
+          </button>
+        ) : null}
       </div>
 
       <Link to="/planning/week" className="text-[13px] text-accent">
@@ -143,98 +121,76 @@ function ResultsTab() {
 
       {results.length === 0 ? (
         <EmptyState
-          hint={t('planning.results.emptyHint')}
-          action={
-            <div className="flex flex-col items-center gap-3">
-              <Button onClick={() => requestCreate()}>{t('planning.newResult')}</Button>
-              <div className="flex max-w-sm flex-wrap justify-center gap-2">
-                {CHIP_KEYS.map((key) => (
-                  <Chip key={key} onClick={() => requestCreate(t(`planning.results.chips.${key}`))}>
-                    {t(`planning.results.chips.${key}`)}
-                  </Chip>
-                ))}
-              </div>
-            </div>
-          }
+          action={<Button onClick={() => requestCreate()}>{t('planning.newResult')}</Button>}
         >
           {t('planning.results.empty')}
         </EmptyState>
       ) : (
-        <>
-          <SortableList
-            ids={results.map((r) => r.id)}
-            onReorder={reorderResults}
-            handleLabel={t('common.reorderHint')}
-          >
-            {(id, handle) => {
-              const result = results.find((r) => r.id === id)
-              if (!result) return null
-              const progress = resultProgress(state, result.id)
-              const objectives = objectivesOfResult(state, result.id).slice(0, 4)
-              const percent = formatPercent(progress.ratio, locale)
-              return (
-                <Card className="flex items-start gap-1 rounded-[20px] p-2">
-                  <Link to={`/planning/results/${result.id}`} className="min-w-0 flex-1 overflow-hidden p-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex min-w-0 flex-1 items-start gap-2">
-                        <span
-                          aria-hidden
-                          className="mt-1.5 size-2.5 shrink-0 rounded-full"
-                          style={{ background: PILLAR_COLOR[pillarOfResult(result)] }}
-                          title={t(`pillars.${pillarOfResult(result)}`)}
-                        />
-                        <p className="min-w-0 break-words font-display text-[20px] leading-[1.35] text-ink">
-                          {result.name}
-                        </p>
-                      </div>
-                      {percent ? (
-                        <span className="shrink-0 pt-1 text-[13px] font-medium tabular-nums text-accent">
-                          {percent}
-                        </span>
-                      ) : null}
-                    </div>
-                    {result.why ? (
-                      <p className="mt-1.5 line-clamp-2 break-words text-[13px] leading-snug text-text-3">
-                        {result.why}
-                      </p>
-                    ) : null}
-                    <p className="mt-1.5 line-clamp-3 min-w-0 break-words text-[13px] leading-snug text-text-3">
-                      {t(resultHealth(state, result.id).key, resultHealth(state, result.id).params)}
+        <SortableList
+          ids={results.map((r) => r.id)}
+          onReorder={reorderResults}
+          handleLabel={t('common.reorderHint')}
+        >
+          {(id, handle) => {
+            const result = results.find((r) => r.id === id)
+            if (!result) return null
+            const progress = resultProgress(state, result.id)
+            const stage = stageFocusOfResult(state, result.id)
+            const percent =
+              progress.tasksTotal > 0 && progress.ratio && progress.ratio > 0
+                ? formatPercent(progress.ratio, locale)
+                : null
+            const count = progress.objectiveCount
+            const countLabel =
+              count === 1
+                ? t('planning.objectiveCountOne')
+                : t('planning.objectiveCount', { count })
+            const meta = [countLabel, stage ? stageShort(t, stage) : null]
+              .filter(Boolean)
+              .join(' · ')
+            return (
+              <div className="relative flex overflow-hidden rounded-2xl border border-line bg-surface-2">
+                <span
+                  aria-hidden
+                  className="absolute inset-y-0 left-0 w-1.5"
+                  style={{ background: railColor(state, result) }}
+                />
+                <Link
+                  to={`/planning/results/${result.id}`}
+                  className="flex min-h-11 min-w-0 flex-1 items-center py-2.5 pr-1 pl-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-1 text-[17px] leading-snug font-medium text-ink">
+                      {result.name}
                     </p>
-                    <StagePath current={stageFocusOfResult(state, result.id)} />
-                    {objectives.length > 0 ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {objectives.map((objective) => (
-                          <Badge key={objective.id} className="max-w-full whitespace-normal break-words px-2.5 py-1 leading-snug">
-                            {objective.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : null}
-                    {progress.tasksTotal > 0 ? <ProgressBar className="mt-3" ratio={progress.ratio} /> : null}
-                  </Link>
-                  <div className="flex flex-col items-center gap-1 pt-1">
-                    <RowMenu
-                      items={[
-                        {
-                          label: t('common.edit'),
-                          onClick: () => navigate(`/planning/results/${result.id}`),
-                        },
-                        {
-                          label: t('common.archive'),
-                          tone: 'danger',
-                          onClick: () => setArchiveId(result.id),
-                        },
-                      ]}
-                    />
-                    {handle}
+                    <p className="mt-0.5 truncate text-[12px] leading-tight text-text-3">{meta}</p>
                   </div>
-                </Card>
-              )
-            }}
-          </SortableList>
-          <DashedNewResult onClick={() => requestCreate()} label={t('planning.newResult')} />
-        </>
+                  {percent ? (
+                    <span className="shrink-0 pl-2 text-[13px] font-medium tabular-nums text-accent">
+                      {percent}
+                    </span>
+                  ) : null}
+                </Link>
+                <div className="flex items-center pr-0.5">
+                  <RowMenu
+                    items={[
+                      {
+                        label: t('common.edit'),
+                        onClick: () => navigate(`/planning/results/${result.id}`),
+                      },
+                      {
+                        label: t('common.archive'),
+                        tone: 'danger',
+                        onClick: () => setArchiveId(result.id),
+                      },
+                    ]}
+                  />
+                  <div className="opacity-30">{handle}</div>
+                </div>
+              </div>
+            )
+          }}
+        </SortableList>
       )}
 
       {archived.length > 0 ? (
@@ -379,7 +335,6 @@ function TasksTab() {
             <li key={task.id}>
               <TaskRow
                 task={task}
-                className={isLoose(task) ? 'border-l-2 border-l-amber' : undefined}
                 onToggle={() => toggle(task)}
                 onExecute={() => execute(task)}
                 onOpen={() => setEditing(task)}
