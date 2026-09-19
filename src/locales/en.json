@@ -405,10 +405,13 @@
     "activityTitle": "Activity rhythm",
     "resultsTitle": "Progress by result",
     "skillsTitle": "Skills",
-    "seeRoster": "See Roster",
+    "seeRoster": "See roster",
     "skillMostActive": "Most active",
     "skillStable": "Stable",
-    "skillStreak": "On a streak"
+    "skillStreak": "On a streak",
+    "thisWeek": "This week",
+    "resultOverall": "Overall progress",
+    "hoy": "Today"
   },
   "journal": {
     "title": "Journal",

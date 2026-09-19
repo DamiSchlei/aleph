@@ -14,7 +14,10 @@ import {
   pickerResults,
   planTotalRows,
   resultHealth,
+  resultRailColor,
   resultStaleThisWeek,
+  resultWeekStats,
+  trackingStats,
   weekSeriesPulse,
   journalFor,
 } from './selectors'
@@ -415,6 +418,90 @@ describe('blockContext', () => {
       tasks: [task({ id: 't', title: 'Paso', resultId: 'r' })],
     })
     expect(blockContext(s, s.tasks[0]).color).toBe('#2F6BFF')
+  })
+})
+
+describe('trackingStats', () => {
+  it('scopes per-day and week totals to the ISO week of the anchor', () => {
+    const s = state({
+      tasks: [
+        task({
+          id: 'prev',
+          title: 'Semana anterior',
+          status: 'done_on_time',
+          completedAt: '2026-09-13T15:00:00',
+          estimatedHours: 2,
+        }),
+        task({
+          id: 'in-week',
+          title: 'Esta semana',
+          status: 'done_on_time',
+          completedAt: '2026-09-16T15:00:00',
+          estimatedHours: 1.5,
+        }),
+        task({
+          id: 'late-week',
+          title: 'Tarde',
+          status: 'done_late',
+          completedAt: '2026-09-18T15:00:00',
+          estimatedHours: 1,
+        }),
+      ],
+    })
+    const stats = trackingStats(s, '2026-09-18')
+    expect(stats.completed).toBe(3)
+    expect(stats.weekCompleted).toBe(2)
+    expect(stats.weekOnTime).toBe(1)
+    expect(stats.weekHours).toBe(2.5)
+    expect(stats.perDay).toHaveLength(7)
+    expect(stats.perDay[0]?.dayKey).toBe('2026-09-14')
+    expect(stats.perDay[6]?.dayKey).toBe('2026-09-20')
+    expect(stats.perDay.find((d) => d.dayKey === '2026-09-16')?.count).toBe(1)
+    expect(stats.perDay.find((d) => d.dayKey === '2026-09-13')).toBeUndefined()
+  })
+})
+
+describe('resultWeekStats', () => {
+  it('counts planned and completed load for the selected week only', () => {
+    const s = state({
+      results: [result({ id: 'r', name: 'Arte', skillId: 'creativity', pillar: 'soul' })],
+      tasks: [
+        task({
+          id: 'planned-done',
+          title: 'A',
+          resultId: 'r',
+          scheduledFor: '2026-09-16',
+          dueAt: '2026-09-16',
+          status: 'done_on_time',
+          completedAt: '2026-09-16T12:00:00',
+          estimatedHours: 2,
+        }),
+        task({
+          id: 'planned-open',
+          title: 'B',
+          resultId: 'r',
+          scheduledFor: '2026-09-17',
+          dueAt: '2026-09-17',
+          estimatedHours: 1,
+        }),
+        task({
+          id: 'other-week',
+          title: 'C',
+          resultId: 'r',
+          scheduledFor: '2026-09-10',
+          dueAt: '2026-09-10',
+          status: 'done_on_time',
+          completedAt: '2026-09-10T12:00:00',
+          estimatedHours: 4,
+        }),
+      ],
+    })
+    const week = resultWeekStats(s, 'r', '2026-09-18')
+    expect(week.planned).toBe(2)
+    expect(week.done).toBe(1)
+    expect(week.hours).toBe(2)
+    expect(week.ratio).toBe(0.5)
+    expect(resultRailColor(s, s.results[0])).toBe('#a78bfa')
   })
 })
 

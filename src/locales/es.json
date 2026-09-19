@@ -405,10 +405,13 @@
     "activityTitle": "Ritmo de actividad",
     "resultsTitle": "Avance por resultado",
     "skillsTitle": "Habilidades",
-    "seeRoster": "Ver Roster",
+    "seeRoster": "Ver roster",
     "skillMostActive": "Más activa",
     "skillStable": "Estable",
-    "skillStreak": "En racha"
+    "skillStreak": "En racha",
+    "thisWeek": "Esta semana",
+    "resultOverall": "Avance total",
+    "hoy": "Hoy"
   },
   "journal": {
     "title": "Bitácora",
