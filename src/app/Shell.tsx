@@ -1,10 +1,13 @@
 import { Outlet } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { JournalBubble } from '@/components/journal/JournalBubble'
+import { AccountMenu } from '@/components/nav/AccountMenu'
 import { TabBar } from '@/components/nav/TabBar'
 import { rollPendingTasksToToday } from '@/data/actions'
 
 export function Shell() {
+  const [accountOpen, setAccountOpen] = useState(false)
+
   useEffect(() => {
     rollPendingTasksToToday()
   }, [])
@@ -18,7 +21,8 @@ export function Shell() {
         <Outlet />
       </main>
       <JournalBubble />
-      <TabBar />
+      <TabBar characterOpen={accountOpen} onCharacterClick={() => setAccountOpen(true)} />
+      <AccountMenu open={accountOpen} onClose={() => setAccountOpen(false)} />
     </div>
   )
 }

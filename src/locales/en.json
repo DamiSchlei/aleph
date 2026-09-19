@@ -9,7 +9,8 @@
     "home": "Home",
     "planning": "Planning",
     "tracking": "Tracking",
-    "planShort": "Plan"
+    "planShort": "Plan",
+    "character": "Character"
   },
   "common": {
     "save": "Save",

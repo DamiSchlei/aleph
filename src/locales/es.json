@@ -9,7 +9,8 @@
     "home": "Inicio",
     "planning": "Planificación",
     "tracking": "Seguimiento",
-    "planShort": "Plan"
+    "planShort": "Plan",
+    "character": "Personaje"
   },
   "common": {
     "save": "Guardar",

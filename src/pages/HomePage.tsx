@@ -1,16 +1,11 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Avatar } from '@/components/character/Avatar'
 import { DayFeed } from '@/components/home/DayFeed'
-import { HomeHero, HomeStickyChrome, type HomeGranularity } from '@/components/home/HomeStickyChrome'
+import { HomeStickyChrome, type HomeGranularity } from '@/components/home/HomeStickyChrome'
 import { PeriodGrid } from '@/components/home/PeriodGrid'
-import { AccountMenu } from '@/components/nav/AccountMenu'
-import { useFeedback } from '@/app/FeedbackProvider'
 import { weekStartKeyOf } from '@/data/dayLoad'
 import { useAleph } from '@/data/store'
 import { addDays, addMonths, startOfMonth, toDayKey } from '@/domain/dates'
-import { dayMoment } from '@/i18n/dayMoment'
-import { formatMoney } from '@/i18n/format'
 
 const DAY_WINDOW_STEP = 14
 const DAY_WINDOW_MAX = 90
@@ -26,9 +21,8 @@ function buildDays(anchorKey: string, radius: number): string[] {
 }
 
 export function HomePage() {
-  const { t, i18n } = useTranslation()
+  const { i18n } = useTranslation()
   const { character } = useAleph()
-  const { pulseKey } = useFeedback()
   const todayKey = toDayKey(new Date())
   const localeTag = i18n.language?.startsWith('en') ? 'en-US' : 'es-AR'
   const locale = character.locale
@@ -39,7 +33,6 @@ export function HomePage() {
   const [jumpNonce, setJumpNonce] = useState(0)
   const [dayRadius, setDayRadius] = useState(DAY_WINDOW_STEP)
   const [chromeHeight, setChromeHeight] = useState(0)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   const days = useMemo(
     () => buildDays(todayKey, dayRadius),
@@ -92,31 +85,8 @@ export function HomePage() {
     [todayKey],
   )
 
-  const xpRatio = character.xpToNext > 0 ? character.xp / character.xpToNext : null
-
   return (
     <div className="flex flex-col">
-      <HomeHero
-        greeting={t(`home.greeting.${dayMoment()}`)}
-        name={character.name}
-        levelLabel={t('home.levelChip', { level: character.level })}
-        moneyLabel={`${t('common.money')}${formatMoney(character.money, locale)}`}
-        xpLabel={t('home.xpLabel', { xp: character.xp, next: character.xpToNext })}
-        xpRatio={xpRatio}
-        avatar={
-          <button
-            type="button"
-            aria-label={t('account.openMenu')}
-            onClick={() => setMenuOpen(true)}
-            className="rounded-full ring-1 ring-accent/40"
-          >
-            <span className="block overflow-hidden rounded-full border border-line">
-              <Avatar avatar={character.avatar} size={96} pulseKey={pulseKey} className="rounded-full" />
-            </span>
-          </button>
-        }
-      />
-
       <HomeStickyChrome
         activeDay={activeDay}
         todayKey={todayKey}
@@ -161,8 +131,6 @@ export function HomePage() {
           }}
         />
       ) : null}
-
-      <AccountMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   )
 }

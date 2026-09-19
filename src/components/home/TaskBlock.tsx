@@ -9,8 +9,8 @@ import { formatHours } from '@/i18n/format'
 import type { Task } from '@/domain/types'
 
 /**
- * Closed Home block: one scheduled Task as a visual unit.
- * Not a domain entity — lineage + title + meta + quiet actions.
+ * Closed Home block: one scheduled Task as a two-line unit (~56–64px).
+ * Not a domain entity — rail + title + meta + quiet actions.
  */
 export function TaskBlock({
   task,
@@ -33,6 +33,13 @@ export function TaskBlock({
   const done = isTaskDone(task.status)
 
   const metaParts: string[] = []
+  if (!showGroupLabel) {
+    if (ctx.kind === 'loose') metaParts.push(t('planning.tasks.loose'))
+    else if (ctx.result?.name) metaParts.push(ctx.result.name)
+  }
+  if (ctx.kind === 'anchored' && ctx.objective?.name) {
+    metaParts.push(ctx.objective.name)
+  }
   if (ctx.timeRange.start && ctx.timeRange.end) {
     metaParts.push(`${ctx.timeRange.start}–${ctx.timeRange.end}`)
   }
@@ -46,137 +53,77 @@ export function TaskBlock({
       : undefined
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1">
       {showGroupLabel && ctx.result ? (
-        <p className="px-1 text-[11px] tracking-[0.14em] text-text-3 uppercase">{ctx.result.name}</p>
+        lineageHref ? (
+          <Link
+            to={lineageHref}
+            className="block truncate px-1 text-[11px] leading-tight text-text-3"
+          >
+            {ctx.result.name}
+          </Link>
+        ) : (
+          <p className="truncate px-1 text-[11px] leading-tight text-text-3">{ctx.result.name}</p>
+        )
       ) : null}
-      <div
-        className={cx(
-          'relative flex min-h-16 overflow-hidden rounded-[20px] border border-line bg-surface-2',
-        )}
-      >
+      <div className="relative flex overflow-hidden rounded-2xl border border-line bg-surface-2">
         <span
           aria-hidden
-          className="absolute inset-y-0 left-0 w-1"
+          className="absolute inset-y-0 left-0 w-1.5"
           style={{ background: ctx.color }}
         />
-        <div className="flex min-w-0 flex-1 items-start gap-1 py-3.5 pr-2 pl-3.5">
-          <div className="min-w-0 flex-1">
-            {lineageHref ? (
-              <Link to={lineageHref} className="block min-w-0">
-                <Lineage
-                  resultName={ctx.result?.name}
-                  objectiveName={ctx.objective?.name}
-                  kind={ctx.kind}
-                  color={ctx.color}
-                />
-              </Link>
-            ) : (
-              <Lineage
-                resultName={undefined}
-                objectiveName={undefined}
-                kind={ctx.kind}
-                color={ctx.color}
-              />
-            )}
-            <button
-              type="button"
-              onClick={onOpen}
-              className="mt-1.5 w-full min-w-0 text-left"
+        <div className="flex min-w-0 flex-1 items-center py-2.5 pr-1 pl-3">
+          <button
+            type="button"
+            onClick={onOpen}
+            className="min-h-11 min-w-0 flex-1 py-0 text-left"
+          >
+            <p
+              className={cx(
+                'line-clamp-1 text-[15px] leading-snug font-medium text-ink',
+                done && 'line-through text-ink-3',
+              )}
             >
-              <p
-                className={cx(
-                  'line-clamp-2 text-[16px] leading-snug font-medium text-ink',
-                  done && 'line-through text-ink-3',
-                )}
-              >
-                {task.title}
-              </p>
-              <p className="mt-1 text-[12px] text-text-3">{metaParts.join(' · ')}</p>
-              {ctx.doneWhen ? (
-                <p className="mt-1 text-[12px] text-text-3">
-                  {t('home.doneWhen', { text: ctx.doneWhen })}
-                </p>
+              {task.title}
+            </p>
+            <p className="mt-0.5 truncate text-[12px] leading-tight text-text-3">
+              {metaParts.join(' · ')}
+            </p>
+          </button>
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={done}
+            aria-label={t('home.completeBlock')}
+            onClick={onToggle}
+            className="flex size-11 shrink-0 items-center justify-center"
+          >
+            <span
+              className={cx(
+                'flex size-[22px] items-center justify-center rounded-md border-2',
+                done ? 'border-mint bg-mint text-white' : 'border-line-strong',
+              )}
+            >
+              {done ? (
+                <svg
+                  viewBox="0 0 16 16"
+                  className="size-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    d="M3.5 8.5 6.5 11.5 12.5 4.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               ) : null}
-            </button>
-          </div>
-          <div className="flex shrink-0 flex-col items-center gap-0.5">
-            <button
-              type="button"
-              role="checkbox"
-              aria-checked={done}
-              aria-label={t('home.completeBlock')}
-              onClick={onToggle}
-              className="flex size-11 items-center justify-center"
-            >
-              <span
-                className={cx(
-                  'flex size-[22px] items-center justify-center rounded-md border-2',
-                  done ? 'border-mint bg-mint text-white' : 'border-line-strong',
-                )}
-              >
-                {done ? (
-                  <svg
-                    viewBox="0 0 16 16"
-                    className="size-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      d="M3.5 8.5 6.5 11.5 12.5 4.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                ) : null}
-              </span>
-            </button>
-            <div className="opacity-50">{handle}</div>
-          </div>
+            </span>
+          </button>
+          <div className="opacity-30">{handle}</div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function Lineage({
-  resultName,
-  objectiveName,
-  kind,
-  color,
-}: {
-  resultName?: string
-  objectiveName?: string
-  kind: 'anchored' | 'result-only' | 'loose'
-  color: string
-}) {
-  const { t } = useTranslation()
-
-  if (kind === 'loose') {
-    return (
-      <p className="text-[11px] font-semibold tracking-[0.14em] text-amber uppercase">
-        {t('planning.tasks.loose')}
-      </p>
-    )
-  }
-
-  return (
-    <div className="min-w-0">
-      {resultName ? (
-        <p
-          className="truncate text-[11px] font-semibold tracking-[0.14em] uppercase"
-          style={{ color }}
-        >
-          {resultName}
-        </p>
-      ) : null}
-      {kind === 'anchored' && objectiveName ? (
-        <p className="mt-0.5 truncate text-[12px] text-text-2">{objectiveName}</p>
-      ) : null}
-      {kind === 'result-only' ? (
-        <p className="mt-0.5 text-[12px] text-text-3">{t('home.noObjective')}</p>
-      ) : null}
     </div>
   )
 }
