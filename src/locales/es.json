@@ -358,7 +358,9 @@
     "nextTask": "Próximo: {{title}}",
     "newResult": "+ Nuevo resultado",
     "resultHint": "Un resultado es una empresa que estás armando.",
-    "openWeek": "Vista semanal"
+    "openWeek": "Vista semanal",
+    "objectiveCount": "{{count}} objetivos",
+    "objectiveCountOne": "1 objetivo"
   },
   "tracking": {
     "title": "Seguimiento",

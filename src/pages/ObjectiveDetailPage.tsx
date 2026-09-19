@@ -1,16 +1,15 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { AppHeader } from '@/components/nav/AppHeader'
 import { JournalThread } from '@/components/journal/JournalThread'
 import { ObjectiveFormSheet } from '@/components/planning/ObjectiveForm'
-import { StagePath } from '@/components/planning/StagePath'
 import { TaskFormSheet } from '@/components/planning/TaskForm'
 import { TaskRow } from '@/components/task/TaskRow'
 import { useTaskCompletion } from '@/components/task/useTaskCompletion'
 import { useTaskActions } from '@/components/task/useTaskActions'
-import { Button, Card, Chip, EmptyState, Page, ProgressBar, cx } from '@/components/ui/primitives'
+import { Button, Chip, EmptyState, Page, ProgressBar, cx } from '@/components/ui/primitives'
 import { ConfirmDialog } from '@/components/ui/Sheet'
+import { RowMenu } from '@/components/ui/RowMenu'
 import { archiveObjective, setObjectiveStatus } from '@/data/actions'
 import {
   deriveObjectiveStage,
@@ -23,7 +22,8 @@ import { useAleph } from '@/data/store'
 import { isTaskDone } from '@/domain/economy'
 import { toDayKey } from '@/domain/dates'
 import { canAddObjective } from '@/domain/limits'
-import { formatDate } from '@/i18n/format'
+import { formatDate, formatPercent } from '@/i18n/format'
+import { stageShort } from '@/i18n/labels'
 import type { ObjectiveStatus, Task } from '@/domain/types'
 
 const STATUS_OPTIONS: ObjectiveStatus[] = ['pending', 'in_progress', 'done', 'blocked']
@@ -56,6 +56,10 @@ export function ObjectiveDetailPage() {
   const associated = [...pending, ...inProgress]
   const completed = all.filter((tk) => isTaskDone(tk.status))
   const stage = objective ? deriveObjectiveStage(state, objective.id) : 'research'
+  const percent =
+    progress && progress.tasksTotal > 0 && progress.ratio && progress.ratio > 0
+      ? formatPercent(progress.ratio, locale)
+      : null
 
   if (!objective || !progress) {
     return (
@@ -79,78 +83,69 @@ export function ObjectiveDetailPage() {
     onReturn: (tk: Task) => actions.back(tk),
   }
 
-  return (
-    <Page className="flex flex-col gap-5 pt-4 pb-24">
-      <AppHeader
-        title={
-          <button
-            type="button"
-            onClick={() => navigate(`/planning/results/${objective.resultId}`)}
-            className="min-h-11 text-left text-[14px] text-ink-3"
-          >
-            ← {result?.name ?? t('planning.results.detailTitle')}
-          </button>
-        }
-      />
+  const meta = [
+    result?.name,
+    objective.targetDate ? formatDate(objective.targetDate, locale) : null,
+    stageShort(t, stage),
+    completed.length > 0 ? t('objectiveDetail.completedCount', { n: completed.length }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold text-ink">{objective.name}</h1>
-        {result ? (
-          <p className="text-[14px] text-ink-3">
-            {t('objectiveDetail.resultLabel', { name: result.name })}
-          </p>
+  return (
+    <Page className="flex flex-col gap-4 pt-2 pb-24">
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => navigate(`/planning/results/${objective.resultId}`)}
+          className="min-h-11 min-w-0 truncate text-left text-[14px] text-ink-3"
+        >
+          ← {result?.name ?? t('planning.results.detailTitle')}
+        </button>
+        <RowMenu
+          items={[
+            { label: t('common.edit'), onClick: () => setEdit(true) },
+            { label: t('common.archive'), tone: 'danger', onClick: () => setArchiveOpen(true) },
+          ]}
+        />
+      </div>
+
+      <header>
+        <h1 className="text-[17px] leading-snug font-semibold text-ink">{objective.name}</h1>
+        <p className="mt-0.5 truncate text-[12px] leading-tight text-text-3">{meta}</p>
+        {objective.why ? (
+          <p className="mt-1 line-clamp-2 text-[13px] text-ink-3">{objective.why}</p>
         ) : null}
-        {objective.targetDate ? (
-          <p className="inline-flex min-h-11 items-center rounded-full border border-line bg-subtle px-3 text-[13px] text-ink-3">
-            {t('home.metaDate', { date: formatDate(objective.targetDate, locale) })}
-          </p>
-        ) : null}
-        {completed.length > 0 ? (
-          <p className="text-[13px] text-ink-3">
-            {t('objectiveDetail.completedCount', { n: completed.length })}
-          </p>
-        ) : null}
-        {objective.why ? <p className="text-[15px] text-ink-3">{objective.why}</p> : null}
       </header>
 
-      {progress.tasksTotal > 0 ? (
-        <Card className="rounded-[20px]">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[13px] text-ink-3">{t('objectiveDetail.progress')}</p>
-          </div>
-          <ProgressBar className="mt-2" ratio={progress.ratio} />
-        </Card>
+      {percent && progress.ratio && progress.ratio > 0 ? (
+        <div className="flex items-center gap-3">
+          <ProgressBar className="flex-1" ratio={progress.ratio} />
+          <span className="text-[13px] tabular-nums text-accent">{percent}</span>
+        </div>
       ) : null}
 
-      <StagePath current={stage} />
-
-      <section>
-        <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-ink-3 uppercase">
-          {t('objectiveDetail.statusLabel')}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {STATUS_OPTIONS.map((status) => (
-            <Chip
-              key={status}
-              active={objective.status === status}
-              onClick={() => setObjectiveStatus(objective.id, status)}
-              className="min-h-11"
-            >
-              {t(`objectiveStatus.${status}`)}
-            </Chip>
-          ))}
-        </div>
-      </section>
+      <div className="flex flex-wrap gap-2">
+        {STATUS_OPTIONS.map((status) => (
+          <Chip
+            key={status}
+            active={objective.status === status}
+            onClick={() => setObjectiveStatus(objective.id, status)}
+            className="min-h-11"
+          >
+            {t(`objectiveStatus.${status}`)}
+          </Chip>
+        ))}
+      </div>
 
       {objective.status === 'done' ? (
-        <Card className="space-y-3 rounded-[20px]">
-          <p className="text-[15px] text-ink-3">{t('planning.objectives.completedCtaTitle')}</p>
-          <div className="flex flex-col gap-2">
-            {canAddNext ? (
-              <Button className="min-h-11 w-full" onClick={() => setCreatingObjective(true)}>
-                {t('planning.objectives.completedCtaNew')}
-              </Button>
-            ) : null}
+        <div className="flex flex-col gap-2">
+          <p className="text-[13px] text-ink-3">{t('planning.objectives.completedCtaTitle')}</p>
+          {canAddNext ? (
+            <Button className="min-h-11 w-full" onClick={() => setCreatingObjective(true)}>
+              {t('planning.objectives.completedCtaNew')}
+            </Button>
+          ) : (
             <Button
               variant="secondary"
               className="min-h-11 w-full"
@@ -158,18 +153,9 @@ export function ObjectiveDetailPage() {
             >
               {t('planning.objectives.completedCtaBack')}
             </Button>
-          </div>
-        </Card>
+          )}
+        </div>
       ) : null}
-
-      <div className="flex gap-2">
-        <Button variant="secondary" className="min-h-11 flex-1" onClick={() => setEdit(true)}>
-          {t('common.edit')}
-        </Button>
-        <Button variant="danger" className="min-h-11 flex-1" onClick={() => setArchiveOpen(true)}>
-          {t('common.archive')}
-        </Button>
-      </div>
 
       <section>
         <p className="mb-2 text-[13px] font-semibold tracking-[0.14em] text-ink-3 uppercase">

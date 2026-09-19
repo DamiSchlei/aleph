@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Badge, Button, Card, cx } from '@/components/ui/primitives'
+import { Button, cx } from '@/components/ui/primitives'
 import { RowMenu } from '@/components/ui/RowMenu'
 import { useAleph } from '@/data/store'
-import { objectiveById, resultById, skillById } from '@/data/selectors'
+import { blockContext, objectiveById, resultById } from '@/data/selectors'
 import { isTaskDone, projectReward } from '@/domain/economy'
 import { formatDate, formatHours } from '@/i18n/format'
-import { skillName } from '@/i18n/labels'
 import type { Task } from '@/domain/types'
 
 export function TaskCheckbox({
@@ -29,13 +28,13 @@ export function TaskCheckbox({
     >
       <span
         className={cx(
-          'flex size-6 items-center justify-center rounded-xl border-2 transition-colors',
-          done ? 'border-mint bg-mint text-white' : 'border-ink-600',
+          'flex size-[22px] items-center justify-center rounded-md border-2 transition-colors',
+          done ? 'border-mint bg-mint text-white' : 'border-line-strong',
         )}
       >
         {done ? (
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="3">
-            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+          <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3.5 8.5 6.5 11.5 12.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         ) : null}
       </span>
@@ -68,7 +67,6 @@ export function TaskRow({
   showProjection = false,
   hideCheckbox = false,
   className,
-  density = 'full',
 }: {
   task: Task
   onToggle: () => void
@@ -81,14 +79,13 @@ export function TaskRow({
   showContext?: boolean
   showProjection?: boolean
   hideCheckbox?: boolean
-  density?: 'full' | 'home'
   className?: string
 }) {
   const { t } = useTranslation()
   const state = useAleph()
   const locale = state.character.locale
   const done = isTaskDone(task.status)
-  const skill = skillById(state, task.skillId)
+  const ctx = blockContext(state, task)
   const result = resultById(state, task.resultId)
   const objective = objectiveById(state, task.objectiveId)
   const contextResult = result ?? resultById(state, objective?.resultId)
@@ -98,18 +95,27 @@ export function TaskRow({
   const canAssign = loose && !done && Boolean(onAssign)
   const canExecute = task.stage === 'research' && !done && Boolean(onExecute)
   const canReturn = task.stage === 'execution' && !done && Boolean(onReturn)
-  const home = density === 'home'
-  const meta = home
-    ? [
-        t('common.hours', { count: Number(formatHours(task.actualHours ?? task.estimatedHours, locale)) }),
-        loose ? t('planning.tasks.loose') : contextResult?.name,
-      ]
-        .filter(Boolean)
-        .join(' · ')
-    : null
+
+  const metaParts: string[] = [`${formatHours(task.actualHours ?? task.estimatedHours, locale)} h`]
+  if (showContext) {
+    if (loose) metaParts.push(t('planning.tasks.loose'))
+    else if (contextResult?.name) metaParts.push(contextResult.name)
+    if (objective?.name) metaParts.push(objective.name)
+  }
+  if (!loose && !done) metaParts.push(t(`stages.${task.stage}.short`))
+  if (task.dueAt && !done) metaParts.push(formatDate(task.dueAt, locale))
+  if (done) metaParts.push(t(`taskStatus.${task.status}`))
+  if (task.status === 'cancelled') metaParts.push(t('taskStatus.cancelled'))
+  if (showProjection && !done) {
+    metaParts.push(`+${projection.xp} XP · +${projection.money} $`)
+  }
+  if (done && task.xpGranted !== undefined) {
+    metaParts.push(`+${task.xpGranted} XP · +${task.moneyGranted} $`)
+  }
 
   return (
-    <Card className={cx('flex items-start gap-1 p-2', className)}>
+    <div className={cx('relative flex overflow-hidden rounded-2xl border border-line bg-surface-2', className)}>
+      <span aria-hidden className="absolute inset-y-0 left-0 w-1.5" style={{ background: ctx.color }} />
       {hideCheckbox ? null : (
         <TaskCheckbox done={done} onToggle={onToggle} label={t('home.completeTask')} />
       )}
@@ -118,58 +124,20 @@ export function TaskRow({
         onClick={onOpen}
         disabled={!onOpen}
         className={cx(
-          'min-w-0 flex-1 py-1.5 pr-1 text-left',
-          hideCheckbox && 'pl-2',
-          onOpen && 'cursor-pointer rounded-xl transition-colors hover:bg-subtle',
+          'min-h-11 min-w-0 flex-1 py-2.5 pr-1 text-left',
+          hideCheckbox && 'pl-3',
+          onOpen && 'cursor-pointer',
         )}
       >
         <p
           className={cx(
-            'text-[15px] leading-snug font-medium',
+            'line-clamp-1 text-[15px] leading-snug font-medium',
             done ? 'text-ink-3 line-through' : 'text-ink',
           )}
         >
           {task.title}
         </p>
-        {home ? (
-          <p className="mt-1 text-[13px] text-ink-3">{meta}</p>
-        ) : (
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          {skill ? (
-            <Badge>
-              <span className="size-2 rounded-full" style={{ background: skill.color }} />
-              {skillName(t, skill)}
-            </Badge>
-          ) : null}
-          <Badge>{t('common.hours', { count: Number(formatHours(task.actualHours ?? task.estimatedHours, locale)) })}</Badge>
-          <Badge>{t(`difficulty.${task.difficulty}`)}</Badge>
-          {showContext && contextResult ? <Badge tone="accent">{contextResult.name}</Badge> : null}
-          {showContext && objective ? <Badge tone="violet">{objective.name}</Badge> : null}
-          {showContext && loose ? <Badge tone="amber">{t('planning.tasks.loose')}</Badge> : null}
-          {showContext && !loose && !done ? (
-            <Badge tone={task.stage === 'execution' ? 'mint' : 'neutral'}>
-              {t(`moments.${task.stage}`)}
-            </Badge>
-          ) : null}
-          {task.dueAt && !done ? <Badge tone="amber">{formatDate(task.dueAt, locale)}</Badge> : null}
-          {done ? (
-            <Badge tone={task.status === 'done_on_time' ? 'mint' : 'rose'}>
-              {t(`taskStatus.${task.status}`)}
-            </Badge>
-          ) : null}
-          {task.status === 'cancelled' ? <Badge tone="rose">{t('taskStatus.cancelled')}</Badge> : null}
-          {showProjection && !done ? (
-            <Badge tone="mint">
-              {t('planning.tasks.projected')} +{projection.xp} XP · +{projection.money} $
-            </Badge>
-          ) : null}
-          {done && task.xpGranted !== undefined ? (
-            <Badge tone="mint">
-              +{task.xpGranted} XP · +{task.moneyGranted} $
-            </Badge>
-          ) : null}
-        </div>
-        )}
+        <p className="mt-0.5 truncate text-[12px] leading-tight text-text-3">{metaParts.join(' · ')}</p>
       </button>
       {canExecute ? (
         <Button className="self-center shrink-0 px-3" onClick={onExecute!}>
@@ -178,14 +146,12 @@ export function TaskRow({
       ) : null}
       {canReturn ? <RowAction onClick={onReturn!}>{t('planning.tasks.backToResearch')}</RowAction> : null}
       {canAssign ? (
-        <RowAction onClick={onAssign!}>
-          {home ? t('planning.tasks.assignShort') : t('planning.tasks.assign')}
-        </RowAction>
+        <RowAction onClick={onAssign!}>{t('planning.tasks.assignShort')}</RowAction>
       ) : null}
       {onDelete ? (
         <RowMenu items={[{ label: t('common.delete'), tone: 'danger', onClick: onDelete }]} />
       ) : null}
-      {handle}
-    </Card>
+      {handle ? <div className="opacity-30">{handle}</div> : null}
+    </div>
   )
 }
