@@ -1,12 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cx } from '@/components/ui/primitives'
 import { captureLooseTask } from '@/data/actions'
 import { composerWriteForDay } from '@/domain/composerParse'
-
-function reducedMotion(): boolean {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
 
 /**
  * Title + hours + submit. Creates a loose task on `dayKey` (not always today).
@@ -16,16 +12,6 @@ export function Composer({ dayKey }: { dayKey: string }) {
   const [draft, setDraft] = useState('')
   const [hours, setHours] = useState(1)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    const input = inputRef.current
-    if (!input) return
-    input.focus()
-    input.scrollIntoView({
-      block: 'center',
-      behavior: reducedMotion() ? 'auto' : 'smooth',
-    })
-  }, [])
 
   const submit = useCallback(() => {
     const raw = draft.trim()

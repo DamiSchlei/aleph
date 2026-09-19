@@ -204,15 +204,7 @@
     "viewerTitleToday": "Tareas · hoy",
     "viewerEmpty": "No hay tareas en este día.",
     "viewerSeeAll": "Ver las {{n}}",
-    "addTask": "Agregar tarea",
-    "indexNone": "Sin tareas",
-    "indexOne": "1 tarea",
-    "indexMany": "{{n}} tareas",
-    "freeInline": "{{n}} libres",
-    "completeNamed": "Completá {{title}}",
-    "reopenNamed": "Reabrí {{title}}",
-    "blockA11y": "{{title}}, {{hours}}, {{stage}}",
-    "blockA11yDone": "{{title}}, {{hours}}, {{stage}}, completada"
+    "addTask": "Agregar tarea"
   },
   "planning": {
     "title": "Planificación",

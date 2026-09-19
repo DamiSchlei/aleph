@@ -84,7 +84,7 @@ export function JournalBubble() {
           className="fixed z-40 size-3 rounded-full bg-ink-2/80"
           style={{
             right: 'max(1rem, env(safe-area-inset-right))',
-            bottom: 'max(calc(var(--tab-bar-height) + 4.75rem), env(safe-area-inset-bottom))',
+            bottom: 'max(calc(var(--tab-bar-height) + 3.25rem), env(safe-area-inset-bottom))',
           }}
         />
       ) : null}
@@ -94,7 +94,7 @@ export function JournalBubble() {
           className="fixed z-40 flex items-end gap-1"
           style={{
             right: 'max(1rem, env(safe-area-inset-right))',
-            bottom: 'max(calc(var(--tab-bar-height) + 4.75rem), env(safe-area-inset-bottom))',
+            bottom: 'max(calc(var(--tab-bar-height) + 3.25rem), env(safe-area-inset-bottom))',
           }}
         >
           <button

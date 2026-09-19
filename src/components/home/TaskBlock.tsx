@@ -18,48 +18,39 @@ export function TaskBlock({
   onToggle,
   onOpen,
   showGroupLabel,
-  omitResult,
 }: {
   task: Task
   handle: ReactNode
   onToggle: () => void
   onOpen: () => void
-  /** Result name above the first card of a consecutive same-result run. */
+  /** Optional result label above the card when grouping consecutive blocks. */
   showGroupLabel?: boolean
-  /** Hide result on the meta line when a group label already names it. */
-  omitResult?: boolean
 }) {
   const { t } = useTranslation()
   const state = useAleph()
   const locale = state.character.locale
   const ctx = blockContext(state, task)
   const done = isTaskDone(task.status)
-  const hours = `${formatHours(ctx.hours, locale)} h`
-  const stage = t(`stages.${ctx.stage}.short`)
-  const hideResult = Boolean(showGroupLabel || omitResult)
 
   const metaParts: string[] = []
-  if (ctx.kind === 'loose') {
-    metaParts.push(t('planning.tasks.loose'), hours, stage)
-  } else if (ctx.kind === 'anchored') {
-    if (ctx.objective?.name) metaParts.push(ctx.objective.name)
-    metaParts.push(hours, stage)
-  } else {
-    if (!hideResult && ctx.result?.name) metaParts.push(ctx.result.name)
-    metaParts.push(hours, stage)
+  if (!showGroupLabel) {
+    if (ctx.kind === 'loose') metaParts.push(t('planning.tasks.loose'))
+    else if (ctx.result?.name) metaParts.push(ctx.result.name)
   }
+  if (ctx.kind === 'anchored' && ctx.objective?.name) {
+    metaParts.push(ctx.objective.name)
+  }
+  if (ctx.timeRange.start && ctx.timeRange.end) {
+    metaParts.push(`${ctx.timeRange.start}–${ctx.timeRange.end}`)
+  }
+  metaParts.push(`${formatHours(ctx.hours, locale)} h`)
+  metaParts.push(t(`stages.${ctx.stage}.short`))
 
   const lineageHref = ctx.objective
     ? `/planning/objectives/${ctx.objective.id}`
     : ctx.result
       ? `/planning/results/${ctx.result.id}`
       : undefined
-
-  const titleName = t(done ? 'home.blockA11yDone' : 'home.blockA11y', {
-    title: task.title,
-    hours,
-    stage,
-  })
 
   return (
     <div className="flex flex-col gap-1">
@@ -85,7 +76,6 @@ export function TaskBlock({
           <button
             type="button"
             onClick={onOpen}
-            aria-label={titleName}
             className="min-h-11 min-w-0 flex-1 py-0 text-left"
           >
             <p
@@ -97,14 +87,14 @@ export function TaskBlock({
               {task.title}
             </p>
             <p className="mt-0.5 truncate text-[12px] leading-tight text-text-3">
-              {metaParts.slice(0, 3).join(' · ')}
+              {metaParts.join(' · ')}
             </p>
           </button>
           <button
             type="button"
             role="checkbox"
             aria-checked={done}
-            aria-label={t(done ? 'home.reopenNamed' : 'home.completeNamed', { title: task.title })}
+            aria-label={t('home.completeBlock')}
             onClick={onToggle}
             className="flex size-11 shrink-0 items-center justify-center"
           >
