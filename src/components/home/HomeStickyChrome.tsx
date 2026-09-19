@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DayTaskViewer } from '@/components/home/DayTaskViewer'
+import { DayTaskViewerHeader } from '@/components/home/DayTaskViewer'
 import { WeekStrip } from '@/components/home/WeekStrip'
 import { cx } from '@/components/ui/primitives'
 import { formatWeekHeading, isoWeekNumber, parseLocal } from '@/domain/dates'
@@ -29,8 +29,8 @@ function longDateLine(
 }
 
 /**
- * Floating date chrome for Home only.
- * Hero scrolls away above; this stays sticky with the week strip and period controls.
+ * Sticky Home chrome: date, period tabs, week strip, and the viewer header.
+ * The active-day list sits below this, not inside it.
  */
 export function HomeStickyChrome({
   activeDay,
@@ -105,7 +105,7 @@ export function HomeStickyChrome({
           ‹
         </button>
         <div className="min-w-0 flex-1 pt-1">
-          <h2 className="truncate text-[18px] font-semibold capitalize text-ink">{line1}</h2>
+          <h1 className="truncate text-[18px] font-semibold capitalize text-ink">{line1}</h1>
           {line2 ? <p className="mt-0.5 truncate text-[12px] text-text-3">{line2}</p> : null}
         </div>
         <button
@@ -128,11 +128,17 @@ export function HomeStickyChrome({
             {t('home.todayJump')}
           </button>
         ) : null}
-        <div className="flex min-w-0 flex-1 rounded-2xl border border-line-strong bg-subtle p-0.5">
+        <div
+          role="tablist"
+          aria-label={t('home.title')}
+          className="flex min-w-0 flex-1 rounded-2xl border border-line-strong bg-subtle p-0.5"
+        >
           {modes.map((mode) => (
             <button
               key={mode}
               type="button"
+              role="tab"
+              aria-selected={granularity === mode}
               onClick={() => onGranularity(mode)}
               className={cx(
                 'min-h-11 min-w-0 flex-1 rounded-xl px-2 text-[14px] font-medium',
@@ -157,11 +163,7 @@ export function HomeStickyChrome({
             localeTag={localeTag}
             onSelectDay={onSelectDay}
           />
-          <DayTaskViewer
-            activeDay={activeDay}
-            todayKey={todayKey}
-            localeTag={localeTag}
-          />
+          <DayTaskViewerHeader />
         </div>
       ) : null}
     </div>

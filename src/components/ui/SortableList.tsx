@@ -32,6 +32,7 @@ export function DragHandle({ listeners, attributes, label }: {
       title={label}
       {...attributes}
       {...listeners}
+      tabIndex={-1}
       className="flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-xl text-ink-400 transition-colors hover:bg-subtle active:cursor-grabbing"
     >
       <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">

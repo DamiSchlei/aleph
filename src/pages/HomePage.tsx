@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DayFeed } from '@/components/home/DayFeed'
+import { DayTaskViewer, DayViewerScope } from '@/components/home/DayTaskViewer'
 import { HomeStickyChrome, type HomeGranularity } from '@/components/home/HomeStickyChrome'
 import { PeriodGrid } from '@/components/home/PeriodGrid'
 import { weekStartKeyOf } from '@/data/dayLoad'
@@ -18,6 +19,10 @@ function buildDays(anchorKey: string, radius: number): string[] {
   return Array.from({ length: radius * 2 + 1 }, (_, i) =>
     toDayKey(addDays(anchorKey, i - radius)),
   )
+}
+
+function reducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 export function HomePage() {
@@ -51,6 +56,15 @@ export function HomePage() {
     setJumpDay(dayKey)
     setJumpNonce((value) => value + 1)
   }, [])
+
+  useEffect(() => {
+    if (granularity !== 'day' || jumpNonce === 0) return
+    const node = document.getElementById('home-day-viewer')
+    node?.scrollIntoView({
+      block: 'start',
+      behavior: reducedMotion() ? 'auto' : 'smooth',
+    })
+  }, [jumpDay, jumpNonce, granularity])
 
   const setMode = (mode: HomeGranularity) => {
     if (mode === granularity) return
@@ -86,51 +100,59 @@ export function HomePage() {
   )
 
   return (
-    <div className="flex flex-col">
-      <HomeStickyChrome
-        activeDay={activeDay}
-        todayKey={todayKey}
-        granularity={granularity}
-        locale={locale}
-        localeTag={localeTag}
-        showHoy={showHoy}
-        onGranularity={setMode}
-        onHoy={() => {
-          setGranularity('day')
-          jumpTo(todayKey)
-        }}
-        onPrev={() => shiftPeriod(-1)}
-        onNext={() => shiftPeriod(1)}
-        onSelectDay={(dayKey) => {
-          setGranularity('day')
-          jumpTo(dayKey)
-        }}
-        onHeightChange={setChromeHeight}
-      />
-
-      {granularity === 'day' && chromeHeight > 0 ? (
-        <DayFeed
-          days={days}
-          jumpDay={jumpDay}
-          jumpNonce={jumpNonce}
-          localeTag={localeTag}
-          omitDay={activeDay}
-          scrollMarginTop={chromeHeight}
-          onActiveDayChange={setActiveDay}
-          onApproachEdge={onApproachEdge}
-        />
-      ) : granularity !== 'day' ? (
-        <PeriodGrid
-          mode={granularity}
-          anchorDay={activeDay}
+    <DayViewerScope activeDay={activeDay} todayKey={todayKey} localeTag={localeTag}>
+      <div className="flex flex-col">
+        <HomeStickyChrome
+          activeDay={activeDay}
           todayKey={todayKey}
+          granularity={granularity}
+          locale={locale}
           localeTag={localeTag}
-          onOpenDay={(dayKey) => {
+          showHoy={showHoy}
+          onGranularity={setMode}
+          onHoy={() => {
+            setGranularity('day')
+            jumpTo(todayKey)
+          }}
+          onPrev={() => shiftPeriod(-1)}
+          onNext={() => shiftPeriod(1)}
+          onSelectDay={(dayKey) => {
             setGranularity('day')
             jumpTo(dayKey)
           }}
+          onHeightChange={setChromeHeight}
         />
-      ) : null}
-    </div>
+
+        {granularity === 'day' && chromeHeight > 0 ? (
+          <>
+            <div
+              id="home-day-viewer"
+              style={{ scrollMarginTop: `${chromeHeight + 8}px` }}
+            >
+              <DayTaskViewer />
+            </div>
+            <DayFeed
+              days={days}
+              localeTag={localeTag}
+              omitDay={activeDay}
+              scrollMarginTop={chromeHeight}
+              onSelectDay={jumpTo}
+              onApproachEdge={onApproachEdge}
+            />
+          </>
+        ) : granularity !== 'day' ? (
+          <PeriodGrid
+            mode={granularity}
+            anchorDay={activeDay}
+            todayKey={todayKey}
+            localeTag={localeTag}
+            onOpenDay={(dayKey) => {
+              setGranularity('day')
+              jumpTo(dayKey)
+            }}
+          />
+        ) : null}
+      </div>
+    </DayViewerScope>
   )
 }
