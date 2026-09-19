@@ -33,9 +33,8 @@ export function TaskBlock({
   const done = isTaskDone(task.status)
 
   const metaParts: string[] = []
-  if (!showGroupLabel) {
-    if (ctx.kind === 'loose') metaParts.push(t('planning.tasks.loose'))
-    else if (ctx.result?.name) metaParts.push(ctx.result.name)
+  if (!showGroupLabel && ctx.kind === 'loose') {
+    metaParts.push(t('planning.tasks.loose'))
   }
   if (ctx.kind === 'anchored' && ctx.objective?.name) {
     metaParts.push(ctx.objective.name)
